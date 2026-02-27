@@ -53,13 +53,6 @@ battery_side_wall_clear = 0.4;
 // Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
 battery_side_wall_u_bridge_overlap = 0.6;
 
-// Match main USB opening so the assembled side profile keeps the same rounded corners.
-usb_clear_x = 1.2;
-usb_hole_extra_w = 1.5;
-usb_hole_h = 8.0;
-usb_hole_corner_r = 1.0;
-usb_hole_z_offset = 3.0;
-
 led_view_d = 2.6;
 
 brand_text = "Crimpdeq";
@@ -131,9 +124,6 @@ battery_side_wall_u_bridge_x0 = u_cutout_inner_x - battery_side_wall_u_bridge_ov
 battery_side_wall_u_bridge_w = battery_side_wall_inner_x - battery_side_wall_u_bridge_x0;
 led_x = pcb_W / 2 - led_from_left;
 led_y = pcb_y_offset + pcb_L / 2 - led_from_usb_side;
-usb_center_z = pcb_top_z + usb_h / 2 - usb_inset;
-usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
-usb_hole_center_z = usb_center_z + usb_hole_z_offset;
 
 assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
@@ -208,20 +198,6 @@ module corner_head_recesses(d, depth) {
 module led_view_hole() {
     translate([led_x, led_y, lid_z_min - 0.1])
         cylinder(d = led_view_d, h = lid_t + 0.3, center = false);
-}
-
-module usb_hole_relief() {
-    // Continue the main USB opening shape into the lid wall.
-    translate([0, inner_y_max + wall_t / 2, usb_hole_center_z])
-        rotate([90, 0, 0])
-            linear_extrude(height = wall_t + 0.3, center = true)
-                rounded_rect_2d(
-                    -usb_hole_w / 2,
-                     usb_hole_w / 2,
-                    -usb_hole_h / 2,
-                     usb_hole_h / 2,
-                    usb_hole_corner_r
-                );
 }
 
 module eye_u_cutout(eye_x, open_left = true) {
@@ -322,7 +298,6 @@ module lid_part() {
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);
         corner_head_recesses(screw_head_d, head_recess_depth);
         led_view_hole();
-        usb_hole_relief();
         translate([0, 0, lid_z_min]) eye_u_cutout(eye_x1, open_left = true);
         translate([0, 0, lid_z_min]) eye_u_cutout(eye_x2, open_left = false);
         // Brand engraving on outer top face.
