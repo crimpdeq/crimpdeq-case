@@ -28,21 +28,21 @@ jobs:
                   sudo apt-get install -y openscad xvfb
             - name: Run collision checks
               run: bash scripts/check-collisions.sh
-            - name: Build enclosure_main.stl
+            - name: Build case_main.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:
-                  scad_file: case/enclosure_main.scad
-                  output_file: case/enclosure_main.stl
-            - name: Build enclosure_lid.stl
+                  scad_file: case/case_main.scad
+                  output_file: case/case_main.stl
+            - name: Build case_lid.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:
-                  scad_file: case/enclosure_lid.scad
-                  output_file: case/enclosure_lid.stl
+                  scad_file: case/case_lid.scad
+                  output_file: case/case_lid.stl
             - name: Upload STL files as artifact
               uses: actions/upload-artifact@v6
               with:
                   name: stl-files
                   path: |
-                      case/enclosure_main.stl
-                      case/enclosure_lid.stl
+                      case/case_main.stl
+                      case/case_lid.stl
                   compression-level: 0

@@ -1,6 +1,6 @@
 //
 // Lid enclosure part
-// - corner screw holes aligned with enclosure_main.scad
+// - corner screw holes aligned with case_main.scad
 // - U cutouts aligned with main part for load-cell hole access
 // - load-cell vertical hold-down features
 //
@@ -59,6 +59,7 @@ brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
+print_layout = true; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
 inner_x_min = -lc_L / 2 - clear_x;
@@ -131,6 +132,10 @@ assert(!battery_side_wall_enable || battery_side_wall_t > 0,
     "battery_side_wall_t must be > 0.");
 assert(!battery_side_wall_enable || battery_side_wall_u_bridge_overlap >= 0,
     "battery_side_wall_u_bridge_overlap must be >= 0.");
+assert(loadcell_hold_down_d > 0,
+    "loadcell_hold_down_d must be > 0.");
+assert(loadcell_hold_down_y_offset >= 0,
+    "loadcell_hold_down_y_offset must be >= 0.");
 assert(loadcell_hold_down_wall_clear >= 0,
     str("loadcell_hold_down_wall_clear must be >= 0. Got ", loadcell_hold_down_wall_clear, " mm."));
 assert(hold_down_w > 0,
@@ -149,6 +154,9 @@ assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 
         battery_side_wall_x + battery_side_wall_t / 2 - inner_x_max, " mm (X)."));
 assert(!battery_side_wall_enable || battery_side_wall_u_bridge_w > 0,
     str("Battery wall/U-corner bridge collapsed. bridge_w=", battery_side_wall_u_bridge_w, " mm."));
+assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
+    str("Battery side wall length exceeds inner cavity span by ",
+        battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -254,7 +262,7 @@ module battery_front_stops() {
 }
 
 module battery_side_walls() {
-    if (battery_side_wall_h > 0 && battery_side_wall_t > 0 && battery_side_wall_l > 0) {
+    if (battery_side_wall_enable && battery_side_wall_h > 0 && battery_side_wall_t > 0 && battery_side_wall_l > 0) {
         wall_z = hold_down_target_z + battery_side_wall_h / 2;
 
         for (x_sign = [-1, 1])
@@ -264,12 +272,19 @@ module battery_side_walls() {
 }
 
 module battery_wall_u_corner_bridges() {
-    if (battery_side_wall_u_bridge_w > 0 && battery_side_wall_l > 0 && lid_t > 0) {
+    if (battery_side_wall_enable && battery_side_wall_u_bridge_w > 0 && battery_side_wall_l > 0 && lid_t > 0) {
         bridge_z = lid_z_min + lid_t / 2;
 
         for (x_sign = [-1, 1])
             translate([x_sign * (battery_side_wall_u_bridge_x0 + battery_side_wall_u_bridge_w / 2), 0, bridge_z])
                 cube([battery_side_wall_u_bridge_w, battery_side_wall_l, lid_t], center = true);
+    }
+}
+
+module battery_side_wall_features() {
+    if (battery_side_wall_enable) {
+        battery_side_walls();
+        battery_wall_u_corner_bridges();
     }
 }
 
@@ -303,8 +318,17 @@ module lid_part() {
         // Brand engraving on outer top face.
         brand_engrave_lid();
     }
-    battery_side_walls();
-    battery_wall_u_corner_bridges();
+    battery_side_wall_features();
 }
 
-lid_part();
+module lid_part_print_layout() {
+    translate([0, 0, lid_z_max])
+        rotate([180, 0, 0])
+            lid_part();
+}
+
+if (print_layout) {
+    lid_part_print_layout();
+} else {
+    lid_part();
+}

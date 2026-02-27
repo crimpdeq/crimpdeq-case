@@ -9,7 +9,7 @@
 include <dimensions.scad>
 use <load_cell.scad>
 use <assembly.scad>
-use <enclosure_lid.scad>
+use <case_lid.scad>
 
 $fn = 96;
 
@@ -47,7 +47,6 @@ pcb_rear_gap = front_clear + rear_clear - pcb_front_gap;
 pcb_rear_stop_w = 4;
 
 usb_clear_x = 1.2;
-usb_clear_z = 1.2;
 usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
 usb_hole_h = 8.0;
 usb_hole_corner_r = 1.0;
@@ -73,6 +72,7 @@ show_lid_preview = true;
 lid_preview_z_offset = 15; // mm (above main part)
 lid_preview_alpha = 0.8; // higher alpha = more opaque
 show_battery_glue_spacer = true;
+print_layout = true; // true: place bottom on Z=0 for direct STL slicing
 
 /*** Derived placement ***/
 inner_x_min = -lc_L / 2 - clear_x;
@@ -109,7 +109,6 @@ battery_y_offset = inner_y_min + battery_rear_gap + bat_L / 2;
 battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
 pcb_y_offset = front_clear - pcb_front_gap;
 
-notch_x1 = -lc_L / 2 + notch_xA;
 notch_x2 = -lc_L / 2 + notch_xB;
 notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
@@ -172,6 +171,10 @@ assert(pcb_guide_riser_w > 0.01,
     str("PCB side-guide riser collapsed. Increase battery width support or reduce pcb_guide_clear. riser_w=", pcb_guide_riser_w));
 assert(usb_hole_top_z <= outer_z_max - 0.1,
     str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
+assert(screw_post_d > screw_thread_d,
+    str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
+assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
+    str("screw_corner_inset too large for enclosure footprint. inset=", screw_corner_inset, " mm."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -566,20 +569,33 @@ module main_part() {
     }
 }
 
-main_part();
-if (show_battery_glue_spacer) {
-    battery_glue_spacer_print_layout();
+module main_part_print_layout() {
+    translate([0, 0, -outer_z_min]) {
+        main_part();
+        if (show_battery_glue_spacer) {
+            battery_glue_spacer_print_layout();
+        }
+    }
 }
-if (show_assembly) {
-    %full_assembly();
-}
-if (show_lid_preview) {
-    translate([0, 0, lid_preview_z_offset]) {
-        // In preview, show lid with configurable opacity. For renders/exports, keep it as %.
-        if ($preview) {
-            color([0.8, 0.8, 0.8, lid_preview_alpha]) lid_part();
-        } else {
-            %lid_part();
+
+if (print_layout) {
+    main_part_print_layout();
+} else {
+    main_part();
+    if (show_battery_glue_spacer) {
+        battery_glue_spacer_print_layout();
+    }
+    if (show_assembly) {
+        %full_assembly();
+    }
+    if (show_lid_preview) {
+        translate([0, 0, lid_preview_z_offset]) {
+            // In preview, show lid with configurable opacity. For renders/exports, keep it as %.
+            if ($preview) {
+                color([0.8, 0.8, 0.8, lid_preview_alpha]) lid_part();
+            } else {
+                %lid_part();
+            }
         }
     }
 }
