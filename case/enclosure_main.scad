@@ -51,6 +51,7 @@ usb_clear_z = 1.2;
 usb_hole_extra_w = 1.5;
 usb_hole_h = 8.0;
 usb_hole_corner_r = 1.0;
+usb_hole_z_offset = 3.0; // move USB hole upward without changing its size
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -68,8 +69,8 @@ brand_depth = 0.8;
 
 // Parameters
 show_assembly = true;
-show_lid_preview = false;
-lid_preview_z_offset = 10; // mm (above main part)
+show_lid_preview = true;
+lid_preview_z_offset = 0; // mm (above main part)
 lid_preview_alpha = 0.8; // higher alpha = more opaque
 show_battery_glue_spacer = true;
 
@@ -118,6 +119,7 @@ notch_pin_h = 6 + loadcell_lift;
 pcb_center_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T / 2;
 usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
+usb_hole_center_z = usb_center_z + usb_hole_z_offset;
 
 screw_x1 = outer_x_min + screw_corner_inset;
 screw_x2 = outer_x_max - screw_corner_inset;
@@ -132,13 +134,13 @@ switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
 switch_z = inner_z_min + switch_h_eff / 2;
 switch_hole_z_min = outer_z_min + switch_hole_h / 2;
 switch_hole_z_pref = max(switch_z, switch_hole_z_min);
-switch_hole_z_max = usb_center_z - usb_hole_h / 2 - switch_usb_gap - switch_hole_h / 2;
+switch_hole_z_max = usb_hole_center_z - usb_hole_h / 2 - switch_usb_gap - switch_hole_h / 2;
 switch_hole_z = max(switch_hole_z_min, min(switch_hole_z_pref, switch_hole_z_max));
 switch_y_min = switch_y - switch_d / 2;
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
 pcb_bottom_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap;
-switch_hole_usb_gap = usb_center_z - usb_hole_h / 2 - (switch_hole_z + switch_hole_h / 2);
+switch_hole_usb_gap = usb_hole_center_z - usb_hole_h / 2 - (switch_hole_z + switch_hole_h / 2);
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
@@ -545,7 +547,7 @@ module main_part() {
             cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
         // Rounded USB opening to reduce sharp edges at the wall cutout.
-        translate([0, inner_y_max + wall_t / 2, usb_center_z])
+        translate([0, inner_y_max + wall_t / 2, usb_hole_center_z])
             rotate([90, 0, 0])
                 linear_extrude(height = wall_t + 0.3, center = true)
                     rounded_rect_2d(
