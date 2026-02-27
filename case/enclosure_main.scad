@@ -29,6 +29,7 @@ loadcell_notch_guide_h = 4;
 loadcell_notch_guide_clear = 0.2;
 loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
+loadcell_u_support_t = 2;
 battery_support_corner_size = 8;
 battery_support_corner_inset = 2;
 battery_support_front_column_clear = 2;
@@ -424,22 +425,52 @@ module eye_access_holes() {
             cylinder(d = eye_access_d, h = floor_t + loadcell_lift + 0.3, center = false);
 }
 
+module eye_u_profile_2d(eye_x, open_left = true, x_open_min = outer_x_min - 0.2, x_open_max = outer_x_max + 0.2) {
+    union() {
+        translate([eye_x, 0])
+            circle(d = u_cutout_z_d);
+
+        if (open_left) {
+            translate([x_open_min, -u_cutout_z_r])
+                square([eye_x - x_open_min, u_cutout_z_d]);
+        } else {
+            translate([eye_x, -u_cutout_z_r])
+                square([x_open_max - eye_x, u_cutout_z_d]);
+        }
+    }
+}
+
 module eye_u_cutout(eye_x, open_left = true) {
     // Overcut in Z so no thin roof remains at the top rim of the main enclosure.
     u_cutout_extrude_h = max(u_cutout_y_span, 2 * (outer_z_max - loadcell_center_z) + 0.4);
     linear_extrude(height = u_cutout_extrude_h, center = true)
-        union() {
-            translate([eye_x, 0])
-                circle(d = u_cutout_z_d);
+        eye_u_profile_2d(eye_x, open_left = open_left);
+}
 
-            if (open_left) {
-                translate([outer_x_min - 0.2, -u_cutout_z_r])
-                    square([eye_x - (outer_x_min - 0.2), u_cutout_z_d]);
-            } else {
-                translate([eye_x, -u_cutout_z_r])
-                    square([(outer_x_max + 0.2) - eye_x, u_cutout_z_d]);
-            }
-        }
+module loadcell_u_cutout_support() {
+    support_h = loadcell_lift - 0.5;
+    if (support_h > 0 && loadcell_u_support_t > 0) {
+        translate([0, 0, inner_z_min])
+            linear_extrude(height = support_h, center = false)
+                intersection() {
+                    union() {
+                        difference() {
+                            offset(delta = loadcell_u_support_t)
+                                eye_u_profile_2d(eye_x1, open_left = true, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                            eye_u_profile_2d(eye_x1, open_left = true, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                        }
+                        difference() {
+                            offset(delta = loadcell_u_support_t)
+                                eye_u_profile_2d(eye_x2, open_left = false, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                            eye_u_profile_2d(eye_x2, open_left = false, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                        }
+                    }
+
+                    // Keep this support inside the inner cavity footprint.
+                    translate([inner_x_min, inner_y_min])
+                        square([inner_x_max - inner_x_min, inner_y_max - inner_y_min], center = false);
+                }
+    }
 }
 
 module brand_engrave_main() {
@@ -482,6 +513,7 @@ module main_part() {
             }
 
             loadcell_support();
+            loadcell_u_cutout_support();
             battery_support_bed();
             pcb_horizontal_guides();
             pcb_rear_stops();
