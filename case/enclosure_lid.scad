@@ -50,6 +50,8 @@ battery_front_stop_z_overlap = bat_T / 2; // reach about mid battery thickness
 battery_side_wall_enable = true;
 battery_side_wall_t = 1.2;
 battery_side_wall_clear = 0.4;
+// Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
+battery_side_wall_u_bridge_overlap = 0.6;
 
 // Match main USB opening so the assembled side profile keeps the same rounded corners.
 usb_clear_x = 1.2;
@@ -123,6 +125,10 @@ battery_side_wall_x = bat_W / 2 + battery_side_wall_clear + battery_side_wall_t 
 battery_side_wall_l = 2 * loadcell_hold_down_y_offset + loadcell_hold_down_d;
 // Extend through the lid thickness so the U-cutout top gap is closed.
 battery_side_wall_h = lid_z_max - hold_down_target_z;
+battery_side_wall_inner_x = battery_side_wall_x - battery_side_wall_t / 2;
+u_cutout_inner_x = eye_x2 - u_cutout_z_r;
+battery_side_wall_u_bridge_x0 = u_cutout_inner_x - battery_side_wall_u_bridge_overlap;
+battery_side_wall_u_bridge_w = battery_side_wall_inner_x - battery_side_wall_u_bridge_x0;
 led_x = pcb_W / 2 - led_from_left;
 led_y = pcb_y_offset + pcb_L / 2 - led_from_usb_side;
 usb_center_z = pcb_top_z + usb_h / 2 - usb_inset;
@@ -133,6 +139,8 @@ assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
 assert(!battery_side_wall_enable || battery_side_wall_t > 0,
     "battery_side_wall_t must be > 0.");
+assert(!battery_side_wall_enable || battery_side_wall_u_bridge_overlap >= 0,
+    "battery_side_wall_u_bridge_overlap must be >= 0.");
 assert(loadcell_hold_down_wall_clear >= 0,
     str("loadcell_hold_down_wall_clear must be >= 0. Got ", loadcell_hold_down_wall_clear, " mm."));
 assert(hold_down_w > 0,
@@ -149,6 +157,8 @@ assert(!battery_front_stop_enable || battery_front_stop_h <= 0
 assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 2 <= inner_x_max + 0.001,
     str("Battery side walls overlap main side wall by ",
         battery_side_wall_x + battery_side_wall_t / 2 - inner_x_max, " mm (X)."));
+assert(!battery_side_wall_enable || battery_side_wall_u_bridge_w > 0,
+    str("Battery wall/U-corner bridge collapsed. bridge_w=", battery_side_wall_u_bridge_w, " mm."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -277,6 +287,16 @@ module battery_side_walls() {
     }
 }
 
+module battery_wall_u_corner_bridges() {
+    if (battery_side_wall_u_bridge_w > 0 && battery_side_wall_l > 0 && lid_t > 0) {
+        bridge_z = lid_z_min + lid_t / 2;
+
+        for (x_sign = [-1, 1])
+            translate([x_sign * (battery_side_wall_u_bridge_x0 + battery_side_wall_u_bridge_w / 2), 0, bridge_z])
+                cube([battery_side_wall_u_bridge_w, battery_side_wall_l, lid_t], center = true);
+    }
+}
+
 module brand_engrave_lid() {
     // Carved on outer top face (same plane as load cell), horizontal and centered.
     translate([0, brand_y, lid_z_max - brand_depth - 0.1])
@@ -309,6 +329,7 @@ module lid_part() {
         brand_engrave_lid();
     }
     battery_side_walls();
+    battery_wall_u_corner_bridges();
 }
 
 lid_part();
