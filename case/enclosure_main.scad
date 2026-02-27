@@ -48,10 +48,10 @@ pcb_rear_stop_w = 4;
 
 usb_clear_x = 1.2;
 usb_clear_z = 1.2;
-usb_hole_extra_w = 1.5;
+usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
 usb_hole_h = 8.0;
 usb_hole_corner_r = 1.0;
-usb_hole_z_offset = 3.0; // move USB hole upward without changing its size
+usb_hole_z_offset = -1.0; // keep USB opening fully below the lid seam
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -120,6 +120,7 @@ pcb_center_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb
 usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
 usb_hole_center_z = usb_center_z + usb_hole_z_offset;
+usb_hole_top_z = usb_hole_center_z + usb_hole_h / 2;
 
 screw_x1 = outer_x_min + screw_corner_inset;
 screw_x2 = outer_x_max - screw_corner_inset;
@@ -169,6 +170,8 @@ assert(pcb_rear_stop_battery_clear >= 0,
     str("pcb_rear_stop_battery_clear must be >= 0. Got ", pcb_rear_stop_battery_clear, " mm."));
 assert(pcb_guide_riser_w > 0.01,
     str("PCB side-guide riser collapsed. Increase battery width support or reduce pcb_guide_clear. riser_w=", pcb_guide_riser_w));
+assert(usb_hole_top_z <= outer_z_max - 0.1,
+    str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
