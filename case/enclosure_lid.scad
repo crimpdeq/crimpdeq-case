@@ -20,7 +20,8 @@ u_cutout_clear = 2.0;
 loadcell_hold_down_clear = 0.3;
 loadcell_hold_down_w = 22.6;
 loadcell_hold_down_d = 8;
-// Center shifted inward so widened hold-downs stay inside the main cavity side walls.
+loadcell_hold_down_wall_clear = 0.4;
+// Baseline inner-edge placement controls where hold-downs start toward the center.
 loadcell_hold_down_edge_offset = 11.6;
 loadcell_hold_down_y_offset = 8;
 
@@ -82,7 +83,10 @@ brand_y = 0; // centered between U cutouts
 
 hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 hold_down_h = lid_z_min - hold_down_target_z;
-hold_down_x = lc_L / 2 - loadcell_hold_down_edge_offset;
+hold_down_inner_x = lc_L / 2 - loadcell_hold_down_edge_offset - loadcell_hold_down_w / 2;
+hold_down_outer_x = inner_x_max - loadcell_hold_down_wall_clear;
+hold_down_w = hold_down_outer_x - hold_down_inner_x;
+hold_down_x = (hold_down_inner_x + hold_down_outer_x) / 2;
 
 eye_x1 = -lc_L / 2 + eye_center_offset;
 eye_x2 = lc_L / 2 - eye_center_offset;
@@ -119,12 +123,16 @@ assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
 assert(!battery_side_wall_enable || battery_side_wall_t > 0,
     "battery_side_wall_t must be > 0.");
-assert(hold_down_x + loadcell_hold_down_w / 2 <= inner_x_max + 0.001,
+assert(loadcell_hold_down_wall_clear >= 0,
+    str("loadcell_hold_down_wall_clear must be >= 0. Got ", loadcell_hold_down_wall_clear, " mm."));
+assert(hold_down_w > 0,
+    str("Load-cell hold-down width collapsed. inner_x=", hold_down_inner_x, " outer_x=", hold_down_outer_x, "."));
+assert(hold_down_x + hold_down_w / 2 <= inner_x_max + 0.001,
     str("Load-cell hold-downs overlap main side wall by ",
-        hold_down_x + loadcell_hold_down_w / 2 - inner_x_max, " mm (X)."));
-assert(hold_down_x - loadcell_hold_down_w / 2 >= bat_W / 2 - 0.001,
+        hold_down_x + hold_down_w / 2 - inner_x_max, " mm (X)."));
+assert(hold_down_x - hold_down_w / 2 >= bat_W / 2 - 0.001,
     str("Load-cell hold-downs overlap battery by ",
-        bat_W / 2 - (hold_down_x - loadcell_hold_down_w / 2), " mm (X)."));
+        bat_W / 2 - (hold_down_x - hold_down_w / 2), " mm (X)."));
 assert(!battery_front_stop_enable || battery_front_stop_h <= 0
     || battery_front_stop_x - battery_front_stop_w / 2 >= pcb_W / 2 + 0.2,
     "Battery front stop tabs must stay outside PCB width.");
@@ -205,7 +213,7 @@ module loadcell_hold_downs() {
         // Keep the center open so the load-cell eye holes remain fully accessible.
         for (y_off = [-loadcell_hold_down_y_offset, loadcell_hold_down_y_offset])
             translate([x_sign * hold_down_x, y_off, hold_down_z])
-                cube([loadcell_hold_down_w, loadcell_hold_down_d, hold_down_h], center = true);
+                cube([hold_down_w, loadcell_hold_down_d, hold_down_h], center = true);
 }
 
 module lid_alignment_lips() {
