@@ -70,7 +70,7 @@ brand_depth = 0.8;
 // Parameters
 show_assembly = true;
 show_lid_preview = true;
-lid_preview_z_offset = 0; // mm (above main part)
+lid_preview_z_offset = 15; // mm (above main part)
 lid_preview_alpha = 0.8; // higher alpha = more opaque
 show_battery_glue_spacer = true;
 
