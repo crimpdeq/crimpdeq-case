@@ -67,8 +67,8 @@ brand_depth = 0.8;
 
 // Parameters
 show_assembly = true;
-show_lid_preview = true;
-lid_preview_z_offset = 0; // mm (above main part)
+show_lid_preview = false;
+lid_preview_z_offset = 10; // mm (above main part)
 lid_preview_alpha = 0.8; // higher alpha = more opaque
 show_battery_glue_spacer = true;
 
@@ -201,8 +201,27 @@ module loadcell_support() {
 
         for (x_sign = [-1, 1])
             for (y_sign = [-1, 1])
-                translate([x_sign * support_x, y_sign * support_y, support_z])
-                    cube([support_xy, support_xy, loadcell_lift], center = true);
+                let(
+                    sx = x_sign * support_x,
+                    sy = y_sign * support_y,
+                    x0 = sx - support_xy / 2,
+                    x1 = sx + support_xy / 2,
+                    y0 = sy - support_xy / 2,
+                    y1 = sy + support_xy / 2,
+                    gap_x_min = x0 - inner_x_min,
+                    gap_x_max = inner_x_max - x1,
+                    gap_y_min = y0 - inner_y_min,
+                    gap_y_max = inner_y_max - y1,
+                    use_x_min = gap_x_min <= gap_x_max && gap_x_min <= gap_y_min && gap_x_min <= gap_y_max,
+                    use_x_max = !use_x_min && gap_x_max <= gap_y_min && gap_x_max <= gap_y_max,
+                    use_y_min = !use_x_min && !use_x_max && gap_y_min <= gap_y_max,
+                    span_x = use_x_min ? (x1 - inner_x_min) : use_x_max ? (inner_x_max - x0) : support_xy,
+                    span_y = use_y_min ? (y1 - inner_y_min) : (!use_x_min && !use_x_max && !use_y_min) ? (inner_y_max - y0) : support_xy,
+                    center_x = use_x_min ? (inner_x_min + x1) / 2 : use_x_max ? (x0 + inner_x_max) / 2 : sx,
+                    center_y = use_y_min ? (inner_y_min + y1) / 2 : (!use_x_min && !use_x_max && !use_y_min) ? (y0 + inner_y_max) / 2 : sy
+                )
+                    translate([center_x, center_y, support_z])
+                        cube([span_x, span_y, loadcell_lift], center = true);
     }
 }
 
