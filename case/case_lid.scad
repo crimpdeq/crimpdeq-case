@@ -59,7 +59,7 @@ brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
-print_layout = true; // true: flip lid for support-free printing (outer top face on bed)
+print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
 inner_x_min = -lc_L / 2 - clear_x;
