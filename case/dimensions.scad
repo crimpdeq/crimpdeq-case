@@ -11,7 +11,7 @@
 lc_L = 80;
 lc_W = 40;
 lc_T = 4;
-loadcell_lift = 4; // support structure height under load cell (from enclosure floor)
+loadcell_lift = 2.5; // support structure height under load cell (from enclosure floor)
 
 eye_d = 17;
 eye_edge_start = 6;
