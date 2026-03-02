@@ -67,11 +67,15 @@ brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
+rear_brand_text = "crimpdeq.com";
+rear_brand_font = "Inter:style=Bold";
+rear_brand_size = 6.0;
+rear_brand_depth = 0.8;
 
 // Parameters
-show_assembly = false;
-show_lid_preview = false;
-lid_preview_z_offset = 15; // mm (above main part)
+show_assembly = true;
+show_lid_preview = true;
+lid_preview_z_offset = 0; // mm (above main part)
 lid_preview_alpha = 0.8; // higher alpha = more opaque
 print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 
@@ -182,6 +186,8 @@ assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
     str("screw_corner_inset too large for enclosure footprint. inset=", screw_corner_inset, " mm."));
+assert(rear_brand_depth > 0 && rear_brand_depth < wall_t,
+    str("rear_brand_depth must be > 0 and < wall_t (", wall_t, " mm)."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -512,6 +518,17 @@ module brand_engrave_main() {
                     text(brand_text, size = brand_size, font = brand_font, halign = "center", valign = "center");
 }
 
+module brand_engrave_main_rear_wall() {
+    rear_brand_z = (outer_z_min + outer_z_max) / 2;
+
+    // Carved on outer rear wall (-Y), opposite the switch and USB openings.
+    // Start from inside the wall and extrude outward so the recess depth stays controlled.
+    translate([0, outer_y_min + rear_brand_depth, rear_brand_z])
+        rotate([90, 0, 0])
+            linear_extrude(height = rear_brand_depth + 0.2, center = false)
+                text(rear_brand_text, size = rear_brand_size, font = rear_brand_font, halign = "center", valign = "center");
+}
+
 module main_part() {
     difference() {
         union() {
@@ -574,6 +591,8 @@ module main_part() {
 
         // Brand engraving on outer bottom face.
         brand_engrave_main();
+        // Rear wall engraving on side opposite the switch/USB wall.
+        brand_engrave_main_rear_wall();
     }
 }
 
