@@ -1,8 +1,8 @@
 // Collision/overlap checks for enclosure and assembly parts.
 // Use with: openscad -D 'mode="main_lid"' -o /tmp/out.stl case/collision_check.scad
 
-use <enclosure_main.scad>
-use <enclosure_lid.scad>
+use <case_main.scad>
+use <case_lid.scad>
 use <load_cell.scad>
 use <battery.scad>
 use <pcb.scad>

@@ -1,6 +1,6 @@
 //
 // Lid enclosure part
-// - corner screw holes aligned with enclosure_main.scad
+// - corner screw holes aligned with case_main.scad
 // - U cutouts aligned with main part for load-cell hole access
 // - load-cell vertical hold-down features
 //
@@ -20,7 +20,8 @@ u_cutout_clear = 2.0;
 loadcell_hold_down_clear = 0.3;
 loadcell_hold_down_w = 22.6;
 loadcell_hold_down_d = 8;
-// Center shifted inward so widened hold-downs stay inside the main cavity side walls.
+loadcell_hold_down_wall_clear = 0.4;
+// Baseline inner-edge placement controls where hold-downs start toward the center.
 loadcell_hold_down_edge_offset = 11.6;
 loadcell_hold_down_y_offset = 8;
 
@@ -45,12 +46,20 @@ battery_front_stop_x_inset = 0.5;
 battery_front_stop_y_clear = 0.3;
 battery_front_stop_z_overlap = bat_T / 2; // reach about mid battery thickness
 
+// Battery side walls (lid underside), running parallel to battery length.
+battery_side_wall_enable = true;
+battery_side_wall_t = 1.2;
+battery_side_wall_clear = 0.4;
+// Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
+battery_side_wall_u_bridge_overlap = 0.6;
+
 led_view_d = 2.6;
 
 brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
+print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
 inner_x_min = -lc_L / 2 - clear_x;
@@ -77,7 +86,10 @@ brand_y = 0; // centered between U cutouts
 
 hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 hold_down_h = lid_z_min - hold_down_target_z;
-hold_down_x = lc_L / 2 - loadcell_hold_down_edge_offset;
+hold_down_inner_x = lc_L / 2 - loadcell_hold_down_edge_offset - loadcell_hold_down_w / 2;
+hold_down_outer_x = inner_x_max - loadcell_hold_down_wall_clear;
+hold_down_w = hold_down_outer_x - hold_down_inner_x;
+hold_down_x = (hold_down_inner_x + hold_down_outer_x) / 2;
 
 eye_x1 = -lc_L / 2 + eye_center_offset;
 eye_x2 = lc_L / 2 - eye_center_offset;
@@ -102,20 +114,49 @@ battery_front_stop_y = battery_front_y + battery_front_stop_y_clear + battery_fr
 battery_front_stop_h = battery_front_stop_enable
     ? max(0, lid_z_min - (battery_top_z - battery_front_stop_z_overlap))
     : 0;
+battery_side_wall_x = bat_W / 2 + battery_side_wall_clear + battery_side_wall_t / 2;
+// Keep wall span within the hold-down column envelope.
+battery_side_wall_l = 2 * loadcell_hold_down_y_offset + loadcell_hold_down_d;
+// Extend through the lid thickness so the U-cutout top gap is closed.
+battery_side_wall_h = lid_z_max - hold_down_target_z;
+battery_side_wall_inner_x = battery_side_wall_x - battery_side_wall_t / 2;
+u_cutout_inner_x = eye_x2 - u_cutout_z_r;
+battery_side_wall_u_bridge_x0 = u_cutout_inner_x - battery_side_wall_u_bridge_overlap;
+battery_side_wall_u_bridge_w = battery_side_wall_inner_x - battery_side_wall_u_bridge_x0;
 led_x = pcb_W / 2 - led_from_left;
 led_y = pcb_y_offset + pcb_L / 2 - led_from_usb_side;
 
 assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
-assert(hold_down_x + loadcell_hold_down_w / 2 <= inner_x_max + 0.001,
+assert(!battery_side_wall_enable || battery_side_wall_t > 0,
+    "battery_side_wall_t must be > 0.");
+assert(!battery_side_wall_enable || battery_side_wall_u_bridge_overlap >= 0,
+    "battery_side_wall_u_bridge_overlap must be >= 0.");
+assert(loadcell_hold_down_d > 0,
+    "loadcell_hold_down_d must be > 0.");
+assert(loadcell_hold_down_y_offset >= 0,
+    "loadcell_hold_down_y_offset must be >= 0.");
+assert(loadcell_hold_down_wall_clear >= 0,
+    str("loadcell_hold_down_wall_clear must be >= 0. Got ", loadcell_hold_down_wall_clear, " mm."));
+assert(hold_down_w > 0,
+    str("Load-cell hold-down width collapsed. inner_x=", hold_down_inner_x, " outer_x=", hold_down_outer_x, "."));
+assert(hold_down_x + hold_down_w / 2 <= inner_x_max + 0.001,
     str("Load-cell hold-downs overlap main side wall by ",
-        hold_down_x + loadcell_hold_down_w / 2 - inner_x_max, " mm (X)."));
-assert(hold_down_x - loadcell_hold_down_w / 2 >= bat_W / 2 - 0.001,
+        hold_down_x + hold_down_w / 2 - inner_x_max, " mm (X)."));
+assert(hold_down_x - hold_down_w / 2 >= bat_W / 2 - 0.001,
     str("Load-cell hold-downs overlap battery by ",
-        bat_W / 2 - (hold_down_x - loadcell_hold_down_w / 2), " mm (X)."));
+        bat_W / 2 - (hold_down_x - hold_down_w / 2), " mm (X)."));
 assert(!battery_front_stop_enable || battery_front_stop_h <= 0
     || battery_front_stop_x - battery_front_stop_w / 2 >= pcb_W / 2 + 0.2,
     "Battery front stop tabs must stay outside PCB width.");
+assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 2 <= inner_x_max + 0.001,
+    str("Battery side walls overlap main side wall by ",
+        battery_side_wall_x + battery_side_wall_t / 2 - inner_x_max, " mm (X)."));
+assert(!battery_side_wall_enable || battery_side_wall_u_bridge_w > 0,
+    str("Battery wall/U-corner bridge collapsed. bridge_w=", battery_side_wall_u_bridge_w, " mm."));
+assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
+    str("Battery side wall length exceeds inner cavity span by ",
+        battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -190,7 +231,7 @@ module loadcell_hold_downs() {
         // Keep the center open so the load-cell eye holes remain fully accessible.
         for (y_off = [-loadcell_hold_down_y_offset, loadcell_hold_down_y_offset])
             translate([x_sign * hold_down_x, y_off, hold_down_z])
-                cube([loadcell_hold_down_w, loadcell_hold_down_d, hold_down_h], center = true);
+                cube([hold_down_w, loadcell_hold_down_d, hold_down_h], center = true);
 }
 
 module lid_alignment_lips() {
@@ -198,8 +239,8 @@ module lid_alignment_lips() {
     if (lip_h > 0 && align_lip_t > 0) {
         lip_z = lid_z_min - lip_h / 2;
 
-        // Front/rear tabs locate the lid without adding geometry in the side U-access zone.
-        for (y_sign = [-1, 1]) {
+        // Keep only the rear tab; remove the USB-side tab to keep connector area clear.
+        for (y_sign = [-1]) {
             y_pos = (y_sign > 0)
                 ? inner_y_max - align_lip_clear - align_lip_t / 2
                 : inner_y_min + align_lip_clear + align_lip_t / 2;
@@ -217,6 +258,33 @@ module battery_front_stops() {
         for (x_sign = [-1, 1])
             translate([x_sign * battery_front_stop_x, battery_front_stop_y, stop_z])
                 cube([battery_front_stop_w, battery_front_stop_t, battery_front_stop_h], center = true);
+    }
+}
+
+module battery_side_walls() {
+    if (battery_side_wall_enable && battery_side_wall_h > 0 && battery_side_wall_t > 0 && battery_side_wall_l > 0) {
+        wall_z = hold_down_target_z + battery_side_wall_h / 2;
+
+        for (x_sign = [-1, 1])
+            translate([x_sign * battery_side_wall_x, 0, wall_z])
+                cube([battery_side_wall_t, battery_side_wall_l, battery_side_wall_h], center = true);
+    }
+}
+
+module battery_wall_u_corner_bridges() {
+    if (battery_side_wall_enable && battery_side_wall_u_bridge_w > 0 && battery_side_wall_l > 0 && lid_t > 0) {
+        bridge_z = lid_z_min + lid_t / 2;
+
+        for (x_sign = [-1, 1])
+            translate([x_sign * (battery_side_wall_u_bridge_x0 + battery_side_wall_u_bridge_w / 2), 0, bridge_z])
+                cube([battery_side_wall_u_bridge_w, battery_side_wall_l, lid_t], center = true);
+    }
+}
+
+module battery_side_wall_features() {
+    if (battery_side_wall_enable) {
+        battery_side_walls();
+        battery_wall_u_corner_bridges();
     }
 }
 
@@ -250,6 +318,17 @@ module lid_part() {
         // Brand engraving on outer top face.
         brand_engrave_lid();
     }
+    battery_side_wall_features();
 }
 
-lid_part();
+module lid_part_print_layout() {
+    translate([0, 0, lid_z_max])
+        rotate([180, 0, 0])
+            lid_part();
+}
+
+if (print_layout) {
+    lid_part_print_layout();
+} else {
+    lid_part();
+}

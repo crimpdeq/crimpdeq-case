@@ -33,16 +33,27 @@ Prebuilt STL files are published in [GitHub Releases](https://github.com/crimpde
 Open the main files directly:
 
 ```bash
-openscad case/enclosure_main.scad
-openscad case/enclosure_lid.scad
+openscad case/case_main.scad
+openscad case/case_lid.scad
 openscad case/assembly.scad
 ```
 
 ### Export STL files (CLI)
 
 ```bash
-openscad -o case/enclosure_main.stl case/enclosure_main.scad
-openscad -o case/enclosure_lid.stl case/enclosure_lid.scad
+openscad -o case/case_main.stl case/case_main.scad
+openscad -o case/case_lid.stl case/case_lid.scad
+```
+
+By default, both files now export in print layout:
+- `case_main.scad`: upright with the floor on the build plate (`Z=0`)
+- `case_lid.scad`: flipped so the outer top face is on the build plate (support-free)
+
+To render in assembly orientation instead:
+
+```bash
+openscad -D 'print_layout=false' -o /tmp/case_main_assembly_oriented.stl case/case_main.scad
+openscad -D 'print_layout=false' -o /tmp/case_lid_assembly_oriented.stl case/case_lid.scad
 ```
 
 ### Run collision checks
@@ -55,8 +66,8 @@ bash scripts/check-collisions.sh
 
 ## Project Structure
 
-- `case/enclosure_main.scad`: main enclosure body
-- `case/enclosure_lid.scad`: lid
+- `case/case_main.scad`: main enclosure body
+- `case/case_lid.scad`: lid
 - `case/assembly.scad`: combined internal assembly preview (load cell, battery, PCB, switch)
 - `case/collision_check.scad`: geometry intersections used for automated collision checks
 - `case/dimensions.scad`: shared dimensions and clearances
@@ -66,7 +77,7 @@ bash scripts/check-collisions.sh
 
 - `.github/workflows/cad_ci.yml`
   - Runs collision checks
-  - Builds `enclosure_main.stl` and `enclosure_lid.stl`
+  - Builds `case_main.stl` and `case_lid.stl`
   - Uploads STL artifacts for CI runs
 - `.github/workflows/release.yml`
   - Builds release STL files when a GitHub Release is created

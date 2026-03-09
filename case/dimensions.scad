@@ -11,7 +11,7 @@
 lc_L = 80;
 lc_W = 40;
 lc_T = 4;
-loadcell_lift = 4; // support structure height under load cell (from enclosure floor)
+loadcell_lift = 2.5; // support structure height under load cell (from enclosure floor)
 
 eye_d = 17;
 eye_edge_start = 6;
@@ -50,7 +50,7 @@ battery_rear_gap = 0.2; // target battery rear-edge gap to enclosure inner rear 
 clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
-top_clear = 0.8; // small PCB-to-lid gap; pcb_T already includes LED thickness
+top_clear = 1.5; // PCB-to-lid gap
 pcb_front_gap = 0.2; // target PCB front-edge gap to USB-side inner wall
 
 // Side switch (KCD11 10x15 mm)

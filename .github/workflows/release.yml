@@ -19,25 +19,25 @@ jobs:
             - name: Prepare output folder
               run: mkdir -p artifacts
 
-            - name: Build enclosure_main.stl
+            - name: Build case_main.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:
-                  scad_file: case/enclosure_main.scad
-                  output_file: artifacts/enclosure_main.stl
+                  scad_file: case/case_main.scad
+                  output_file: artifacts/case_main.stl
 
-            - name: Build enclosure_lid.stl
+            - name: Build case_lid.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:
-                  scad_file: case/enclosure_lid.scad
-                  output_file: artifacts/enclosure_lid.stl
+                  scad_file: case/case_lid.scad
+                  output_file: artifacts/case_lid.stl
 
             - name: Upload case release files
               uses: actions/upload-artifact@v6
               with:
                   name: release-case-files
                   path: |
-                      artifacts/enclosure_main.stl
-                      artifacts/enclosure_lid.stl
+                      artifacts/case_main.stl
+                      artifacts/case_lid.stl
                   if-no-files-found: error
                   compression-level: 0
 
@@ -56,8 +56,8 @@ jobs:
 
             - name: Verify release assets exist
               run: |
-                  test -f release-assets/case/enclosure_main.stl
-                  test -f release-assets/case/enclosure_lid.stl
+                  test -f release-assets/case/case_main.stl
+                  test -f release-assets/case/case_lid.stl
 
             - name: Upload release assets
               uses: svenstaro/upload-release-action@v2

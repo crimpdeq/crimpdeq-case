@@ -9,7 +9,7 @@
 include <dimensions.scad>
 use <load_cell.scad>
 use <assembly.scad>
-use <enclosure_lid.scad>
+use <case_lid.scad>
 
 $fn = 96;
 
@@ -29,6 +29,7 @@ loadcell_notch_guide_h = 4;
 loadcell_notch_guide_clear = 0.2;
 loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
+loadcell_u_support_t = 2;
 battery_support_corner_size = 8;
 battery_support_corner_inset = 2;
 battery_support_front_column_clear = 2;
@@ -36,20 +37,22 @@ battery_support_bottom_gap = 0.5;
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
 battery_guide_h = bat_T * 0.6;
-battery_glue_spacer_size = 2; // square spacer glued to battery underside (XY)
-battery_glue_spacer_h = 2; // battery support spacer height to keep battery level
 pcb_guide_clear = 0.2;
 pcb_guide_h = 2.6;
 pcb_rear_stop_bottom_gap = 0.6;
 pcb_rear_stop_battery_clear = 0.2;
 pcb_rear_gap = front_clear + rear_clear - pcb_front_gap;
 pcb_rear_stop_w = 4;
+pcb_battery_tongue_enable = true;
+pcb_battery_tongue_front_clear = 3.5; // overlap under battery front edge
+pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
+pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 
 usb_clear_x = 1.2;
-usb_clear_z = 1.2;
-usb_hole_extra_w = 1.5;
+usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
 usb_hole_h = 8.0;
 usb_hole_corner_r = 1.0;
+usb_hole_z_offset = -1.0; // keep USB opening fully below the lid seam
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -64,13 +67,17 @@ brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
+rear_brand_text = "crimpdeq.com";
+rear_brand_font = "Inter:style=Bold";
+rear_brand_size = 6.0;
+rear_brand_depth = 0.8;
 
 // Parameters
 show_assembly = true;
-show_lid_preview = false;
-lid_preview_z_offset = 10; // mm (above main part)
+show_lid_preview = true;
+lid_preview_z_offset = 0; // mm (above main part)
 lid_preview_alpha = 0.8; // higher alpha = more opaque
-show_battery_glue_spacer = true;
+print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 
 /*** Derived placement ***/
 inner_x_min = -lc_L / 2 - clear_x;
@@ -107,7 +114,6 @@ battery_y_offset = inner_y_min + battery_rear_gap + bat_L / 2;
 battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
 pcb_y_offset = front_clear - pcb_front_gap;
 
-notch_x1 = -lc_L / 2 + notch_xA;
 notch_x2 = -lc_L / 2 + notch_xB;
 notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
@@ -117,6 +123,8 @@ notch_pin_h = 6 + loadcell_lift;
 pcb_center_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T / 2;
 usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
+usb_hole_center_z = usb_center_z + usb_hole_z_offset;
+usb_hole_top_z = usb_hole_center_z + usb_hole_h / 2;
 
 screw_x1 = outer_x_min + screw_corner_inset;
 screw_x2 = outer_x_max - screw_corner_inset;
@@ -131,13 +139,13 @@ switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
 switch_z = inner_z_min + switch_h_eff / 2;
 switch_hole_z_min = outer_z_min + switch_hole_h / 2;
 switch_hole_z_pref = max(switch_z, switch_hole_z_min);
-switch_hole_z_max = usb_center_z - usb_hole_h / 2 - switch_usb_gap - switch_hole_h / 2;
+switch_hole_z_max = usb_hole_center_z - usb_hole_h / 2 - switch_usb_gap - switch_hole_h / 2;
 switch_hole_z = max(switch_hole_z_min, min(switch_hole_z_pref, switch_hole_z_max));
 switch_y_min = switch_y - switch_d / 2;
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
 pcb_bottom_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap;
-switch_hole_usb_gap = usb_center_z - usb_hole_h / 2 - (switch_hole_z + switch_hole_h / 2);
+switch_hole_usb_gap = usb_hole_center_z - usb_hole_h / 2 - (switch_hole_z + switch_hole_h / 2);
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
@@ -164,8 +172,22 @@ assert(pcb_rear_stop_bottom_gap >= 0 && pcb_rear_stop_bottom_gap <= pcb_T - 0.2,
     str("pcb_rear_stop_bottom_gap out of range: ", pcb_rear_stop_bottom_gap, " mm."));
 assert(pcb_rear_stop_battery_clear >= 0,
     str("pcb_rear_stop_battery_clear must be >= 0. Got ", pcb_rear_stop_battery_clear, " mm."));
+assert(pcb_battery_tongue_front_clear >= 0,
+    str("pcb_battery_tongue_front_clear must be >= 0. Got ", pcb_battery_tongue_front_clear, " mm."));
+assert(pcb_battery_tongue_top_clear >= 0,
+    str("pcb_battery_tongue_top_clear must be >= 0. Got ", pcb_battery_tongue_top_clear, " mm."));
+assert(pcb_battery_tongue_bottom_clear >= 0,
+    str("pcb_battery_tongue_bottom_clear must be >= 0. Got ", pcb_battery_tongue_bottom_clear, " mm."));
 assert(pcb_guide_riser_w > 0.01,
     str("PCB side-guide riser collapsed. Increase battery width support or reduce pcb_guide_clear. riser_w=", pcb_guide_riser_w));
+assert(usb_hole_top_z <= outer_z_max - 0.1,
+    str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
+assert(screw_post_d > screw_thread_d,
+    str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
+assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
+    str("screw_corner_inset too large for enclosure footprint. inset=", screw_corner_inset, " mm."));
+assert(rear_brand_depth > 0 && rear_brand_depth < wall_t,
+    str("rear_brand_depth must be > 0 and < wall_t (", wall_t, " mm)."));
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -201,8 +223,27 @@ module loadcell_support() {
 
         for (x_sign = [-1, 1])
             for (y_sign = [-1, 1])
-                translate([x_sign * support_x, y_sign * support_y, support_z])
-                    cube([support_xy, support_xy, loadcell_lift], center = true);
+                let(
+                    sx = x_sign * support_x,
+                    sy = y_sign * support_y,
+                    x0 = sx - support_xy / 2,
+                    x1 = sx + support_xy / 2,
+                    y0 = sy - support_xy / 2,
+                    y1 = sy + support_xy / 2,
+                    gap_x_min = x0 - inner_x_min,
+                    gap_x_max = inner_x_max - x1,
+                    gap_y_min = y0 - inner_y_min,
+                    gap_y_max = inner_y_max - y1,
+                    use_x_min = gap_x_min <= gap_x_max && gap_x_min <= gap_y_min && gap_x_min <= gap_y_max,
+                    use_x_max = !use_x_min && gap_x_max <= gap_y_min && gap_x_max <= gap_y_max,
+                    use_y_min = !use_x_min && !use_x_max && gap_y_min <= gap_y_max,
+                    span_x = use_x_min ? (x1 - inner_x_min) : use_x_max ? (inner_x_max - x0) : support_xy,
+                    span_y = use_y_min ? (y1 - inner_y_min) : (!use_x_min && !use_x_max && !use_y_min) ? (inner_y_max - y0) : support_xy,
+                    center_x = use_x_min ? (inner_x_min + x1) / 2 : use_x_max ? (x0 + inner_x_max) / 2 : sx,
+                    center_y = use_y_min ? (inner_y_min + y1) / 2 : (!use_x_min && !use_x_max && !use_y_min) ? (y0 + inner_y_max) / 2 : sy
+                )
+                    translate([center_x, center_y, support_z])
+                        cube([span_x, span_y, loadcell_lift], center = true);
     }
 }
 
@@ -325,6 +366,15 @@ module pcb_horizontal_guides() {
     pcb_support_x = (col_inner_x + pcb_support_outer_x) / 2;
     riser_w = col_outer_x - guide_inner_x;
     riser_x = (col_outer_x + guide_inner_x) / 2;
+    battery_front_y = battery_y_offset + bat_L / 2;
+    support_back_y = front_anchor_y;
+    tongue_front_y = battery_front_y - pcb_battery_tongue_front_clear;
+    tongue_l = max(0, support_back_y - tongue_front_y);
+    tongue_y = (support_back_y + tongue_front_y) / 2;
+    tongue_top_z = battery_bottom_z - pcb_battery_tongue_top_clear;
+    tongue_bottom_z = loadcell_top_z + pcb_battery_tongue_bottom_clear;
+    tongue_h = max(0, tongue_top_z - tongue_bottom_z);
+    tongue_z = tongue_bottom_z + tongue_h / 2;
 
     for (x_sign = [-1, 1]) {
         if (pcb_support_h > 0 && pcb_support_w > 0.01)
@@ -336,6 +386,11 @@ module pcb_horizontal_guides() {
             // Use only the outer strip above the PCB to avoid PCB collision.
             translate([x_sign * riser_x, front_anchor_y, riser_z])
                 cube([riser_w, battery_support_corner_size, riser_h], center = true);
+
+        if (pcb_battery_tongue_enable && tongue_h > 0.01 && tongue_l > 0.01 && pcb_support_w > 0.01)
+            // Small tongue from PCB vertical supports to prop the battery front underside.
+            translate([x_sign * pcb_support_x, tongue_y, tongue_z])
+                cube([pcb_support_w, tongue_l, tongue_h], center = true);
     }
 }
 
@@ -405,22 +460,52 @@ module eye_access_holes() {
             cylinder(d = eye_access_d, h = floor_t + loadcell_lift + 0.3, center = false);
 }
 
+module eye_u_profile_2d(eye_x, open_left = true, x_open_min = outer_x_min - 0.2, x_open_max = outer_x_max + 0.2) {
+    union() {
+        translate([eye_x, 0])
+            circle(d = u_cutout_z_d);
+
+        if (open_left) {
+            translate([x_open_min, -u_cutout_z_r])
+                square([eye_x - x_open_min, u_cutout_z_d]);
+        } else {
+            translate([eye_x, -u_cutout_z_r])
+                square([x_open_max - eye_x, u_cutout_z_d]);
+        }
+    }
+}
+
 module eye_u_cutout(eye_x, open_left = true) {
     // Overcut in Z so no thin roof remains at the top rim of the main enclosure.
     u_cutout_extrude_h = max(u_cutout_y_span, 2 * (outer_z_max - loadcell_center_z) + 0.4);
     linear_extrude(height = u_cutout_extrude_h, center = true)
-        union() {
-            translate([eye_x, 0])
-                circle(d = u_cutout_z_d);
+        eye_u_profile_2d(eye_x, open_left = open_left);
+}
 
-            if (open_left) {
-                translate([outer_x_min - 0.2, -u_cutout_z_r])
-                    square([eye_x - (outer_x_min - 0.2), u_cutout_z_d]);
-            } else {
-                translate([eye_x, -u_cutout_z_r])
-                    square([(outer_x_max + 0.2) - eye_x, u_cutout_z_d]);
-            }
-        }
+module loadcell_u_cutout_support() {
+    support_h = loadcell_lift - 0.5;
+    if (support_h > 0 && loadcell_u_support_t > 0) {
+        translate([0, 0, inner_z_min])
+            linear_extrude(height = support_h, center = false)
+                intersection() {
+                    union() {
+                        difference() {
+                            offset(delta = loadcell_u_support_t)
+                                eye_u_profile_2d(eye_x1, open_left = true, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                            eye_u_profile_2d(eye_x1, open_left = true, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                        }
+                        difference() {
+                            offset(delta = loadcell_u_support_t)
+                                eye_u_profile_2d(eye_x2, open_left = false, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                            eye_u_profile_2d(eye_x2, open_left = false, x_open_min = inner_x_min, x_open_max = inner_x_max);
+                        }
+                    }
+
+                    // Keep this support inside the inner cavity footprint.
+                    translate([inner_x_min, inner_y_min])
+                        square([inner_x_max - inner_x_min, inner_y_max - inner_y_min], center = false);
+                }
+    }
 }
 
 module brand_engrave_main() {
@@ -433,17 +518,15 @@ module brand_engrave_main() {
                     text(brand_text, size = brand_size, font = brand_font, halign = "center", valign = "center");
 }
 
-module battery_glue_spacer() {
-    cube([battery_glue_spacer_size, battery_glue_spacer_size, battery_glue_spacer_h], center = true);
-}
+module brand_engrave_main_rear_wall() {
+    rear_brand_z = (outer_z_min + outer_z_max) / 2;
 
-module battery_glue_spacer_print_layout() {
-    // Loose printed spacer for gluing to the battery underside (typically near the unsupported front area).
-    spacer_x = outer_x_max + wall_t + battery_glue_spacer_size / 2 + 4;
-    spacer_y = outer_y_min + battery_glue_spacer_size / 2 + 4;
-    spacer_z = outer_z_min + battery_glue_spacer_h / 2;
-    translate([spacer_x, spacer_y, spacer_z])
-        battery_glue_spacer();
+    // Carved on outer rear wall (-Y), opposite the switch and USB openings.
+    // Start from inside the wall and extrude outward so the recess depth stays controlled.
+    translate([0, outer_y_min + rear_brand_depth, rear_brand_z])
+        rotate([90, 0, 0])
+            linear_extrude(height = rear_brand_depth + 0.2, center = false)
+                text(rear_brand_text, size = rear_brand_size, font = rear_brand_font, halign = "center", valign = "center");
 }
 
 module main_part() {
@@ -463,6 +546,7 @@ module main_part() {
             }
 
             loadcell_support();
+            loadcell_u_cutout_support();
             battery_support_bed();
             pcb_horizontal_guides();
             pcb_rear_stops();
@@ -494,7 +578,7 @@ module main_part() {
             cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
         // Rounded USB opening to reduce sharp edges at the wall cutout.
-        translate([0, inner_y_max + wall_t / 2, usb_center_z])
+        translate([0, inner_y_max + wall_t / 2, usb_hole_center_z])
             rotate([90, 0, 0])
                 linear_extrude(height = wall_t + 0.3, center = true)
                     rounded_rect_2d(
@@ -507,23 +591,40 @@ module main_part() {
 
         // Brand engraving on outer bottom face.
         brand_engrave_main();
+        // Rear wall engraving on side opposite the switch/USB wall.
+        brand_engrave_main_rear_wall();
     }
 }
 
-main_part();
-if (show_battery_glue_spacer) {
-    battery_glue_spacer_print_layout();
+module main_part_print_layout() {
+    translate([0, 0, -outer_z_min]) {
+        main_part();
+    }
 }
+
+if (print_layout) {
+    main_part_print_layout();
+} else {
+    main_part();
+}
+
 if (show_assembly) {
-    %full_assembly();
+    if (print_layout) {
+        translate([0, 0, -outer_z_min]) %full_assembly();
+    } else {
+        %full_assembly();
+    }
 }
+
 if (show_lid_preview) {
-    translate([0, 0, lid_preview_z_offset]) {
+    preview_z = (print_layout ? -outer_z_min : 0) + lid_preview_z_offset;
+    translate([0, 0, preview_z]) {
         // In preview, show lid with configurable opacity. For renders/exports, keep it as %.
         if ($preview) {
-            color([0.8, 0.8, 0.8, lid_preview_alpha]) lid_part();
+            color([0.8, 0.8, 0.8, lid_preview_alpha])
+                if (print_layout) lid_part_print_layout(); else lid_part();
         } else {
-            %lid_part();
+            if (print_layout) %lid_part_print_layout(); else %lid_part();
         }
     }
 }
