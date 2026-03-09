@@ -45,16 +45,20 @@ openscad -o case/case_main.stl case/case_main.scad
 openscad -o case/case_lid.stl case/case_lid.scad
 ```
 
-By default, both files now export in print layout:
-- `case_main.scad`: upright with the floor on the build plate (`Z=0`)
-- `case_lid.scad`: flipped so the outer top face is on the build plate (support-free)
+By default, both files export in assembly orientation:
+- `case_main.scad`: main body in assembled orientation
+- `case_lid.scad`: lid in assembled orientation
 
-To render in assembly orientation instead:
+To export in print layout instead:
 
 ```bash
-openscad -D 'print_layout=false' -o /tmp/case_main_assembly_oriented.stl case/case_main.scad
-openscad -D 'print_layout=false' -o /tmp/case_lid_assembly_oriented.stl case/case_lid.scad
+openscad -D 'print_layout=true' -o /tmp/case_main_print_layout.stl case/case_main.scad
+openscad -D 'print_layout=true' -o /tmp/case_lid_print_layout.stl case/case_lid.scad
 ```
+
+Print layout places:
+- `case_main.scad`: upright with the floor on the build plate (`Z=0`)
+- `case_lid.scad`: flipped so the outer top face is on the build plate (support-free)
 
 ### Run collision checks
 

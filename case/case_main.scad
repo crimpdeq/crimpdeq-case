@@ -52,6 +52,8 @@ usb_clear_x = 1.2;
 usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
 usb_hole_h = 8.0;
 usb_hole_corner_r = 1.0;
+usb_lead_in_depth = 1.0; // outer-face chamfer depth for easier plug insertion
+usb_lead_in_delta = 0.6; // outer-face profile expansion for the lead-in chamfer
 usb_hole_open_top = true; // remove the thin upper wall above the USB opening for printability
 usb_hole_z_offset = 0.5; // moved USB opening 1.5 mm upward
 
@@ -220,6 +222,36 @@ module usb_opening_2d() {
          usb_hole_cut_top_z,
          usb_hole_corner_r
     );
+}
+
+module usb_opening_profile_2d(delta = 0) {
+    if (delta > 0)
+        offset(delta = delta)
+            usb_opening_2d();
+    else
+        usb_opening_2d();
+}
+
+module usb_opening_slice(y_pos, delta = 0, slice_t = 0.02) {
+    translate([0, y_pos, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = slice_t, center = true)
+                usb_opening_profile_2d(delta);
+}
+
+module usb_opening_cut() {
+    translate([0, inner_y_max + wall_t / 2, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = wall_t + 0.3, center = true)
+                usb_opening_profile_2d();
+
+    chamfer_depth = min(max(0, usb_lead_in_depth), wall_t + 0.15);
+    if (chamfer_depth > 0 && usb_lead_in_delta > 0) {
+        hull() {
+            usb_opening_slice(outer_y_max - chamfer_depth, 0);
+            usb_opening_slice(outer_y_max, usb_lead_in_delta);
+        }
+    }
 }
 
 module notch_pin(x, y) {
@@ -590,11 +622,8 @@ module main_part() {
         translate([switch_x, inner_y_max + wall_t / 2, switch_hole_z])
             cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
-        // USB opening with rounded top/bottom corners and an open top to avoid a thin unprintable wall.
-        translate([0, inner_y_max + wall_t / 2, 0])
-            rotate([90, 0, 0])
-                linear_extrude(height = wall_t + 0.3, center = true)
-                    usb_opening_2d();
+        // USB opening with rounded top/bottom corners, an open top seam, and an outer lead-in chamfer.
+        usb_opening_cut();
 
         // Brand engraving on outer bottom face.
         brand_engrave_main();
