@@ -271,10 +271,11 @@ module usb_cable_boot_profile_2d() {
 module usb_cable_fit_probe() {
     probe_y_min = inner_y_max + 0.05;
     probe_y_max = outer_y_max + 0.2;
+    probe_y_mid = (probe_y_min + probe_y_max) / 2;
 
-    translate([0, probe_y_min, 0])
+    translate([0, probe_y_mid, 0])
         rotate([90, 0, 0])
-            linear_extrude(height = probe_y_max - probe_y_min, center = false)
+            linear_extrude(height = probe_y_max - probe_y_min, center = true)
                 usb_cable_boot_profile_2d();
 }
 
