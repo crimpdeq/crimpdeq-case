@@ -37,6 +37,12 @@ usb_h = 3.2;
 usb_d = 7;
 usb_inset = 3.2;
 
+// USB-C cable plug outer housing envelope used for fit checks
+// (common slim molded plug body; not just the metal connector shell)
+usb_cable_boot_w = 12.0;
+usb_cable_boot_h = 6.0;
+usb_cable_boot_corner_r = 1.0;
+
 // LED placement on PCB
 led_from_left = 5;
 led_from_usb_side = 15;

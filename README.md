@@ -62,7 +62,7 @@ Print layout places:
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including a USB-C cable plug housing fit check at the port opening.
 
 ```bash
 bash scripts/check-collisions.sh

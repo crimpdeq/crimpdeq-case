@@ -187,6 +187,10 @@ assert(pcb_guide_riser_w > 0.01,
     str("PCB side-guide riser collapsed. Increase battery width support or reduce pcb_guide_clear. riser_w=", pcb_guide_riser_w));
 assert(usb_hole_open_top || usb_hole_top_z <= outer_z_max - 0.1,
     str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
+assert(usb_cable_boot_w > 0 && usb_cable_boot_h > 0,
+    str("USB cable boot envelope must be positive. w=", usb_cable_boot_w, " h=", usb_cable_boot_h));
+assert(usb_cable_boot_corner_r >= 0,
+    str("usb_cable_boot_corner_r must be >= 0. Got ", usb_cable_boot_corner_r, " mm."));
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
@@ -252,6 +256,26 @@ module usb_opening_cut() {
             usb_opening_slice(outer_y_max, usb_lead_in_delta);
         }
     }
+}
+
+module usb_cable_boot_profile_2d() {
+    rounded_rect_2d(
+        -usb_cable_boot_w / 2,
+         usb_cable_boot_w / 2,
+         usb_center_z - usb_cable_boot_h / 2,
+         usb_center_z + usb_cable_boot_h / 2,
+         usb_cable_boot_corner_r
+    );
+}
+
+module usb_cable_fit_probe() {
+    probe_y_min = inner_y_max + 0.05;
+    probe_y_max = outer_y_max + 0.2;
+
+    translate([0, probe_y_min, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = probe_y_max - probe_y_min, center = false)
+                usb_cable_boot_profile_2d();
 }
 
 module notch_pin(x, y) {

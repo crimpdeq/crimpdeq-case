@@ -56,6 +56,7 @@ check_mode main_loadcell nonempty
 check_mode main_battery empty
 check_mode main_pcb nonempty
 check_mode main_switch empty
+check_mode main_usb_cable empty
 check_mode lid_loadcell empty
 check_mode lid_battery empty
 check_mode lid_pcb empty

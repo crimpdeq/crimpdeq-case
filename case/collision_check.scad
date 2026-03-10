@@ -73,6 +73,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_switch") {
     intersection() { main_part(); asm_switch(); }
+} else if (mode == "main_usb_cable") {
+    intersection() { main_part(); usb_cable_fit_probe(); }
 } else if (mode == "lid_components") {
     intersection() { lid_part(); asm_all(); }
 } else if (mode == "lid_loadcell") {
