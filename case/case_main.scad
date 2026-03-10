@@ -55,7 +55,7 @@ usb_hole_corner_r = 1.0;
 usb_lead_in_depth = 1.0; // outer-face chamfer depth for easier plug insertion
 usb_lead_in_delta = 0.6; // outer-face profile expansion for the lead-in chamfer
 usb_hole_open_top = true; // remove the thin upper wall above the USB opening for printability
-usb_hole_z_offset = 0.5; // moved USB opening 1.5 mm upward
+usb_hole_z_offset = 0.5; // shift USB opening upward relative to connector center
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -185,6 +185,14 @@ assert(pcb_battery_tongue_bottom_clear >= 0,
     str("pcb_battery_tongue_bottom_clear must be >= 0. Got ", pcb_battery_tongue_bottom_clear, " mm."));
 assert(pcb_guide_riser_w > 0.01,
     str("PCB side-guide riser collapsed. Increase battery width support or reduce pcb_guide_clear. riser_w=", pcb_guide_riser_w));
+assert(usb_hole_w > 0 && usb_hole_h > 0,
+    str("USB opening envelope must be positive. w=", usb_hole_w, " h=", usb_hole_h));
+assert(usb_hole_corner_r >= 0,
+    str("usb_hole_corner_r must be >= 0. Got ", usb_hole_corner_r, " mm."));
+assert(usb_lead_in_depth >= 0,
+    str("usb_lead_in_depth must be >= 0. Got ", usb_lead_in_depth, " mm."));
+assert(usb_lead_in_delta >= 0,
+    str("usb_lead_in_delta must be >= 0. Got ", usb_lead_in_delta, " mm."));
 assert(usb_hole_open_top || usb_hole_top_z <= outer_z_max - 0.1,
     str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
 assert(usb_cable_boot_w > 0 && usb_cable_boot_h > 0,
@@ -218,14 +226,45 @@ module rounded_block_xy(min_v, max_v, r) {
             rounded_rect_2d(min_v[0], max_v[0], min_v[1], max_v[1], r);
 }
 
+module bottom_rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
+    w = x_max - x_min;
+    h = y_max - y_min;
+    rr = max(0, min(r, w / 2 - 0.01, h - 0.01));
+
+    if (rr > 0) {
+        union() {
+            translate([x_min, y_min + rr])
+                square([w, h - rr], center = false);
+            translate([x_min + rr, y_min])
+                square([w - 2 * rr, rr], center = false);
+            translate([x_min + rr, y_min + rr])
+                circle(r = rr);
+            translate([x_max - rr, y_min + rr])
+                circle(r = rr);
+        }
+    } else {
+        translate([x_min, y_min])
+            square([w, h], center = false);
+    }
+}
+
 module usb_opening_2d() {
-    rounded_rect_2d(
-        -usb_hole_w / 2,
-         usb_hole_w / 2,
-         usb_hole_bottom_z,
-         usb_hole_cut_top_z,
-         usb_hole_corner_r
-    );
+    if (usb_hole_open_top)
+        bottom_rounded_rect_2d(
+            -usb_hole_w / 2,
+             usb_hole_w / 2,
+             usb_hole_bottom_z,
+             usb_hole_cut_top_z,
+             usb_hole_corner_r
+        );
+    else
+        rounded_rect_2d(
+            -usb_hole_w / 2,
+             usb_hole_w / 2,
+             usb_hole_bottom_z,
+             usb_hole_cut_top_z,
+             usb_hole_corner_r
+        );
 }
 
 module usb_opening_profile_2d(delta = 0) {
