@@ -68,6 +68,15 @@ This validates expected contacts/clearances between the enclosure parts and the 
 bash scripts/check-collisions.sh
 ```
 
+Useful overrides for faster/local runs:
+
+```bash
+CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
+```
+
+- `CHECK_JOBS`: number of OpenSCAD checks to run in parallel (defaults to up to 4 cores)
+- `OPENSCAD_RENDER_FN`: tessellation used by collision checks only (defaults to `24`)
+
 ## Project Structure
 
 - `case/case_main.scad`: main enclosure body

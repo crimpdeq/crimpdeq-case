@@ -5,7 +5,8 @@
 
 include <dimensions.scad>
 
-$fn = 64;
+render_fn = is_undef(render_fn) ? 64 : render_fn;
+$fn = render_fn;
 
 // Optional: small corner rounding for nicer preview (set to 0 for plain cube)
 bat_corner_r = 2;

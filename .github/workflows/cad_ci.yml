@@ -27,7 +27,7 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y openscad xvfb
             - name: Run collision checks
-              run: bash scripts/check-collisions.sh
+              run: CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
             - name: Build case_main.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:

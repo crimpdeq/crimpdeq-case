@@ -8,7 +8,8 @@ use <battery.scad>
 use <pcb.scad>
 include <dimensions.scad>
 
-$fn = 96;
+render_fn = is_undef(render_fn) ? 96 : render_fn;
+$fn = render_fn;
 
 battery_y_offset = -pcb_L / 2 - rear_clear + battery_rear_gap + bat_L / 2;
 pcb_y_offset = front_clear - pcb_front_gap;

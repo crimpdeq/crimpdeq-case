@@ -11,7 +11,8 @@ use <load_cell.scad>
 use <assembly.scad>
 use <case_lid.scad>
 
-$fn = 96;
+render_fn = is_undef(render_fn) ? 96 : render_fn;
+$fn = render_fn;
 
 /*** Enclosure parameters ***/
 wall_t = 3;

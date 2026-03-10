@@ -8,7 +8,8 @@ use <battery.scad>
 use <pcb.scad>
 include <dimensions.scad>
 
-$fn = 64;
+render_fn = is_undef(render_fn) ? 24 : render_fn;
+$fn = render_fn;
 
 // Override from CLI with -D 'mode="..."'
 mode = "main_lid";

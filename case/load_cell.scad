@@ -5,7 +5,8 @@
 
 include <dimensions.scad>
 
-$fn = 96;
+render_fn = is_undef(render_fn) ? 96 : render_fn;
+$fn = render_fn;
 
 // Derived hole centers
 eye_x1 = eye_center_offset;
