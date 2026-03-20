@@ -11,7 +11,8 @@ use <load_cell.scad>
 use <assembly.scad>
 use <case_lid.scad>
 
-$fn = 96;
+render_fn = is_undef(render_fn) ? 96 : render_fn;
+$fn = render_fn;
 
 /*** Enclosure parameters ***/
 wall_t = 3;
@@ -52,7 +53,10 @@ usb_clear_x = 1.2;
 usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
 usb_hole_h = 8.0;
 usb_hole_corner_r = 1.0;
-usb_hole_z_offset = -1.0; // keep USB opening fully below the lid seam
+usb_lead_in_depth = 1.0; // outer-face chamfer depth for easier plug insertion
+usb_lead_in_delta = 0.6; // outer-face profile expansion for the lead-in chamfer
+usb_hole_open_top = true; // remove the thin upper wall above the USB opening for printability
+usb_hole_z_offset = 0.5; // shift USB opening upward relative to connector center
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -124,7 +128,9 @@ pcb_center_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb
 usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
 usb_hole_center_z = usb_center_z + usb_hole_z_offset;
+usb_hole_bottom_z = usb_hole_center_z - usb_hole_h / 2;
 usb_hole_top_z = usb_hole_center_z + usb_hole_h / 2;
+usb_hole_cut_top_z = usb_hole_open_top ? outer_z_max : usb_hole_top_z;
 
 screw_x1 = outer_x_min + screw_corner_inset;
 screw_x2 = outer_x_max - screw_corner_inset;
@@ -180,8 +186,20 @@ assert(pcb_battery_tongue_bottom_clear >= 0,
     str("pcb_battery_tongue_bottom_clear must be >= 0. Got ", pcb_battery_tongue_bottom_clear, " mm."));
 assert(pcb_guide_riser_w > 0.01,
     str("PCB side-guide riser collapsed. Increase battery width support or reduce pcb_guide_clear. riser_w=", pcb_guide_riser_w));
-assert(usb_hole_top_z <= outer_z_max - 0.1,
+assert(usb_hole_w > 0 && usb_hole_h > 0,
+    str("USB opening envelope must be positive. w=", usb_hole_w, " h=", usb_hole_h));
+assert(usb_hole_corner_r >= 0,
+    str("usb_hole_corner_r must be >= 0. Got ", usb_hole_corner_r, " mm."));
+assert(usb_lead_in_depth >= 0,
+    str("usb_lead_in_depth must be >= 0. Got ", usb_lead_in_depth, " mm."));
+assert(usb_lead_in_delta >= 0,
+    str("usb_lead_in_delta must be >= 0. Got ", usb_lead_in_delta, " mm."));
+assert(usb_hole_open_top || usb_hole_top_z <= outer_z_max - 0.1,
     str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
+assert(usb_cable_boot_w > 0 && usb_cable_boot_h > 0,
+    str("USB cable boot envelope must be positive. w=", usb_cable_boot_w, " h=", usb_cable_boot_h));
+assert(usb_cable_boot_corner_r >= 0,
+    str("usb_cable_boot_corner_r must be >= 0. Got ", usb_cable_boot_corner_r, " mm."));
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
@@ -207,6 +225,98 @@ module rounded_block_xy(min_v, max_v, r) {
     translate([0, 0, min_v[2]])
         linear_extrude(height = max_v[2] - min_v[2], center = false)
             rounded_rect_2d(min_v[0], max_v[0], min_v[1], max_v[1], r);
+}
+
+module bottom_rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
+    w = x_max - x_min;
+    h = y_max - y_min;
+    rr = max(0, min(r, w / 2 - 0.01, h - 0.01));
+
+    if (rr > 0) {
+        union() {
+            translate([x_min, y_min + rr])
+                square([w, h - rr], center = false);
+            translate([x_min + rr, y_min])
+                square([w - 2 * rr, rr], center = false);
+            translate([x_min + rr, y_min + rr])
+                circle(r = rr);
+            translate([x_max - rr, y_min + rr])
+                circle(r = rr);
+        }
+    } else {
+        translate([x_min, y_min])
+            square([w, h], center = false);
+    }
+}
+
+module usb_opening_2d() {
+    if (usb_hole_open_top)
+        bottom_rounded_rect_2d(
+            -usb_hole_w / 2,
+             usb_hole_w / 2,
+             usb_hole_bottom_z,
+             usb_hole_cut_top_z,
+             usb_hole_corner_r
+        );
+    else
+        rounded_rect_2d(
+            -usb_hole_w / 2,
+             usb_hole_w / 2,
+             usb_hole_bottom_z,
+             usb_hole_cut_top_z,
+             usb_hole_corner_r
+        );
+}
+
+module usb_opening_profile_2d(delta = 0) {
+    if (delta > 0)
+        offset(delta = delta)
+            usb_opening_2d();
+    else
+        usb_opening_2d();
+}
+
+module usb_opening_slice(y_pos, delta = 0, slice_t = 0.02) {
+    translate([0, y_pos, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = slice_t, center = true)
+                usb_opening_profile_2d(delta);
+}
+
+module usb_opening_cut() {
+    translate([0, inner_y_max + wall_t / 2, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = wall_t + 0.3, center = true)
+                usb_opening_profile_2d();
+
+    chamfer_depth = min(max(0, usb_lead_in_depth), wall_t + 0.15);
+    if (chamfer_depth > 0 && usb_lead_in_delta > 0) {
+        hull() {
+            usb_opening_slice(outer_y_max - chamfer_depth, 0);
+            usb_opening_slice(outer_y_max, usb_lead_in_delta);
+        }
+    }
+}
+
+module usb_cable_boot_profile_2d() {
+    rounded_rect_2d(
+        -usb_cable_boot_w / 2,
+         usb_cable_boot_w / 2,
+         usb_center_z - usb_cable_boot_h / 2,
+         usb_center_z + usb_cable_boot_h / 2,
+         usb_cable_boot_corner_r
+    );
+}
+
+module usb_cable_fit_probe() {
+    probe_y_min = inner_y_max + 0.05;
+    probe_y_max = outer_y_max + 0.2;
+    probe_y_mid = (probe_y_min + probe_y_max) / 2;
+
+    translate([0, probe_y_mid, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = probe_y_max - probe_y_min, center = true)
+                usb_cable_boot_profile_2d();
 }
 
 module notch_pin(x, y) {
@@ -577,17 +687,8 @@ module main_part() {
         translate([switch_x, inner_y_max + wall_t / 2, switch_hole_z])
             cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
-        // Rounded USB opening to reduce sharp edges at the wall cutout.
-        translate([0, inner_y_max + wall_t / 2, usb_hole_center_z])
-            rotate([90, 0, 0])
-                linear_extrude(height = wall_t + 0.3, center = true)
-                    rounded_rect_2d(
-                        -usb_hole_w / 2,
-                         usb_hole_w / 2,
-                        -usb_hole_h / 2,
-                         usb_hole_h / 2,
-                        usb_hole_corner_r
-                    );
+        // USB opening with rounded top/bottom corners, an open top seam, and an outer lead-in chamfer.
+        usb_opening_cut();
 
         // Brand engraving on outer bottom face.
         brand_engrave_main();

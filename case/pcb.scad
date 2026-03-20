@@ -5,7 +5,8 @@
 
 include <dimensions.scad>
 
-$fn = 64;
+render_fn = is_undef(render_fn) ? 64 : render_fn;
+$fn = render_fn;
 
 // LED envelope (visual only, not shared board dimensions)
 led_w = 1.6;

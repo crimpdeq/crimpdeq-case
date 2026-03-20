@@ -45,24 +45,37 @@ openscad -o case/case_main.stl case/case_main.scad
 openscad -o case/case_lid.stl case/case_lid.scad
 ```
 
-By default, both files now export in print layout:
+By default, both files export in assembly orientation:
+- `case_main.scad`: main body in assembled orientation
+- `case_lid.scad`: lid in assembled orientation
+
+To export in print layout instead:
+
+```bash
+openscad -D 'print_layout=true' -o /tmp/case_main_print_layout.stl case/case_main.scad
+openscad -D 'print_layout=true' -o /tmp/case_lid_print_layout.stl case/case_lid.scad
+```
+
+Print layout places:
 - `case_main.scad`: upright with the floor on the build plate (`Z=0`)
 - `case_lid.scad`: flipped so the outer top face is on the build plate (support-free)
 
-To render in assembly orientation instead:
-
-```bash
-openscad -D 'print_layout=false' -o /tmp/case_main_assembly_oriented.stl case/case_main.scad
-openscad -D 'print_layout=false' -o /tmp/case_lid_assembly_oriented.stl case/case_lid.scad
-```
-
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including a USB-C cable plug housing fit check at the port opening.
 
 ```bash
 bash scripts/check-collisions.sh
 ```
+
+Useful overrides for faster/local runs:
+
+```bash
+CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
+```
+
+- `CHECK_JOBS`: number of OpenSCAD checks to run in parallel (defaults to up to 4 cores)
+- `OPENSCAD_RENDER_FN`: tessellation used by collision checks only (defaults to `24`)
 
 ## Project Structure
 
