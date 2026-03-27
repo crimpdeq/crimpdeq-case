@@ -51,12 +51,12 @@ pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 
 usb_clear_x = 1.2;
 usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
-usb_hole_h = 8.0;
+usb_hole_h = 10.5;
 usb_hole_corner_r = 1.0;
 usb_lead_in_depth = 1.0; // outer-face chamfer depth for easier plug insertion
 usb_lead_in_delta = 0.6; // outer-face profile expansion for the lead-in chamfer
 usb_hole_open_top = true; // remove the thin upper wall above the USB opening for printability
-usb_hole_z_offset = 0.5; // shift USB opening upward relative to connector center
+usb_hole_z_offset = 2.0; // shift USB opening upward relative to connector center
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
