@@ -49,14 +49,14 @@ led_from_usb_side = 15;
 
 // Stack spacing
 loadcell_to_battery_gap = 2;
-battery_to_pcb_gap = 0;
+battery_to_pcb_gap = 1.0; // small relief so the PCB does not rest directly on the battery
 battery_rear_gap = 0.2; // target battery rear-edge gap to enclosure inner rear wall
 
 // Inner cavity clearances
 clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
-top_clear = 1.5; // PCB-to-lid gap
+top_clear = 2.5; // PCB-to-lid gap, increased slightly to reduce lid pressure on the PCB
 pcb_front_gap = 0.2; // target PCB front-edge gap to USB-side inner wall
 
 // Side switch (KCD11 10x15 mm)
