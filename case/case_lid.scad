@@ -18,15 +18,18 @@ corner_r = 6;
 eye_access_clear = 1.0;
 u_cutout_clear = 2.0;
 
-loadcell_hold_down_clear = 0.3;
+loadcell_hold_down_clear = 0.6;
 loadcell_hold_down_w = 22.6;
 loadcell_hold_down_d = 8;
 loadcell_hold_down_wall_clear = 0.4;
 // Baseline inner-edge placement controls where hold-downs start toward the center.
-loadcell_hold_down_edge_offset = 11.6;
+// Nudged outward slightly to add more battery-side assembly clearance.
+loadcell_hold_down_edge_offset = 10.8;
 loadcell_hold_down_y_offset = 8;
 
-screw_clear_d = 2.8; // clearance for M2.5 screws
+screw_clear_d = 3.0; // slightly looser clearance so the lid seats more easily on the posts
+screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly
+screw_hole_lead_in_depth = 1.0;
 screw_head_d = 5.2; // typical M2.5 button/pan head clearance
 screw_head_recess = 1.8; // recess depth so heads do not protrude
 
@@ -35,7 +38,7 @@ screw_head_recess = 1.8; // recess depth so heads do not protrude
 align_lip_enable = true;
 align_lip_h = 1.2;
 align_lip_t = 1.0;
-align_lip_clear = 0.4; // extra fit margin for print tolerances / elephant foot
+align_lip_clear = 0.6; // extra fit margin for print tolerances / elephant foot
 align_lip_front_back_len = 24;
 
 // Battery anti-slip tabs on lid underside (engage battery front corners when assembled).
@@ -50,7 +53,7 @@ battery_front_stop_z_overlap = bat_T / 2; // reach about mid battery thickness
 // Battery side walls (lid underside), running parallel to battery length.
 battery_side_wall_enable = true;
 battery_side_wall_t = 1.2;
-battery_side_wall_clear = 0.4;
+battery_side_wall_clear = 0.7;
 // Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
 battery_side_wall_u_bridge_overlap = 0.6;
 
@@ -139,6 +142,12 @@ assert(loadcell_hold_down_y_offset >= 0,
     "loadcell_hold_down_y_offset must be >= 0.");
 assert(loadcell_hold_down_wall_clear >= 0,
     str("loadcell_hold_down_wall_clear must be >= 0. Got ", loadcell_hold_down_wall_clear, " mm."));
+assert(screw_hole_lead_in_d >= screw_clear_d,
+    str("screw_hole_lead_in_d must be >= screw_clear_d. lead_in_d=", screw_hole_lead_in_d,
+        " clear_d=", screw_clear_d));
+assert(screw_hole_lead_in_depth >= 0 && screw_hole_lead_in_depth <= lid_t,
+    str("screw_hole_lead_in_depth must be within [0, lid_t]. depth=", screw_hole_lead_in_depth,
+        " lid_t=", lid_t));
 assert(hold_down_w > 0,
     str("Load-cell hold-down width collapsed. inner_x=", hold_down_inner_x, " outer_x=", hold_down_outer_x, "."));
 assert(hold_down_x + hold_down_w / 2 <= inner_x_max + 0.001,
@@ -201,6 +210,14 @@ module corner_head_recesses(d, depth) {
         recess_z = lid_z_max - depth / 2 + 0.1;
         each_corner(recess_z)
             cylinder(d = d, h = recess_h, center = true);
+    }
+}
+
+module corner_hole_lead_ins(d0, d1, depth) {
+    if (depth > 0) {
+        lead_in_z = lid_z_min + depth / 2;
+        each_corner(lead_in_z)
+            cylinder(d1 = d0, d2 = d1, h = depth + 0.2, center = true);
     }
 }
 
@@ -312,6 +329,7 @@ module lid_part() {
             }
         }
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);
+        corner_hole_lead_ins(screw_hole_lead_in_d, screw_clear_d, screw_hole_lead_in_depth);
         corner_head_recesses(screw_head_d, head_recess_depth);
         led_view_hole();
         translate([0, 0, lid_z_min]) eye_u_cutout(eye_x1, open_left = true);
