@@ -95,3 +95,9 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 - `.github/workflows/release.yml`
   - Builds release STL files when a GitHub Release is created
   - Uploads the generated STL files to the release assets
+
+## License
+
+This repository is source-available for personal and educational use only.
+
+Commercial manufacture, sale of PCBs, sale of 3D-printed cases, kits, or assembled Crimpdeq devices requires prior written permission.
