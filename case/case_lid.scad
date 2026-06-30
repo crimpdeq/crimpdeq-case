@@ -61,6 +61,8 @@ internal_feature_embed = 0.15; // overlap underside features into the roof for a
 
 status_led_view_d = 2.6;
 rgb_led_view_d = 3.0;
+led_view_chamfer_depth = 0.8;
+led_view_chamfer_delta = 0.6;
 
 brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
@@ -167,6 +169,11 @@ assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_
 assert(status_led_view_d > 0 && rgb_led_view_d > 0,
     str("LED view diameters must be > 0. status=", status_led_view_d,
         " rgb=", rgb_led_view_d, " mm."));
+assert(led_view_chamfer_depth >= 0 && led_view_chamfer_depth <= lid_t,
+    str("led_view_chamfer_depth must be within [0, lid_t]. depth=", led_view_chamfer_depth,
+        " lid_t=", lid_t));
+assert(led_view_chamfer_delta >= 0,
+    str("led_view_chamfer_delta must be >= 0. Got ", led_view_chamfer_delta, " mm."));
 assert(status_led_view_x - status_led_view_d / 2 >= -pcb_W / 2 - 0.001
     && status_led_view_x + status_led_view_d / 2 <= pcb_W / 2 + 0.001
     && status_led_y - status_led_view_d / 2 >= -pcb_L / 2 - 0.001
@@ -234,6 +241,15 @@ module corner_hole_lead_ins(d0, d1, depth) {
 module led_view_hole(x, y, d) {
     translate([x, y, lid_z_min - 0.1])
         cylinder(d = d, h = lid_t + 0.3, center = false);
+
+    if (led_view_chamfer_depth > 0 && led_view_chamfer_delta > 0)
+        translate([x, y, lid_z_max - led_view_chamfer_depth])
+            cylinder(
+                d1 = d,
+                d2 = d + 2 * led_view_chamfer_delta,
+                h = led_view_chamfer_depth + 0.2,
+                center = false
+            );
 }
 
 module led_view_holes() {
