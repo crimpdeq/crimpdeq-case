@@ -55,6 +55,8 @@ pcb_battery_tongue_front_clear = 3.5; // overlap under battery front edge
 pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
 pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 
+internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
+
 usb_clear_x = 1.2;
 usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
 usb_hole_h = 10.5;
@@ -327,7 +329,8 @@ module notch_pin(x, y) {
 module loadcell_support() {
     if (loadcell_lift > 0) {
         support_xy = loadcell_support_corner_size;
-        support_z = inner_z_min + loadcell_lift / 2;
+        support_h = loadcell_lift + internal_feature_embed;
+        support_z = inner_z_min - internal_feature_embed + support_h / 2;
         support_x = lc_L / 2 - loadcell_support_corner_inset - support_xy / 2;
         support_y = lc_W / 2 - loadcell_support_corner_inset - support_xy / 2;
 
@@ -353,7 +356,7 @@ module loadcell_support() {
                     center_y = use_y_min ? (inner_y_min + y1) / 2 : (!use_x_min && !use_x_max && !use_y_min) ? (y0 + inner_y_max) / 2 : sy
                 )
                     translate([center_x, center_y, support_z])
-                        cube([span_x, span_y, loadcell_lift], center = true);
+                        cube([span_x, span_y, support_h], center = true);
     }
 }
 
@@ -377,8 +380,8 @@ module battery_support_bed() {
                 let(
                     pad_y = battery_y_offset + y_sign * support_y,
                     col_y = (y_sign > 0) ? max(pad_y, front_column_min_y) : pad_y,
-                    col_h = (loadcell_top_z + loadcell_to_battery_gap) - inner_z_min,
-                    col_z = inner_z_min + col_h / 2,
+                    col_h = (loadcell_top_z + loadcell_to_battery_gap) - (inner_z_min - internal_feature_embed),
+                    col_z = inner_z_min - internal_feature_embed + col_h / 2,
                     shelf_len = abs(col_y - pad_y) + support_xy,
                     shelf_y = (col_y + pad_y) / 2,
                     x_leg_x = x_sign * (bat_W / 2 + battery_guide_clear + battery_guide_t / 2),
@@ -391,10 +394,10 @@ module battery_support_bed() {
                     y_bridge_y1 = battery_y_offset + y_sign * (bat_L / 2 + battery_guide_clear),
                     y_bridge_len = abs(y_bridge_y1 - y_bridge_y0),
                     y_bridge_y = (y_bridge_y0 + y_bridge_y1) / 2,
-                    x_leg_col_h = max(0, guide_bottom_z - inner_z_min),
-                    x_leg_col_z = inner_z_min + x_leg_col_h / 2,
-                    y_leg_col_h = max(0, guide_bottom_z - inner_z_min),
-                    y_leg_col_z = inner_z_min + y_leg_col_h / 2
+                    x_leg_col_h = max(0, guide_bottom_z - (inner_z_min - internal_feature_embed)),
+                    x_leg_col_z = inner_z_min - internal_feature_embed + x_leg_col_h / 2,
+                    y_leg_col_h = max(0, guide_bottom_z - (inner_z_min - internal_feature_embed)),
+                    y_leg_col_z = inner_z_min - internal_feature_embed + y_leg_col_h / 2
                 ) {
                     // Floor-anchored column.
                     translate([x_sign * support_x, col_y, col_z])
@@ -573,8 +576,8 @@ module notch_pins() {
 }
 
 module loadcell_notch_guides() {
-    guide_h = loadcell_notch_guide_h + loadcell_lift;
-    guide_z = inner_z_min + guide_h / 2;
+    guide_h = loadcell_notch_guide_h + loadcell_lift + internal_feature_embed;
+    guide_z = inner_z_min - internal_feature_embed + guide_h / 2;
     guide_x = notch_x2 - loadcell_notch_guide_len / 2;
     guide_bottom_y = notch_y1 - loadcell_notch_guide_clear - loadcell_notch_guide_w / 2;
     guide_top_y = notch_y2 + loadcell_notch_guide_clear + loadcell_notch_guide_w / 2;
@@ -641,8 +644,8 @@ module eye_u_cutout(eye_x, open_left = true) {
 module loadcell_u_cutout_support() {
     support_h = loadcell_lift - 0.5;
     if (support_h > 0 && loadcell_u_support_t > 0) {
-        translate([0, 0, inner_z_min])
-            linear_extrude(height = support_h, center = false)
+        translate([0, 0, inner_z_min - internal_feature_embed])
+            linear_extrude(height = support_h + internal_feature_embed, center = false)
                 intersection() {
                     union() {
                         difference() {

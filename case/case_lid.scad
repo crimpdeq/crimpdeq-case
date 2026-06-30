@@ -57,6 +57,8 @@ battery_side_wall_clear = 0.7;
 // Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
 battery_side_wall_u_bridge_overlap = 0.6;
 
+internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
+
 status_led_view_d = 2.6;
 rgb_led_view_d = 3.0;
 
@@ -256,19 +258,21 @@ module eye_u_cutout(eye_x, open_left = true) {
 }
 
 module loadcell_hold_downs() {
-    hold_down_z = hold_down_target_z + hold_down_h / 2;
+    hold_down_h_eff = hold_down_h + internal_feature_embed;
+    hold_down_z = hold_down_target_z + hold_down_h_eff / 2;
 
     for (x_sign = [-1, 1])
         // Keep the center open so the load-cell eye holes remain fully accessible.
         for (y_off = [-loadcell_hold_down_y_offset, loadcell_hold_down_y_offset])
             translate([x_sign * hold_down_x, y_off, hold_down_z])
-                cube([hold_down_w, loadcell_hold_down_d, hold_down_h], center = true);
+                cube([hold_down_w, loadcell_hold_down_d, hold_down_h_eff], center = true);
 }
 
 module lid_alignment_lips() {
     lip_h = align_lip_h_eff;
     if (lip_h > 0 && align_lip_t > 0) {
-        lip_z = lid_z_min - lip_h / 2;
+        lip_h_eff = lip_h + internal_feature_embed;
+        lip_z = lid_z_min - lip_h / 2 + internal_feature_embed / 2;
 
         // Keep only the rear tab; remove the USB-side tab to keep connector area clear.
         for (y_sign = [-1]) {
@@ -277,18 +281,19 @@ module lid_alignment_lips() {
                 : inner_y_min + align_lip_clear + align_lip_t / 2;
 
             translate([0, y_pos, lip_z])
-                cube([align_lip_front_back_len, align_lip_t, lip_h], center = true);
+                cube([align_lip_front_back_len, align_lip_t, lip_h_eff], center = true);
         }
     }
 }
 
 module battery_front_stops() {
     if (battery_front_stop_h > 0 && battery_front_stop_t > 0 && battery_front_stop_w > 0) {
-        stop_z = lid_z_min - battery_front_stop_h / 2;
+        stop_h_eff = battery_front_stop_h + internal_feature_embed;
+        stop_z = lid_z_min - battery_front_stop_h / 2 + internal_feature_embed / 2;
 
         for (x_sign = [-1, 1])
             translate([x_sign * battery_front_stop_x, battery_front_stop_y, stop_z])
-                cube([battery_front_stop_w, battery_front_stop_t, battery_front_stop_h], center = true);
+                cube([battery_front_stop_w, battery_front_stop_t, stop_h_eff], center = true);
     }
 }
 
