@@ -758,7 +758,7 @@ if (print_layout) {
     main_part();
 }
 
-if (show_assembly) {
+if ($preview && show_assembly) {
     if (print_layout) {
         translate([0, 0, -outer_z_min]) %full_assembly();
     } else {
@@ -766,15 +766,10 @@ if (show_assembly) {
     }
 }
 
-if (show_lid_preview) {
+if ($preview && show_lid_preview) {
     preview_z = (print_layout ? -outer_z_min : 0) + lid_preview_z_offset;
     translate([0, 0, preview_z]) {
-        // In preview, show lid with configurable opacity. For renders/exports, keep it as %.
-        if ($preview) {
-            color([0.8, 0.8, 0.8, lid_preview_alpha])
-                if (print_layout) lid_part_print_layout(); else lid_part();
-        } else {
-            if (print_layout) %lid_part_print_layout(); else %lid_part();
-        }
+        color([0.8, 0.8, 0.8, lid_preview_alpha])
+            if (print_layout) lid_part_print_layout(); else lid_part();
     }
 }
