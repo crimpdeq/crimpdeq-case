@@ -36,6 +36,11 @@ module asm_switch() {
             cube([switch_w, switch_d, switch_h], center = true);
 }
 
+module led_sightline_probe(led_x, led_y, d = 1.0) {
+    translate([led_x, pcb_y_offset + led_y, pcb_top_z - 0.1])
+        cylinder(d = d, h = top_clear + 3.4, center = false);
+}
+
 module asm_all() {
     union() {
         asm_loadcell();
@@ -77,6 +82,10 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
+} else if (mode == "lid_status_led_sightline") {
+    intersection() { lid_part(); led_sightline_probe(status_led_x, status_led_y); }
+} else if (mode == "lid_rgb_led_sightline") {
+    intersection() { lid_part(); led_sightline_probe(rgb_led_x, rgb_led_y); }
 } else if (mode == "loadcell_battery") {
     intersection() { asm_loadcell(); asm_battery(); }
 } else if (mode == "loadcell_pcb") {
