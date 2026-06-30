@@ -57,7 +57,8 @@ battery_side_wall_clear = 0.7;
 // Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
 battery_side_wall_u_bridge_overlap = 0.6;
 
-led_view_d = 2.6;
+status_led_view_d = 2.6;
+rgb_led_view_d = 3.0;
 
 brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
@@ -127,8 +128,10 @@ battery_side_wall_inner_x = battery_side_wall_x - battery_side_wall_t / 2;
 u_cutout_inner_x = eye_x2 - u_cutout_z_r;
 battery_side_wall_u_bridge_x0 = u_cutout_inner_x - battery_side_wall_u_bridge_overlap;
 battery_side_wall_u_bridge_w = battery_side_wall_inner_x - battery_side_wall_u_bridge_x0;
-led_x = pcb_W / 2 - led_from_left;
-led_y = pcb_y_offset + pcb_L / 2 - led_from_usb_side;
+status_led_view_x = status_led_x;
+status_led_view_y = pcb_y_offset + status_led_y;
+rgb_led_view_x = rgb_led_x;
+rgb_led_view_y = pcb_y_offset + rgb_led_y;
 
 assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
@@ -167,6 +170,19 @@ assert(!battery_side_wall_enable || battery_side_wall_u_bridge_w > 0,
 assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
     str("Battery side wall length exceeds inner cavity span by ",
         battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
+assert(status_led_view_d > 0 && rgb_led_view_d > 0,
+    str("LED view diameters must be > 0. status=", status_led_view_d,
+        " rgb=", rgb_led_view_d, " mm."));
+assert(status_led_view_x - status_led_view_d / 2 >= -pcb_W / 2 - 0.001
+    && status_led_view_x + status_led_view_d / 2 <= pcb_W / 2 + 0.001
+    && status_led_y - status_led_view_d / 2 >= -pcb_L / 2 - 0.001
+    && status_led_y + status_led_view_d / 2 <= pcb_L / 2 + 0.001,
+    "Status LED viewing hole must stay within PCB footprint.");
+assert(rgb_led_view_x - rgb_led_view_d / 2 >= -pcb_W / 2 - 0.001
+    && rgb_led_view_x + rgb_led_view_d / 2 <= pcb_W / 2 + 0.001
+    && rgb_led_y - rgb_led_view_d / 2 >= -pcb_L / 2 - 0.001
+    && rgb_led_y + rgb_led_view_d / 2 <= pcb_L / 2 + 0.001,
+    "RGB LED viewing hole must stay within PCB footprint.");
 
 module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -221,9 +237,14 @@ module corner_hole_lead_ins(d0, d1, depth) {
     }
 }
 
-module led_view_hole() {
-    translate([led_x, led_y, lid_z_min - 0.1])
-        cylinder(d = led_view_d, h = lid_t + 0.3, center = false);
+module led_view_hole(x, y, d) {
+    translate([x, y, lid_z_min - 0.1])
+        cylinder(d = d, h = lid_t + 0.3, center = false);
+}
+
+module led_view_holes() {
+    led_view_hole(status_led_view_x, status_led_view_y, status_led_view_d);
+    led_view_hole(rgb_led_view_x, rgb_led_view_y, rgb_led_view_d);
 }
 
 module eye_u_cutout(eye_x, open_left = true) {
@@ -331,7 +352,7 @@ module lid_part() {
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);
         corner_hole_lead_ins(screw_hole_lead_in_d, screw_clear_d, screw_hole_lead_in_depth);
         corner_head_recesses(screw_head_d, head_recess_depth);
-        led_view_hole();
+        led_view_holes();
         translate([0, 0, lid_z_min]) eye_u_cutout(eye_x1, open_left = true);
         translate([0, 0, lid_z_min]) eye_u_cutout(eye_x2, open_left = false);
         // Brand engraving on outer top face.
