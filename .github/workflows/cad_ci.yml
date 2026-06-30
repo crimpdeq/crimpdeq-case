@@ -28,21 +28,24 @@ jobs:
                   sudo apt-get install -y openscad xvfb
             - name: Run collision checks
               run: CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
+            - name: Set STL filename suffix
+              id: vars
+              run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
             - name: Build case_main.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:
                   scad_file: case/case_main.scad
-                  output_file: case/case_main.stl
+                  output_file: case/case_main-${{ steps.vars.outputs.short_sha }}.stl
             - name: Build case_lid.stl
               uses: flat35hd99/openscad-actions@v1.4
               with:
                   scad_file: case/case_lid.scad
-                  output_file: case/case_lid.stl
+                  output_file: case/case_lid-${{ steps.vars.outputs.short_sha }}.stl
             - name: Upload STL files as artifact
               uses: actions/upload-artifact@v6
               with:
-                  name: stl-files
+                  name: stl-files-${{ steps.vars.outputs.short_sha }}
                   path: |
-                      case/case_main.stl
-                      case/case_lid.stl
+                      case/case_main-${{ steps.vars.outputs.short_sha }}.stl
+                      case/case_lid-${{ steps.vars.outputs.short_sha }}.stl
                   compression-level: 0
