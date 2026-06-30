@@ -54,6 +54,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); lid_part(); }
 } else if (mode == "main_lid_eps_up") {
     intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
+} else if (mode == "main_lid_eps_down") {
+    intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
 } else if (mode == "main_components") {
     intersection() { main_part(); asm_all(); }
 } else if (mode == "main_loadcell") {
@@ -82,6 +84,10 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
+} else if (mode == "lid_screw_shank_fit") {
+    intersection() { lid_part(); lid_screw_shank_fit_probe(); }
+} else if (mode == "lid_screw_head_fit") {
+    intersection() { lid_part(); lid_screw_head_fit_probe(); }
 } else if (mode == "lid_status_led_sightline") {
     intersection() { lid_part(); led_sightline_probe(status_led_x, status_led_y); }
 } else if (mode == "lid_rgb_led_sightline") {

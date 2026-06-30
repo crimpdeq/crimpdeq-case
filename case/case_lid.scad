@@ -32,6 +32,9 @@ screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during ass
 screw_hole_lead_in_depth = 1.0;
 screw_head_d = 5.2; // typical M2.5 button/pan head clearance
 screw_head_recess = 1.8; // recess depth so heads do not protrude
+screw_fit_shank_d = 2.6; // fit-check envelope for an M2.5 screw shank through the lid
+screw_fit_head_d = 5.0; // fit-check envelope for a typical M2.5 pan/button head
+screw_fit_head_h = 1.6;
 
 // Alignment tabs (underside) that register in the main cavity.
 // Intentionally only on front/rear walls so the side U-access zone stays clear.
@@ -147,6 +150,15 @@ assert(screw_hole_lead_in_d >= screw_clear_d,
 assert(screw_hole_lead_in_depth >= 0 && screw_hole_lead_in_depth <= lid_t,
     str("screw_hole_lead_in_depth must be within [0, lid_t]. depth=", screw_hole_lead_in_depth,
         " lid_t=", lid_t));
+assert(screw_fit_shank_d > 0 && screw_fit_shank_d < screw_clear_d,
+    str("screw_fit_shank_d must be > 0 and < screw_clear_d. fit=", screw_fit_shank_d,
+        " clear=", screw_clear_d));
+assert(screw_fit_head_d > 0 && screw_fit_head_d < screw_head_d,
+    str("screw_fit_head_d must be > 0 and < screw_head_d. fit=", screw_fit_head_d,
+        " recess=", screw_head_d));
+assert(screw_fit_head_h > 0 && screw_fit_head_h < head_recess_depth,
+    str("screw_fit_head_h must be > 0 and < head_recess_depth. fit=", screw_fit_head_h,
+        " recess=", head_recess_depth));
 assert(hold_down_w > 0,
     str("Load-cell hold-down width collapsed. inner_x=", hold_down_inner_x, " outer_x=", hold_down_outer_x, "."));
 assert(hold_down_x + hold_down_w / 2 <= inner_x_max + 0.001,
@@ -236,6 +248,16 @@ module corner_hole_lead_ins(d0, d1, depth) {
         each_corner(lead_in_z)
             cylinder(d1 = d0, d2 = d1, h = depth + 0.2, center = true);
     }
+}
+
+module lid_screw_shank_fit_probe() {
+    corner_holes(screw_fit_shank_d, lid_z_min - align_lip_h_eff - 0.2, lid_z_max + 0.2);
+}
+
+module lid_screw_head_fit_probe() {
+    head_z = lid_z_max - screw_fit_head_h / 2;
+    each_corner(head_z)
+        cylinder(d = screw_fit_head_d, h = screw_fit_head_h, center = true);
 }
 
 module led_view_hole(x, y, d) {
