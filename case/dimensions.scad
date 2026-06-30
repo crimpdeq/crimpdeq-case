@@ -26,9 +26,9 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 
-// PCB
-pcb_L = 64;
-pcb_W = 24;
+// PCB v2.0.0 Edge.Cuts envelope
+pcb_L = 63.8;
+pcb_W = 23.0;
 pcb_T = 5;
 
 // USB-C connector envelope
