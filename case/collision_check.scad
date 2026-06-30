@@ -6,22 +6,13 @@ use <case_lid.scad>
 use <load_cell.scad>
 use <battery.scad>
 use <pcb.scad>
-include <dimensions.scad>
+include <placement.scad>
 
 render_fn = is_undef(render_fn) ? 24 : render_fn;
 $fn = render_fn;
 
 // Override from CLI with -D 'mode="..."'
 mode = "main_lid";
-
-battery_y_offset = -pcb_L / 2 - rear_clear + battery_rear_gap + bat_L / 2;
-pcb_y_offset = front_clear - pcb_front_gap;
-loadcell_center_z = loadcell_lift;
-loadcell_top_z = loadcell_center_z + lc_T / 2;
-switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
-switch_x = 0;
-switch_y = pcb_L / 2 + front_clear - switch_d / 2 - switch_clear;
-switch_z = -lc_T / 2 + switch_h_eff / 2;
 
 module asm_loadcell() {
     translate([0, 0, loadcell_center_z])

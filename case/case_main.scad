@@ -6,7 +6,7 @@
 // - corner threaded pilot holes for M2.5x10 screws
 //
 
-include <dimensions.scad>
+include <placement.scad>
 use <load_cell.scad>
 use <assembly.scad>
 use <case_lid.scad>
@@ -98,12 +98,7 @@ usb_front_y = pcb_L / 2; // connector flush with PCB edge (no overhang)
 inner_y_max = usb_front_y + front_clear;
 brand_y = 0; // centered between U cutouts
 
-inner_z_min = -lc_T / 2;
-loadcell_bottom_z = inner_z_min + loadcell_lift;
-loadcell_center_z = loadcell_bottom_z + lc_T / 2;
-loadcell_top_z = loadcell_bottom_z + lc_T;
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
-pcb_top_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T;
 inner_z_max = pcb_top_z + top_clear;
 
 outer_x_min = inner_x_min - wall_t;
@@ -120,17 +115,12 @@ eye_access_d = eye_d + eye_access_clear;
 u_cutout_z_d = eye_access_d + 2 * u_cutout_clear;
 u_cutout_z_r = u_cutout_z_d / 2;
 u_cutout_y_span = lc_W;
-battery_y_offset = inner_y_min + battery_rear_gap + bat_L / 2;
-battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
-pcb_y_offset = front_clear - pcb_front_gap;
-
 notch_x2 = -lc_L / 2 + notch_xB;
 notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
 notch_pin_d = max(0.2, notch_d - notch_pin_clear);
 notch_pin_h = 6 + loadcell_lift;
 
-pcb_center_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T / 2;
 usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
 usb_hole_center_z = usb_center_z + usb_hole_z_offset;
@@ -145,10 +135,6 @@ screw_y2 = outer_y_max - screw_corner_inset;
 max_thread_depth = max(0, (outer_z_max - outer_z_min) - screw_thread_tip_clear);
 thread_depth = min(screw_thread_depth, max_thread_depth);
 
-switch_x = 0;
-switch_y = inner_y_max - switch_d / 2 - switch_clear;
-switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
-switch_z = inner_z_min + switch_h_eff / 2;
 switch_hole_z_min = outer_z_min + switch_hole_h / 2;
 switch_hole_z_pref = max(switch_z, switch_hole_z_min);
 switch_hole_z_max = usb_hole_center_z - usb_hole_h / 2 - switch_usb_gap - switch_hole_h / 2;
@@ -156,7 +142,6 @@ switch_hole_z = max(switch_hole_z_min, min(switch_hole_z_pref, switch_hole_z_max
 switch_y_min = switch_y - switch_d / 2;
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
-pcb_bottom_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap;
 switch_hole_usb_gap = usb_hole_center_z - usb_hole_h / 2 - (switch_hole_z + switch_hole_h / 2);
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);

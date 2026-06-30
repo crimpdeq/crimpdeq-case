@@ -5,7 +5,7 @@
 // - load-cell vertical hold-down features
 //
 
-include <dimensions.scad>
+include <placement.scad>
 
 render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
@@ -74,9 +74,6 @@ inner_y_min = -pcb_L / 2 - rear_clear;
 usb_front_y = pcb_L / 2; // connector flush with PCB edge (no overhang)
 inner_y_max = usb_front_y + front_clear;
 
-loadcell_center_z = loadcell_lift;
-loadcell_top_z = loadcell_center_z + lc_T / 2;
-pcb_top_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T;
 inner_z_max = pcb_top_z + top_clear;
 
 outer_x_min = inner_x_min - wall_t;
@@ -102,11 +99,6 @@ eye_access_d = eye_d + eye_access_clear;
 u_cutout_z_d = eye_access_d + 2 * u_cutout_clear;
 u_cutout_z_r = u_cutout_z_d / 2;
 u_cutout_y_span = lc_W;
-
-pcb_y_offset = front_clear - pcb_front_gap;
-battery_y_offset = inner_y_min + battery_rear_gap + bat_L / 2;
-battery_top_z = loadcell_top_z + loadcell_to_battery_gap + bat_T;
-battery_front_y = battery_y_offset + bat_L / 2;
 
 screw_x1 = outer_x_min + screw_corner_inset;
 screw_x2 = outer_x_max - screw_corner_inset;
