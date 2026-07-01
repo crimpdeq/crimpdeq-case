@@ -61,13 +61,14 @@ battery_side_wall_clear = 0.7;
 battery_side_wall_u_bridge_overlap = 0.6;
 
 // PCB top clamps near the USB side. They keep the PCB seated in its cradle while
-// leaving the connector and center routing area clear.
+// leaving the connector, center routing area, and right-side power/wire pads clear.
 pcb_top_clamp_enable = true;
 pcb_top_clamp_clear = 0.10;
 pcb_top_clamp_w = 3.2;
 pcb_top_clamp_d = 4.0;
 pcb_top_clamp_x_inset = 1.2;
 pcb_top_clamp_front_setback = 4.0;
+pcb_top_clamp_rear_setback = 10.0;
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
@@ -141,8 +142,10 @@ status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
 pcb_top_clamp_h = pcb_top_clamp_enable ? max(0, lid_z_min - (pcb_top_z + pcb_top_clamp_clear)) : 0;
+// Positive case X maps to the KiCad left side, away from J4 B+/SW+/B- wire pads.
 pcb_top_clamp_x = pcb_W / 2 - pcb_top_clamp_x_inset - pcb_top_clamp_w / 2;
-pcb_top_clamp_y = pcb_y_offset + pcb_L / 2 - pcb_top_clamp_front_setback;
+pcb_top_clamp_front_y = pcb_y_offset + pcb_L / 2 - pcb_top_clamp_front_setback;
+pcb_top_clamp_rear_y = pcb_y_offset + pcb_L / 2 - pcb_top_clamp_rear_setback;
 
 assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
@@ -194,10 +197,12 @@ assert(!pcb_top_clamp_enable || pcb_top_clamp_clear >= 0,
     str("pcb_top_clamp_clear must be >= 0. Got ", pcb_top_clamp_clear, " mm."));
 assert(!pcb_top_clamp_enable || (pcb_top_clamp_w > 0 && pcb_top_clamp_d > 0),
     str("PCB top clamp footprint must be positive. w=", pcb_top_clamp_w, " d=", pcb_top_clamp_d));
-assert(!pcb_top_clamp_enable || pcb_top_clamp_x - pcb_top_clamp_w / 2 >= -pcb_W / 2 - 0.001,
+assert(!pcb_top_clamp_enable || pcb_top_clamp_x + pcb_top_clamp_w / 2 <= pcb_W / 2 + 0.001,
     "PCB top clamps must stay inside PCB width.");
-assert(!pcb_top_clamp_enable || pcb_top_clamp_y + pcb_top_clamp_d / 2 <= pcb_y_offset + pcb_L / 2 + 0.001,
-    "PCB top clamps must stay behind the PCB front edge.");
+assert(!pcb_top_clamp_enable || pcb_top_clamp_front_y + pcb_top_clamp_d / 2 <= pcb_y_offset + pcb_L / 2 + 0.001,
+    "Front PCB top clamp must stay behind the PCB front edge.");
+assert(!pcb_top_clamp_enable || pcb_top_clamp_rear_y - pcb_top_clamp_d / 2 >= pcb_y_offset - pcb_L / 2 - 0.001,
+    "Rear PCB top clamp must stay inside the PCB rear edge.");
 assert(status_led_view_d > 0 && rgb_led_view_d > 0,
     str("LED view diameters must be > 0. status=", status_led_view_d,
         " rgb=", rgb_led_view_d, " mm."));
@@ -387,9 +392,9 @@ module pcb_top_clamps() {
         clamp_h_eff = pcb_top_clamp_h + internal_feature_embed;
         clamp_z = pcb_top_z + pcb_top_clamp_clear + clamp_h_eff / 2;
 
-        for (x_sign = [-1, 1])
-            // Press near the PCB edges, outside the USB connector body and away from LEDs.
-            translate([x_sign * pcb_top_clamp_x, pcb_top_clamp_y, clamp_z])
+        for (clamp_y = [pcb_top_clamp_front_y, pcb_top_clamp_rear_y])
+            // Press on the wire-free PCB side only; the opposite side carries J4 B+/SW+/B- wiring.
+            translate([pcb_top_clamp_x, clamp_y, clamp_z])
                 cube([pcb_top_clamp_w, pcb_top_clamp_d, clamp_h_eff], center = true);
     }
 }
