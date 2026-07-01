@@ -71,6 +71,7 @@ checks=(
     "lid_loadcell empty"
     "lid_battery empty"
     "lid_pcb empty"
+    "lid_pcb_eps_z_plus nonempty"
     "lid_switch empty"
     "lid_screw_shank_fit empty"
     "lid_screw_head_fit empty"

@@ -82,6 +82,8 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_battery(); }
 } else if (mode == "lid_pcb") {
     intersection() { lid_part(); asm_pcb(); }
+} else if (mode == "lid_pcb_eps_z_plus") {
+    intersection() { lid_part(); translate([0, 0, 0.15]) asm_pcb(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
 } else if (mode == "lid_screw_shank_fit") {

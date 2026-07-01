@@ -60,6 +60,15 @@ battery_side_wall_clear = 0.7;
 // Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
 battery_side_wall_u_bridge_overlap = 0.6;
 
+// PCB top clamps near the USB side. They keep the PCB seated in its cradle while
+// leaving the connector and center routing area clear.
+pcb_top_clamp_enable = true;
+pcb_top_clamp_clear = 0.10;
+pcb_top_clamp_w = 3.2;
+pcb_top_clamp_d = 4.0;
+pcb_top_clamp_x_inset = 1.2;
+pcb_top_clamp_front_setback = 4.0;
+
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
 status_led_view_d = 2.6;
@@ -131,6 +140,9 @@ status_led_view_x = status_led_x;
 status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
+pcb_top_clamp_h = pcb_top_clamp_enable ? max(0, lid_z_min - (pcb_top_z + pcb_top_clamp_clear)) : 0;
+pcb_top_clamp_x = pcb_W / 2 - pcb_top_clamp_x_inset - pcb_top_clamp_w / 2;
+pcb_top_clamp_y = pcb_y_offset + pcb_L / 2 - pcb_top_clamp_front_setback;
 
 assert(!battery_front_stop_enable || battery_front_stop_w > 0,
     "battery_front_stop_w must be > 0.");
@@ -178,6 +190,14 @@ assert(!battery_side_wall_enable || battery_side_wall_u_bridge_w > 0,
 assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
     str("Battery side wall length exceeds inner cavity span by ",
         battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
+assert(!pcb_top_clamp_enable || pcb_top_clamp_clear >= 0,
+    str("pcb_top_clamp_clear must be >= 0. Got ", pcb_top_clamp_clear, " mm."));
+assert(!pcb_top_clamp_enable || (pcb_top_clamp_w > 0 && pcb_top_clamp_d > 0),
+    str("PCB top clamp footprint must be positive. w=", pcb_top_clamp_w, " d=", pcb_top_clamp_d));
+assert(!pcb_top_clamp_enable || pcb_top_clamp_x - pcb_top_clamp_w / 2 >= -pcb_W / 2 - 0.001,
+    "PCB top clamps must stay inside PCB width.");
+assert(!pcb_top_clamp_enable || pcb_top_clamp_y + pcb_top_clamp_d / 2 <= pcb_y_offset + pcb_L / 2 + 0.001,
+    "PCB top clamps must stay behind the PCB front edge.");
 assert(status_led_view_d > 0 && rgb_led_view_d > 0,
     str("LED view diameters must be > 0. status=", status_led_view_d,
         " rgb=", rgb_led_view_d, " mm."));
@@ -362,6 +382,18 @@ module battery_side_wall_features() {
     }
 }
 
+module pcb_top_clamps() {
+    if (pcb_top_clamp_enable && pcb_top_clamp_h > 0) {
+        clamp_h_eff = pcb_top_clamp_h + internal_feature_embed;
+        clamp_z = pcb_top_z + pcb_top_clamp_clear + clamp_h_eff / 2;
+
+        for (x_sign = [-1, 1])
+            // Press near the PCB edges, outside the USB connector body and away from LEDs.
+            translate([x_sign * pcb_top_clamp_x, pcb_top_clamp_y, clamp_z])
+                cube([pcb_top_clamp_w, pcb_top_clamp_d, clamp_h_eff], center = true);
+    }
+}
+
 module brand_engrave_lid() {
     // Carved on outer top face (same plane as load cell), horizontal and centered.
     translate([0, brand_y, lid_z_max - brand_depth - 0.1])
@@ -380,6 +412,7 @@ module lid_part() {
             );
             lid_alignment_lips();
             battery_front_stops();
+            pcb_top_clamps();
             if (hold_down_h > 0) {
                 loadcell_hold_downs();
             }
