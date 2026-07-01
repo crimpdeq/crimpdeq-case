@@ -61,7 +61,7 @@ battery_side_wall_clear = 0.7;
 battery_side_wall_u_bridge_overlap = 0.6;
 
 // PCB top clamps near the USB side. They keep the PCB seated in its cradle while
-// leaving the connector, center routing area, and right-side power/wire pads clear.
+// leaving the connector, center routing area, and right-side battery/switch wire pads clear.
 pcb_top_clamp_enable = true;
 pcb_top_clamp_clear = 0.10;
 pcb_top_clamp_w = 3.2;
@@ -142,7 +142,7 @@ status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
 pcb_top_clamp_h = pcb_top_clamp_enable ? max(0, lid_z_min - (pcb_top_z + pcb_top_clamp_clear)) : 0;
-// Positive case X maps to the KiCad left side, away from J4 B+/SW+/B- wire pads.
+// Positive case X maps to the KiCad left side, away from the right-side B+/SW+/B- wire pads.
 pcb_top_clamp_x = pcb_W / 2 - pcb_top_clamp_x_inset - pcb_top_clamp_w / 2;
 pcb_top_clamp_front_y = pcb_y_offset + pcb_L / 2 - pcb_top_clamp_front_setback;
 pcb_top_clamp_rear_y = pcb_y_offset + pcb_L / 2 - pcb_top_clamp_rear_setback;
@@ -197,7 +197,7 @@ assert(!pcb_top_clamp_enable || pcb_top_clamp_clear >= 0,
     str("pcb_top_clamp_clear must be >= 0. Got ", pcb_top_clamp_clear, " mm."));
 assert(!pcb_top_clamp_enable || (pcb_top_clamp_w > 0 && pcb_top_clamp_d > 0),
     str("PCB top clamp footprint must be positive. w=", pcb_top_clamp_w, " d=", pcb_top_clamp_d));
-assert(!pcb_top_clamp_enable || pcb_top_clamp_x + pcb_top_clamp_w / 2 <= pcb_W / 2 + 0.001,
+assert(!pcb_top_clamp_enable || abs(pcb_top_clamp_x) + pcb_top_clamp_w / 2 <= pcb_W / 2 + 0.001,
     "PCB top clamps must stay inside PCB width.");
 assert(!pcb_top_clamp_enable || pcb_top_clamp_front_y + pcb_top_clamp_d / 2 <= pcb_y_offset + pcb_L / 2 + 0.001,
     "Front PCB top clamp must stay behind the PCB front edge.");
@@ -393,7 +393,7 @@ module pcb_top_clamps() {
         clamp_z = pcb_top_z + pcb_top_clamp_clear + clamp_h_eff / 2;
 
         for (clamp_y = [pcb_top_clamp_front_y, pcb_top_clamp_rear_y])
-            // Press on the wire-free PCB side only; the opposite side carries J4 B+/SW+/B- wiring.
+            // Press on the side opposite the B+/SW+/B- wiring.
             translate([pcb_top_clamp_x, clamp_y, clamp_z])
                 cube([pcb_top_clamp_w, pcb_top_clamp_d, clamp_h_eff], center = true);
     }
