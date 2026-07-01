@@ -21,12 +21,14 @@ rgb_led_rot_z = 0;
 
 module pcb_model(show_usb=true) {
     assert(usb_inset >= 0 && usb_inset <= pcb_T, "usb_inset must be between 0 and pcb_T");
+    assert(usb_overhang >= 0 && usb_overhang <= usb_d,
+        "usb_overhang must be between 0 and usb_d");
     assert(status_led_h <= pcb_T && rgb_led_h <= pcb_T,
         "LED heights must fit within pcb_T (PCB thickness already includes LEDs)");
 
     usb_x = 0;
-    usb_y = pcb_L/2 - usb_d/2;               // flush to PCB edge (no overhang)
-    usb_z = pcb_T/2 + usb_h/2 - usb_inset;   // recessed into PCB by usb_inset
+    usb_y = pcb_L/2 + usb_overhang - usb_d/2; // connector nose protrudes past PCB edge
+    usb_z = pcb_T/2 + usb_h/2 - usb_inset;    // recessed into PCB by usb_inset
 
     pcb_usb_pocket_z = pcb_T/2 - usb_inset/2;
     // LEDs are embedded in the PCB thickness (must not protrude above the PCB top face).

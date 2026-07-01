@@ -57,14 +57,14 @@ pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 
 internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
 
-usb_clear_x = 1.2;
-usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
-usb_hole_h = 10.5;
-usb_hole_corner_r = 1.0;
+usb_clear_x = 0.55;
+usb_hole_extra_w = 0.0; // 9 + 2*0.55 = 10.1 mm total USB opening width
+usb_hole_h = usb_h + 1.2;
+usb_hole_corner_r = 0.8;
 usb_lead_in_depth = 1.0; // outer-face chamfer depth for easier plug insertion
-usb_lead_in_delta = 0.6; // outer-face profile expansion for the lead-in chamfer
-usb_hole_open_top = true; // remove the thin upper wall above the USB opening for printability
-usb_hole_z_offset = 2.0; // shift USB opening upward relative to connector center
+usb_lead_in_delta = 0.45; // outer-face profile expansion for the lead-in chamfer
+usb_hole_open_top = false; // closed, connector-sized USB opening
+usb_hole_z_offset = 0.0; // align opening center to USB-C connector center
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -96,8 +96,8 @@ inner_x_min = -lc_L / 2 - clear_x;
 inner_x_max = lc_L / 2 + clear_x;
 
 inner_y_min = -pcb_L / 2 - rear_clear;
-usb_front_y = pcb_L / 2; // connector flush with PCB edge (no overhang)
-inner_y_max = usb_front_y + front_clear;
+usb_front_y = pcb_L / 2 + usb_overhang; // connector nose protrudes past PCB edge
+inner_y_max = pcb_y_offset + pcb_L / 2 + pcb_front_wall_clear;
 brand_y = 0; // centered between U cutouts
 
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
@@ -149,6 +149,7 @@ battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
+connector_wall_entry_actual = (pcb_y_offset + usb_front_y) - inner_y_max;
 pcb_guide_riser_w = (bat_W / 2 - battery_support_corner_inset) - (pcb_W / 2 + pcb_guide_clear);
 
 assert(switch_y_min >= loadcell_y_max,
@@ -165,8 +166,10 @@ assert(pcb_front_gap >= 0 && pcb_front_gap <= front_clear + rear_clear,
     str("pcb_front_gap out of range: ", pcb_front_gap, " mm."));
 assert(pcb_rear_gap_actual >= -0.001 && pcb_front_gap_actual >= -0.001,
     str("PCB exceeds cavity bounds. rear_gap=", pcb_rear_gap_actual, " front_gap=", pcb_front_gap_actual));
-assert(abs(pcb_front_gap_actual - pcb_front_gap) <= 0.01,
-    str("PCB front gap mismatch: target=", pcb_front_gap, " actual=", pcb_front_gap_actual));
+assert(abs(pcb_front_gap_actual - pcb_front_wall_clear) <= 0.01,
+    str("PCB front wall clearance mismatch: target=", pcb_front_wall_clear, " actual=", pcb_front_gap_actual));
+assert(abs(connector_wall_entry_actual - max(0, usb_overhang - pcb_front_wall_clear)) <= 0.01,
+    str("USB connector wall entry mismatch: target=", max(0, usb_overhang - pcb_front_wall_clear), " actual=", connector_wall_entry_actual));
 assert(pcb_rear_stop_bottom_gap >= 0 && pcb_rear_stop_bottom_gap <= pcb_T - 0.2,
     str("pcb_rear_stop_bottom_gap out of range: ", pcb_rear_stop_bottom_gap, " mm."));
 assert(pcb_rear_stop_battery_clear >= 0,
@@ -198,10 +201,10 @@ assert(usb_lead_in_delta >= 0,
     str("usb_lead_in_delta must be >= 0. Got ", usb_lead_in_delta, " mm."));
 assert(usb_hole_open_top || usb_hole_top_z <= outer_z_max - 0.1,
     str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
-assert(usb_cable_boot_w > 0 && usb_cable_boot_h > 0,
-    str("USB cable boot envelope must be positive. w=", usb_cable_boot_w, " h=", usb_cable_boot_h));
-assert(usb_cable_boot_corner_r >= 0,
-    str("usb_cable_boot_corner_r must be >= 0. Got ", usb_cable_boot_corner_r, " mm."));
+assert(usb_plug_shell_w > 0 && usb_plug_shell_h > 0,
+    str("USB plug shell envelope must be positive. w=", usb_plug_shell_w, " h=", usb_plug_shell_h));
+assert(usb_plug_shell_corner_r >= 0,
+    str("usb_plug_shell_corner_r must be >= 0. Got ", usb_plug_shell_corner_r, " mm."));
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
@@ -300,13 +303,13 @@ module usb_opening_cut() {
     }
 }
 
-module usb_cable_boot_profile_2d() {
+module usb_plug_shell_profile_2d() {
     rounded_rect_2d(
-        -usb_cable_boot_w / 2,
-         usb_cable_boot_w / 2,
-         usb_center_z - usb_cable_boot_h / 2,
-         usb_center_z + usb_cable_boot_h / 2,
-         usb_cable_boot_corner_r
+        -usb_plug_shell_w / 2,
+         usb_plug_shell_w / 2,
+         usb_center_z - usb_plug_shell_h / 2,
+         usb_center_z + usb_plug_shell_h / 2,
+         usb_plug_shell_corner_r
     );
 }
 
@@ -318,7 +321,7 @@ module usb_cable_fit_probe() {
     translate([0, probe_y_mid, 0])
         rotate([90, 0, 0])
             linear_extrude(height = probe_y_max - probe_y_min, center = true)
-                usb_cable_boot_profile_2d();
+                usb_plug_shell_profile_2d();
 }
 
 module notch_pin(x, y) {
@@ -736,7 +739,7 @@ module main_part() {
         translate([switch_x, inner_y_max + wall_t / 2, switch_hole_z])
             cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
-        // USB opening with rounded top/bottom corners, an open top seam, and an outer lead-in chamfer.
+        // Connector-sized USB opening with rounded corners and an outer lead-in chamfer.
         usb_opening_cut();
 
         // Brand engraving on outer bottom face.

@@ -36,12 +36,13 @@ usb_w = 9;
 usb_h = 3.2;
 usb_d = 7;
 usb_inset = 3.2;
+usb_overhang = 0.3; // connector nose extends beyond PCB edge after PCB-EDGE alignment
 
-// USB-C cable plug outer housing envelope used for fit checks
-// (common slim molded plug body; not just the metal connector shell)
-usb_cable_boot_w = 12.0;
-usb_cable_boot_h = 6.0;
-usb_cable_boot_corner_r = 1.0;
+// USB-C plug metal shell envelope used for port fit checks.
+// The molded cable boot stays outside the case; only the plug shell enters the hole.
+usb_plug_shell_w = 8.6;
+usb_plug_shell_h = 3.0;
+usb_plug_shell_corner_r = 0.7;
 
 // LED placement on PCB v2.0.0.
 // Coordinates are relative to the PCB center in case coordinates (+Y is USB side).
@@ -62,7 +63,8 @@ clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
 top_clear = 2.5; // PCB-to-lid gap, increased slightly to reduce lid pressure on the PCB
-pcb_front_gap = 0.2; // target PCB front-edge gap to USB-side inner wall
+pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
+pcb_front_wall_clear = 0.05; // PCB front-edge clearance to USB-side inner wall; only connector enters port hole
 
 // Side switch (KCD11 10x15 mm)
 switch_w = 15;
