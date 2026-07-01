@@ -86,7 +86,7 @@ checks=(
     "main_lid_eps_down nonempty"
     "main_loadcell_eps_z_plus empty"
     "main_pcb_eps_y_plus nonempty"
-    "main_pcb_eps_yz_plus empty"
+    "main_pcb_eps_yz_plus nonempty"
     "battery_pcb_eps_z_plus empty"
 )
 

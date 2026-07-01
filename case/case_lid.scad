@@ -78,8 +78,8 @@ inner_x_min = -lc_L / 2 - clear_x;
 inner_x_max = lc_L / 2 + clear_x;
 
 inner_y_min = -pcb_L / 2 - rear_clear;
-usb_front_y = pcb_L / 2; // connector flush with PCB edge (no overhang)
-inner_y_max = usb_front_y + front_clear;
+usb_front_y = pcb_L / 2 + usb_overhang; // connector nose protrudes past PCB edge
+inner_y_max = pcb_y_offset + pcb_L / 2 + pcb_front_wall_clear;
 
 inner_z_max = pcb_top_z + top_clear;
 
