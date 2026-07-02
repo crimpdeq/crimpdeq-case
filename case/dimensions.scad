@@ -26,9 +26,9 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 
-// PCB v2.0.0 Edge.Cuts envelope
-pcb_L = 63.8;
-pcb_W = 23.0;
+// PCB v2.1 Edge.Cuts envelope
+pcb_L = 63.85;
+pcb_W = 23.05;
 pcb_T = 5;
 
 // USB-C connector envelope
@@ -64,7 +64,7 @@ rear_clear = 0.8;
 front_clear = 2.0;
 top_clear = 2.5; // PCB-to-lid gap, increased slightly to reduce lid pressure on the PCB
 pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
-pcb_front_wall_clear = 0.05; // PCB front-edge clearance to USB-side inner wall; only connector enters port hole
+pcb_front_wall_clear = 0.025; // PCB front-edge clearance to USB-side inner wall; only connector enters port hole
 
 // Side switch (KCD11 10x15 mm)
 switch_w = 15;
