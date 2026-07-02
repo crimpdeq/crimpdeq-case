@@ -6,22 +6,13 @@ use <case_lid.scad>
 use <load_cell.scad>
 use <battery.scad>
 use <pcb.scad>
-include <dimensions.scad>
+include <placement.scad>
 
 render_fn = is_undef(render_fn) ? 24 : render_fn;
 $fn = render_fn;
 
 // Override from CLI with -D 'mode="..."'
 mode = "main_lid";
-
-battery_y_offset = -pcb_L / 2 - rear_clear + battery_rear_gap + bat_L / 2;
-pcb_y_offset = front_clear - pcb_front_gap;
-loadcell_center_z = loadcell_lift;
-loadcell_top_z = loadcell_center_z + lc_T / 2;
-switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
-switch_x = 0;
-switch_y = pcb_L / 2 + front_clear - switch_d / 2 - switch_clear;
-switch_z = -lc_T / 2 + switch_h_eff / 2;
 
 module asm_loadcell() {
     translate([0, 0, loadcell_center_z])
@@ -45,6 +36,11 @@ module asm_switch() {
             cube([switch_w, switch_d, switch_h], center = true);
 }
 
+module led_sightline_probe(led_x, led_y, d = 1.0) {
+    translate([led_x, pcb_y_offset + led_y, pcb_top_z - 0.1])
+        cylinder(d = d, h = top_clear + 3.4, center = false);
+}
+
 module asm_all() {
     union() {
         asm_loadcell();
@@ -58,6 +54,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); lid_part(); }
 } else if (mode == "main_lid_eps_up") {
     intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
+} else if (mode == "main_lid_eps_down") {
+    intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
 } else if (mode == "main_components") {
     intersection() { main_part(); asm_all(); }
 } else if (mode == "main_loadcell") {
@@ -84,8 +82,18 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_battery(); }
 } else if (mode == "lid_pcb") {
     intersection() { lid_part(); asm_pcb(); }
+} else if (mode == "lid_pcb_eps_z_plus") {
+    intersection() { lid_part(); translate([0, 0, 0.15]) asm_pcb(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
+} else if (mode == "lid_screw_shank_fit") {
+    intersection() { lid_part(); lid_screw_shank_fit_probe(); }
+} else if (mode == "lid_screw_head_fit") {
+    intersection() { lid_part(); lid_screw_head_fit_probe(); }
+} else if (mode == "lid_status_led_sightline") {
+    intersection() { lid_part(); led_sightline_probe(status_led_x, status_led_y); }
+} else if (mode == "lid_rgb_led_sightline") {
+    intersection() { lid_part(); led_sightline_probe(rgb_led_x, rgb_led_y); }
 } else if (mode == "loadcell_battery") {
     intersection() { asm_loadcell(); asm_battery(); }
 } else if (mode == "loadcell_pcb") {

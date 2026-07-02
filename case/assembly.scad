@@ -6,24 +6,14 @@
 use <load_cell.scad>
 use <battery.scad>
 use <pcb.scad>
-include <dimensions.scad>
+include <placement.scad>
 
 render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
-battery_y_offset = -pcb_L / 2 - rear_clear + battery_rear_gap + bat_L / 2;
-pcb_y_offset = front_clear - pcb_front_gap;
-loadcell_center_z = loadcell_lift;
-loadcell_top_z = loadcell_center_z + lc_T / 2;
-switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
-switch_x = 0;
-switch_y = pcb_L / 2 + front_clear - switch_d / 2 - switch_clear;
-switch_z = -lc_T / 2 + switch_h_eff / 2; // sit on enclosure floor plane
-
 loadcell_y_max = lc_W / 2;
 switch_y_min = switch_y - switch_d / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
-pcb_bottom_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap;
 
 assert(switch_y_min >= loadcell_y_max,
     str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));

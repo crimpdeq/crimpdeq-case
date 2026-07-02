@@ -6,7 +6,7 @@
 // - corner threaded pilot holes for M2.5x10 screws
 //
 
-include <dimensions.scad>
+include <placement.scad>
 use <load_cell.scad>
 use <assembly.scad>
 use <case_lid.scad>
@@ -55,14 +55,16 @@ pcb_battery_tongue_front_clear = 3.5; // overlap under battery front edge
 pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
 pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 
-usb_clear_x = 1.2;
-usb_hole_extra_w = 0.6; // 9 + 2*1.2 + 0.6 = 12.0 mm total USB opening width
-usb_hole_h = 10.5;
-usb_hole_corner_r = 1.0;
+internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
+
+usb_clear_x = 0.55;
+usb_hole_extra_w = 0.0; // 9 + 2*0.55 = 10.1 mm total USB opening width
+usb_hole_h = usb_h + 1.2;
+usb_hole_corner_r = 0.8;
 usb_lead_in_depth = 1.0; // outer-face chamfer depth for easier plug insertion
-usb_lead_in_delta = 0.6; // outer-face profile expansion for the lead-in chamfer
-usb_hole_open_top = true; // remove the thin upper wall above the USB opening for printability
-usb_hole_z_offset = 2.0; // shift USB opening upward relative to connector center
+usb_lead_in_delta = 0.45; // outer-face profile expansion for the lead-in chamfer
+usb_hole_open_top = false; // closed, connector-sized USB opening
+usb_hole_z_offset = 0.0; // align opening center to USB-C connector center
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -94,16 +96,11 @@ inner_x_min = -lc_L / 2 - clear_x;
 inner_x_max = lc_L / 2 + clear_x;
 
 inner_y_min = -pcb_L / 2 - rear_clear;
-usb_front_y = pcb_L / 2; // connector flush with PCB edge (no overhang)
-inner_y_max = usb_front_y + front_clear;
+usb_front_y = pcb_L / 2 + usb_overhang; // connector nose protrudes past PCB edge
+inner_y_max = pcb_y_offset + pcb_L / 2 + pcb_front_wall_clear;
 brand_y = 0; // centered between U cutouts
 
-inner_z_min = -lc_T / 2;
-loadcell_bottom_z = inner_z_min + loadcell_lift;
-loadcell_center_z = loadcell_bottom_z + lc_T / 2;
-loadcell_top_z = loadcell_bottom_z + lc_T;
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
-pcb_top_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T;
 inner_z_max = pcb_top_z + top_clear;
 
 outer_x_min = inner_x_min - wall_t;
@@ -120,17 +117,12 @@ eye_access_d = eye_d + eye_access_clear;
 u_cutout_z_d = eye_access_d + 2 * u_cutout_clear;
 u_cutout_z_r = u_cutout_z_d / 2;
 u_cutout_y_span = lc_W;
-battery_y_offset = inner_y_min + battery_rear_gap + bat_L / 2;
-battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
-pcb_y_offset = front_clear - pcb_front_gap;
-
 notch_x2 = -lc_L / 2 + notch_xB;
 notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
 notch_pin_d = max(0.2, notch_d - notch_pin_clear);
 notch_pin_h = 6 + loadcell_lift;
 
-pcb_center_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T / 2;
 usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
 usb_hole_center_z = usb_center_z + usb_hole_z_offset;
@@ -145,10 +137,6 @@ screw_y2 = outer_y_max - screw_corner_inset;
 max_thread_depth = max(0, (outer_z_max - outer_z_min) - screw_thread_tip_clear);
 thread_depth = min(screw_thread_depth, max_thread_depth);
 
-switch_x = 0;
-switch_y = inner_y_max - switch_d / 2 - switch_clear;
-switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
-switch_z = inner_z_min + switch_h_eff / 2;
 switch_hole_z_min = outer_z_min + switch_hole_h / 2;
 switch_hole_z_pref = max(switch_z, switch_hole_z_min);
 switch_hole_z_max = usb_hole_center_z - usb_hole_h / 2 - switch_usb_gap - switch_hole_h / 2;
@@ -156,12 +144,12 @@ switch_hole_z = max(switch_hole_z_min, min(switch_hole_z_pref, switch_hole_z_max
 switch_y_min = switch_y - switch_d / 2;
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
-pcb_bottom_z = loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap;
 switch_hole_usb_gap = usb_hole_center_z - usb_hole_h / 2 - (switch_hole_z + switch_hole_h / 2);
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
+connector_wall_entry_actual = (pcb_y_offset + usb_front_y) - inner_y_max;
 pcb_guide_riser_w = (bat_W / 2 - battery_support_corner_inset) - (pcb_W / 2 + pcb_guide_clear);
 
 assert(switch_y_min >= loadcell_y_max,
@@ -178,8 +166,10 @@ assert(pcb_front_gap >= 0 && pcb_front_gap <= front_clear + rear_clear,
     str("pcb_front_gap out of range: ", pcb_front_gap, " mm."));
 assert(pcb_rear_gap_actual >= -0.001 && pcb_front_gap_actual >= -0.001,
     str("PCB exceeds cavity bounds. rear_gap=", pcb_rear_gap_actual, " front_gap=", pcb_front_gap_actual));
-assert(abs(pcb_front_gap_actual - pcb_front_gap) <= 0.01,
-    str("PCB front gap mismatch: target=", pcb_front_gap, " actual=", pcb_front_gap_actual));
+assert(abs(pcb_front_gap_actual - pcb_front_wall_clear) <= 0.01,
+    str("PCB front wall clearance mismatch: target=", pcb_front_wall_clear, " actual=", pcb_front_gap_actual));
+assert(abs(connector_wall_entry_actual - max(0, usb_overhang - pcb_front_wall_clear)) <= 0.01,
+    str("USB connector wall entry mismatch: target=", max(0, usb_overhang - pcb_front_wall_clear), " actual=", connector_wall_entry_actual));
 assert(pcb_rear_stop_bottom_gap >= 0 && pcb_rear_stop_bottom_gap <= pcb_T - 0.2,
     str("pcb_rear_stop_bottom_gap out of range: ", pcb_rear_stop_bottom_gap, " mm."));
 assert(pcb_rear_stop_battery_clear >= 0,
@@ -211,10 +201,10 @@ assert(usb_lead_in_delta >= 0,
     str("usb_lead_in_delta must be >= 0. Got ", usb_lead_in_delta, " mm."));
 assert(usb_hole_open_top || usb_hole_top_z <= outer_z_max - 0.1,
     str("USB opening reaches lid seam by ", usb_hole_top_z - outer_z_max, " mm. Lower usb_hole_z_offset."));
-assert(usb_cable_boot_w > 0 && usb_cable_boot_h > 0,
-    str("USB cable boot envelope must be positive. w=", usb_cable_boot_w, " h=", usb_cable_boot_h));
-assert(usb_cable_boot_corner_r >= 0,
-    str("usb_cable_boot_corner_r must be >= 0. Got ", usb_cable_boot_corner_r, " mm."));
+assert(usb_plug_shell_w > 0 && usb_plug_shell_h > 0,
+    str("USB plug shell envelope must be positive. w=", usb_plug_shell_w, " h=", usb_plug_shell_h));
+assert(usb_plug_shell_corner_r >= 0,
+    str("usb_plug_shell_corner_r must be >= 0. Got ", usb_plug_shell_corner_r, " mm."));
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
@@ -313,13 +303,13 @@ module usb_opening_cut() {
     }
 }
 
-module usb_cable_boot_profile_2d() {
+module usb_plug_shell_profile_2d() {
     rounded_rect_2d(
-        -usb_cable_boot_w / 2,
-         usb_cable_boot_w / 2,
-         usb_center_z - usb_cable_boot_h / 2,
-         usb_center_z + usb_cable_boot_h / 2,
-         usb_cable_boot_corner_r
+        -usb_plug_shell_w / 2,
+         usb_plug_shell_w / 2,
+         usb_center_z - usb_plug_shell_h / 2,
+         usb_center_z + usb_plug_shell_h / 2,
+         usb_plug_shell_corner_r
     );
 }
 
@@ -331,7 +321,7 @@ module usb_cable_fit_probe() {
     translate([0, probe_y_mid, 0])
         rotate([90, 0, 0])
             linear_extrude(height = probe_y_max - probe_y_min, center = true)
-                usb_cable_boot_profile_2d();
+                usb_plug_shell_profile_2d();
 }
 
 module notch_pin(x, y) {
@@ -342,7 +332,8 @@ module notch_pin(x, y) {
 module loadcell_support() {
     if (loadcell_lift > 0) {
         support_xy = loadcell_support_corner_size;
-        support_z = inner_z_min + loadcell_lift / 2;
+        support_h = loadcell_lift + internal_feature_embed;
+        support_z = inner_z_min - internal_feature_embed + support_h / 2;
         support_x = lc_L / 2 - loadcell_support_corner_inset - support_xy / 2;
         support_y = lc_W / 2 - loadcell_support_corner_inset - support_xy / 2;
 
@@ -368,7 +359,7 @@ module loadcell_support() {
                     center_y = use_y_min ? (inner_y_min + y1) / 2 : (!use_x_min && !use_x_max && !use_y_min) ? (y0 + inner_y_max) / 2 : sy
                 )
                     translate([center_x, center_y, support_z])
-                        cube([span_x, span_y, loadcell_lift], center = true);
+                        cube([span_x, span_y, support_h], center = true);
     }
 }
 
@@ -392,8 +383,8 @@ module battery_support_bed() {
                 let(
                     pad_y = battery_y_offset + y_sign * support_y,
                     col_y = (y_sign > 0) ? max(pad_y, front_column_min_y) : pad_y,
-                    col_h = (loadcell_top_z + loadcell_to_battery_gap) - inner_z_min,
-                    col_z = inner_z_min + col_h / 2,
+                    col_h = (loadcell_top_z + loadcell_to_battery_gap) - (inner_z_min - internal_feature_embed),
+                    col_z = inner_z_min - internal_feature_embed + col_h / 2,
                     shelf_len = abs(col_y - pad_y) + support_xy,
                     shelf_y = (col_y + pad_y) / 2,
                     x_leg_x = x_sign * (bat_W / 2 + battery_guide_clear + battery_guide_t / 2),
@@ -406,10 +397,10 @@ module battery_support_bed() {
                     y_bridge_y1 = battery_y_offset + y_sign * (bat_L / 2 + battery_guide_clear),
                     y_bridge_len = abs(y_bridge_y1 - y_bridge_y0),
                     y_bridge_y = (y_bridge_y0 + y_bridge_y1) / 2,
-                    x_leg_col_h = max(0, guide_bottom_z - inner_z_min),
-                    x_leg_col_z = inner_z_min + x_leg_col_h / 2,
-                    y_leg_col_h = max(0, guide_bottom_z - inner_z_min),
-                    y_leg_col_z = inner_z_min + y_leg_col_h / 2
+                    x_leg_col_h = max(0, guide_bottom_z - (inner_z_min - internal_feature_embed)),
+                    x_leg_col_z = inner_z_min - internal_feature_embed + x_leg_col_h / 2,
+                    y_leg_col_h = max(0, guide_bottom_z - (inner_z_min - internal_feature_embed)),
+                    y_leg_col_z = inner_z_min - internal_feature_embed + y_leg_col_h / 2
                 ) {
                     // Floor-anchored column.
                     translate([x_sign * support_x, col_y, col_z])
@@ -588,8 +579,8 @@ module notch_pins() {
 }
 
 module loadcell_notch_guides() {
-    guide_h = loadcell_notch_guide_h + loadcell_lift;
-    guide_z = inner_z_min + guide_h / 2;
+    guide_h = loadcell_notch_guide_h + loadcell_lift + internal_feature_embed;
+    guide_z = inner_z_min - internal_feature_embed + guide_h / 2;
     guide_x = notch_x2 - loadcell_notch_guide_len / 2;
     guide_bottom_y = notch_y1 - loadcell_notch_guide_clear - loadcell_notch_guide_w / 2;
     guide_top_y = notch_y2 + loadcell_notch_guide_clear + loadcell_notch_guide_w / 2;
@@ -656,8 +647,8 @@ module eye_u_cutout(eye_x, open_left = true) {
 module loadcell_u_cutout_support() {
     support_h = loadcell_lift - 0.5;
     if (support_h > 0 && loadcell_u_support_t > 0) {
-        translate([0, 0, inner_z_min])
-            linear_extrude(height = support_h, center = false)
+        translate([0, 0, inner_z_min - internal_feature_embed])
+            linear_extrude(height = support_h + internal_feature_embed, center = false)
                 intersection() {
                     union() {
                         difference() {
@@ -748,7 +739,7 @@ module main_part() {
         translate([switch_x, inner_y_max + wall_t / 2, switch_hole_z])
             cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
-        // USB opening with rounded top/bottom corners, an open top seam, and an outer lead-in chamfer.
+        // Connector-sized USB opening with rounded corners and an outer lead-in chamfer.
         usb_opening_cut();
 
         // Brand engraving on outer bottom face.
@@ -770,7 +761,7 @@ if (print_layout) {
     main_part();
 }
 
-if (show_assembly) {
+if ($preview && show_assembly) {
     if (print_layout) {
         translate([0, 0, -outer_z_min]) %full_assembly();
     } else {
@@ -778,15 +769,10 @@ if (show_assembly) {
     }
 }
 
-if (show_lid_preview) {
+if ($preview && show_lid_preview) {
     preview_z = (print_layout ? -outer_z_min : 0) + lid_preview_z_offset;
     translate([0, 0, preview_z]) {
-        // In preview, show lid with configurable opacity. For renders/exports, keep it as %.
-        if ($preview) {
-            color([0.8, 0.8, 0.8, lid_preview_alpha])
-                if (print_layout) lid_part_print_layout(); else lid_part();
-        } else {
-            if (print_layout) %lid_part_print_layout(); else %lid_part();
-        }
+        color([0.8, 0.8, 0.8, lid_preview_alpha])
+            if (print_layout) lid_part_print_layout(); else lid_part();
     }
 }

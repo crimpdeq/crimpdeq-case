@@ -26,9 +26,9 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 
-// PCB
-pcb_L = 64;
-pcb_W = 24;
+// PCB v2.1 Edge.Cuts envelope
+pcb_L = 63.85;
+pcb_W = 23.05;
 pcb_T = 5;
 
 // USB-C connector envelope
@@ -36,16 +36,22 @@ usb_w = 9;
 usb_h = 3.2;
 usb_d = 7;
 usb_inset = 3.2;
+usb_overhang = 0.3; // connector nose extends beyond PCB edge after PCB-EDGE alignment
 
-// USB-C cable plug outer housing envelope used for fit checks
-// (common slim molded plug body; not just the metal connector shell)
-usb_cable_boot_w = 12.0;
-usb_cable_boot_h = 6.0;
-usb_cable_boot_corner_r = 1.0;
+// USB-C plug metal shell envelope used for port fit checks.
+// The molded cable boot stays outside the case; only the plug shell enters the hole.
+usb_plug_shell_w = 8.6;
+usb_plug_shell_h = 3.0;
+usb_plug_shell_corner_r = 0.7;
 
-// LED placement on PCB
-led_from_left = 5;
-led_from_usb_side = 15;
+// LED placement on PCB v2.0.0.
+// Coordinates are relative to the PCB center in case coordinates (+Y is USB side).
+// KiCad X is mirrored into case X; these match D1 at (134.4, 95.6)
+// and WS2812B/D4 at (147.6, 81.8) on a board centered at (140.7, 78.3).
+status_led_x = 6.3;
+status_led_y = 17.3;
+rgb_led_x = -6.9;
+rgb_led_y = 3.5;
 
 // Stack spacing
 loadcell_to_battery_gap = 2;
@@ -57,7 +63,8 @@ clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
 top_clear = 2.5; // PCB-to-lid gap, increased slightly to reduce lid pressure on the PCB
-pcb_front_gap = 0.2; // target PCB front-edge gap to USB-side inner wall
+pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
+pcb_front_wall_clear = 0.025; // PCB front-edge clearance to USB-side inner wall; only connector enters port hole
 
 // Side switch (KCD11 10x15 mm)
 switch_w = 15;
