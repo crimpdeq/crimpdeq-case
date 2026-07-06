@@ -53,7 +53,7 @@ pcb_rear_rest_stop_gap = 0.0; // merge the rear shelf into the stopper as a sing
 pcb_battery_tongue_enable = true;
 pcb_battery_tongue_front_clear = 3.5; // overlap under battery front edge
 pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
-pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
+pcb_battery_tongue_bottom_clear = 0.8; // extra load-cell top clearance so battery tabs don't pinch/tilt it
 
 internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
 
