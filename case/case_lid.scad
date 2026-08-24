@@ -48,8 +48,8 @@ align_lip_front_back_len = 24;
 // Placed outside PCB width so they can extend down without colliding with the PCB.
 battery_front_stop_enable = true;
 battery_front_stop_t = 1.2;
-battery_front_stop_w = 3.0;
-battery_front_stop_x_inset = 0.5;
+battery_front_stop_w = 1.0;
+battery_front_stop_x_inset = 0.3;
 battery_front_stop_y_clear = 0.3;
 battery_front_stop_z_overlap = bat_T / 2; // reach about mid battery thickness
 
@@ -73,7 +73,7 @@ pcb_top_clamp_rear_setback = 10.0;
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
 status_led_view_d = 2.6;
-rgb_led_view_d = 3.0;
+rgb_led_view_d = 5.8;
 led_view_chamfer_depth = 0.8;
 led_view_chamfer_delta = 0.6;
 
@@ -81,15 +81,16 @@ brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
+brand_x = -10; // keep engraving clear of the two revision-3 LED view holes
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
 inner_x_min = -lc_L / 2 - clear_x;
 inner_x_max = lc_L / 2 + clear_x;
 
-inner_y_min = -pcb_L / 2 - rear_clear;
-usb_front_y = pcb_L / 2 + usb_overhang; // connector nose protrudes past PCB edge
-inner_y_max = pcb_y_offset + pcb_L / 2 + pcb_front_wall_clear;
+inner_y_min = case_inner_y_min;
+inner_y_max = case_inner_y_max;
+usb_front_y = usb_y + usb_d / 2;
 
 inner_z_max = pcb_top_z + top_clear;
 
@@ -401,7 +402,7 @@ module pcb_top_clamps() {
 
 module brand_engrave_lid() {
     // Carved on outer top face (same plane as load cell), horizontal and centered.
-    translate([0, brand_y, lid_z_max - brand_depth - 0.1])
+    translate([brand_x, brand_y, lid_z_max - brand_depth - 0.1])
         linear_extrude(height = brand_depth + 0.2, center = false)
             rotate([0, 0, 90])
                 text(brand_text, size = brand_size, font = brand_font, halign = "center", valign = "center");
@@ -431,7 +432,12 @@ module lid_part() {
         // Brand engraving on outer top face.
         brand_engrave_lid();
     }
-    battery_side_wall_features();
+    // These bridges are added after the U-cutouts, so explicitly re-cut the
+    // LED sightlines where the RGB opening overlaps a bridge corner.
+    difference() {
+        battery_side_wall_features();
+        led_view_holes();
+    }
 }
 
 module lid_part_print_layout() {

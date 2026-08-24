@@ -26,17 +26,21 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 
-// PCB v2.1 Edge.Cuts envelope
-pcb_L = 63.85;
-pcb_W = 23.05;
+// PCB revision 3.0 (PR crimpdeq/crimpdeq-pcb#23).
+// The board is installed bottom-side up so its two bottom-mounted LEDs face the lid.
+pcb_L = 30;
+pcb_W = 30;
 pcb_T = 5;
 
 // USB-C connector envelope
 usb_w = 9;
 usb_h = 3.2;
-usb_d = 7;
+usb_d = 7.73;
 usb_inset = 3.2;
-usb_overhang = 0.3; // connector nose extends beyond PCB edge after PCB-EDGE alignment
+// Case-local coordinates after flipping the PCB bottom-side up while keeping
+// the USB edge toward +Y. Source board center: (142.45, 67.40).
+usb_x = -4.55;
+usb_y = 11.135;
 
 // USB-C plug metal shell envelope used for port fit checks.
 // The molded cable boot stays outside the case; only the plug shell enters the hole.
@@ -44,14 +48,18 @@ usb_plug_shell_w = 8.6;
 usb_plug_shell_h = 3.0;
 usb_plug_shell_corner_r = 0.7;
 
-// LED placement on PCB v2.0.0.
-// Coordinates are relative to the PCB center in case coordinates (+Y is USB side).
-// KiCad X is mirrored into case X; these match D1 at (134.4, 95.6)
-// and WS2812B/D4 at (147.6, 81.8) on a board centered at (140.7, 78.3).
-status_led_x = 6.3;
-status_led_y = 17.3;
-rgb_led_x = -6.9;
-rgb_led_y = 3.5;
+// Bottom-mounted LED positions, transformed into case-local coordinates.
+// D1 is the battery-status LED; D4 is the WS2812B RGB LED.
+status_led_x = 7.65;
+status_led_y = -1.40;
+status_led_w = 1.6;
+status_led_l = 0.8;
+status_led_h = 0.8;
+rgb_led_x = 11.95;
+rgb_led_y = -10.90;
+rgb_led_w = 5.0;
+rgb_led_l = 5.0;
+rgb_led_h = 1.6;
 
 // Stack spacing
 loadcell_to_battery_gap = 2;
@@ -64,7 +72,6 @@ rear_clear = 0.8;
 front_clear = 2.0;
 top_clear = 2.5; // PCB-to-lid gap, increased slightly to reduce lid pressure on the PCB
 pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
-pcb_front_wall_clear = 0.025; // PCB front-edge clearance to USB-side inner wall; only connector enters port hole
 
 // Side switch (KCD11 10x15 mm)
 switch_w = 15;
@@ -72,6 +79,7 @@ switch_d = 13;
 switch_h = 10;
 switch_rot_y = 0;
 switch_clear = 0.4;
+battery_switch_gap = 0.4;
 
 // Screw centers from outer walls (shared by main and lid).
 // 5.25 mm makes main screw posts merge into side walls for higher strength.

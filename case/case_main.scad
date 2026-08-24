@@ -32,20 +32,20 @@ loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
 loadcell_u_support_t = 2;
 battery_support_corner_size = 8;
-battery_support_corner_inset = 2;
+battery_support_corner_inset = 1;
 battery_support_front_column_clear = 2;
 battery_support_bottom_gap = 0.5;
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
 battery_guide_h = bat_T * 0.6;
-pcb_guide_clear = 0.35; // a bit more drop-in tolerance without giving up positive side location
+pcb_guide_clear = 0.25;
 pcb_guide_h = 2.6;
 pcb_guide_lead_in_h = 0.8;
 pcb_guide_side_lead_in = 0.6;
 pcb_rear_stop_lead_in = 0.8;
 pcb_rear_stop_bottom_gap = 0.6;
 pcb_rear_stop_battery_clear = 0.2;
-pcb_rear_gap = front_clear + rear_clear - pcb_front_gap;
+pcb_rear_stop_depth = 0.8;
 pcb_rear_stop_w = 4;
 pcb_rear_rest_w = 5;
 pcb_rear_rest_depth = 3.8; // extends slightly under the PCB rear edge so it actually lands on the shelves
@@ -95,9 +95,9 @@ print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 inner_x_min = -lc_L / 2 - clear_x;
 inner_x_max = lc_L / 2 + clear_x;
 
-inner_y_min = -pcb_L / 2 - rear_clear;
-usb_front_y = pcb_L / 2 + usb_overhang; // connector nose protrudes past PCB edge
-inner_y_max = pcb_y_offset + pcb_L / 2 + pcb_front_wall_clear;
+inner_y_min = case_inner_y_min;
+inner_y_max = case_inner_y_max;
+usb_front_y = usb_y + usb_d / 2;
 brand_y = 0; // centered between U cutouts
 
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
@@ -123,7 +123,7 @@ notch_y2 = lc_W / 2;
 notch_pin_d = max(0.2, notch_d - notch_pin_clear);
 notch_pin_h = 6 + loadcell_lift;
 
-usb_center_z = pcb_center_z + (pcb_T / 2 + usb_h / 2 - usb_inset);
+usb_center_z = pcb_center_z - (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
 usb_hole_center_z = usb_center_z + usb_hole_z_offset;
 usb_hole_bottom_z = usb_hole_center_z - usb_hole_h / 2;
@@ -149,7 +149,7 @@ battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
-connector_wall_entry_actual = (pcb_y_offset + usb_front_y) - inner_y_max;
+connector_wall_gap_actual = inner_y_max - (pcb_y_offset + usb_front_y);
 pcb_guide_riser_w = (bat_W / 2 - battery_support_corner_inset) - (pcb_W / 2 + pcb_guide_clear);
 
 assert(switch_y_min >= loadcell_y_max,
@@ -166,10 +166,10 @@ assert(pcb_front_gap >= 0 && pcb_front_gap <= front_clear + rear_clear,
     str("pcb_front_gap out of range: ", pcb_front_gap, " mm."));
 assert(pcb_rear_gap_actual >= -0.001 && pcb_front_gap_actual >= -0.001,
     str("PCB exceeds cavity bounds. rear_gap=", pcb_rear_gap_actual, " front_gap=", pcb_front_gap_actual));
-assert(abs(pcb_front_gap_actual - pcb_front_wall_clear) <= 0.01,
-    str("PCB front wall clearance mismatch: target=", pcb_front_wall_clear, " actual=", pcb_front_gap_actual));
-assert(abs(connector_wall_entry_actual - max(0, usb_overhang - pcb_front_wall_clear)) <= 0.01,
-    str("USB connector wall entry mismatch: target=", max(0, usb_overhang - pcb_front_wall_clear), " actual=", connector_wall_entry_actual));
+assert(abs(pcb_front_gap_actual - pcb_front_gap) <= 0.01,
+    str("PCB front wall clearance mismatch: target=", pcb_front_gap, " actual=", pcb_front_gap_actual));
+assert(connector_wall_gap_actual >= -0.001,
+    str("USB connector extends into the front wall by ", -connector_wall_gap_actual, " mm."));
 assert(pcb_rear_stop_bottom_gap >= 0 && pcb_rear_stop_bottom_gap <= pcb_T - 0.2,
     str("pcb_rear_stop_bottom_gap out of range: ", pcb_rear_stop_bottom_gap, " mm."));
 assert(pcb_rear_stop_battery_clear >= 0,
@@ -257,16 +257,16 @@ module bottom_rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
 module usb_opening_2d() {
     if (usb_hole_open_top)
         bottom_rounded_rect_2d(
-            -usb_hole_w / 2,
-             usb_hole_w / 2,
+            usb_x - usb_hole_w / 2,
+            usb_x + usb_hole_w / 2,
              usb_hole_bottom_z,
              usb_hole_cut_top_z,
              usb_hole_corner_r
         );
     else
         rounded_rect_2d(
-            -usb_hole_w / 2,
-             usb_hole_w / 2,
+            usb_x - usb_hole_w / 2,
+            usb_x + usb_hole_w / 2,
              usb_hole_bottom_z,
              usb_hole_cut_top_z,
              usb_hole_corner_r
@@ -305,8 +305,8 @@ module usb_opening_cut() {
 
 module usb_plug_shell_profile_2d() {
     rounded_rect_2d(
-        -usb_plug_shell_w / 2,
-         usb_plug_shell_w / 2,
+        usb_x - usb_plug_shell_w / 2,
+        usb_x + usb_plug_shell_w / 2,
          usb_center_z - usb_plug_shell_h / 2,
          usb_center_z + usb_plug_shell_h / 2,
          usb_plug_shell_corner_r
@@ -527,48 +527,77 @@ module pcb_horizontal_guides() {
 }
 
 module pcb_rear_corner_cradles() {
+    pcb_rear_y = pcb_y_offset - pcb_L / 2;
     stop_top_z = pcb_bottom_z + min(pcb_guide_h, pcb_T);
     stop_bottom_z_pcb = pcb_bottom_z + max(0, min(pcb_rear_stop_bottom_gap, pcb_T - 0.2));
     stop_bottom_z_battery = battery_bottom_z + bat_T + pcb_rear_stop_battery_clear;
     stop_bottom_z = min(stop_bottom_z_pcb, stop_bottom_z_battery, stop_top_z - 0.2);
     stop_h = max(0.2, stop_top_z - stop_bottom_z);
-    stop_z = stop_bottom_z + stop_h / 2;
-    stop_depth = max(0, pcb_rear_gap);
+    stop_depth = max(0, pcb_rear_stop_depth);
     stop_x = pcb_W / 2 - pcb_rear_stop_w / 2;
     stop_lead_in_h = min(stop_h, pcb_guide_lead_in_h);
     stop_body_h = max(0, stop_h - stop_lead_in_h);
     stop_top_inset = min(max(0, pcb_rear_stop_lead_in), max(0, stop_depth - 0.2));
     stop_top_depth = max(0.2, stop_depth - stop_top_inset);
-    stop_top_y = inner_y_min + stop_top_depth / 2;
+    stop_y = pcb_rear_y - stop_depth / 2;
+    stop_top_y = pcb_rear_y - stop_depth + stop_top_depth / 2;
 
-    // Rear corner shelf that merges into the wall stop, forming a small cradle
-    // for each PCB rear corner instead of two separate features.
+    // The shorter revision-3 PCB no longer reaches the rear enclosure wall.
+    // Support each rear corner from a floor-anchored column outside the battery.
     rest_depth = max(0, pcb_rear_rest_depth);
     rest_top_z = pcb_bottom_z;
     rest_bottom_z = stop_bottom_z_battery;
     rest_h = max(0, rest_top_z - rest_bottom_z);
     rest_z = rest_bottom_z + rest_h / 2;
-    cradle_overlap = min(pcb_rear_stop_w, 0.2);
-    rest_w = pcb_rear_rest_w + cradle_overlap;
-    rest_x = pcb_W / 2 - pcb_rear_stop_w - pcb_rear_rest_stop_gap - pcb_rear_rest_w / 2 + cradle_overlap / 2;
+    rest_inner_x = pcb_W / 2 - pcb_rear_stop_w - pcb_rear_rest_stop_gap - pcb_rear_rest_w;
+    rest_outer_x = bat_W / 2 + battery_guide_clear + battery_guide_t;
+    rest_w = rest_outer_x - rest_inner_x;
+    rest_x = (rest_inner_x + rest_outer_x) / 2;
+    rest_y = pcb_rear_y + rest_depth / 2;
+    bat_col_y = bat_L / 2 - battery_support_corner_inset - battery_support_corner_size / 2;
+    front_column_min_y = loadcell_y_max + battery_support_front_column_clear + battery_support_corner_size / 2;
+    front_anchor_y = max(battery_y_offset + bat_col_y, front_column_min_y);
+    front_support_back_y = front_anchor_y - battery_support_corner_size / 2;
+    rest_front_y = pcb_rear_y + rest_depth;
+    bridge_overlap = 0.2;
+    bridge_y_min = rest_front_y - bridge_overlap;
+    bridge_y_max = front_support_back_y + bridge_overlap;
+    bridge_l = max(0, bridge_y_max - bridge_y_min);
+    bridge_y = (bridge_y_min + bridge_y_max) / 2;
+    bridge_x = stop_x;
+    bridge_w = pcb_rear_rest_w;
+    column_x = bat_W / 2 + battery_guide_clear + battery_guide_t / 2;
+    column_bottom_z = inner_z_min - internal_feature_embed;
+    column_h = max(0, rest_top_z - column_bottom_z);
+    column_z = column_bottom_z + column_h / 2;
 
     if (stop_depth > 0.01) {
         for (x_sign = [-1, 1]) {
             if (stop_body_h > 0.01)
-                translate([x_sign * stop_x, inner_y_min + stop_depth / 2, stop_bottom_z + stop_body_h / 2])
+                translate([x_sign * stop_x, stop_y, stop_bottom_z + stop_body_h / 2])
                     cube([pcb_rear_stop_w, stop_depth, stop_body_h], center = true);
 
             if (stop_lead_in_h > 0.01)
                 hull() {
-                    translate([x_sign * stop_x, inner_y_min + stop_depth / 2, stop_bottom_z + stop_body_h + 0.01])
+                    translate([x_sign * stop_x, stop_y, stop_bottom_z + stop_body_h + 0.01])
                         cube([pcb_rear_stop_w, stop_depth, 0.02], center = true);
                     translate([x_sign * stop_x, stop_top_y, stop_top_z - 0.01])
                         cube([pcb_rear_stop_w, stop_top_depth, 0.02], center = true);
                 }
 
-            if (rest_depth > 0.01 && rest_h > 0.01 && rest_x - rest_w / 2 >= 0)
-                translate([x_sign * rest_x, inner_y_min + rest_depth / 2, rest_z])
+            if (rest_depth > 0.01 && rest_h > 0.01 && rest_w > 0.01)
+                translate([x_sign * rest_x, rest_y, rest_z])
                     cube([rest_w, rest_depth, rest_h], center = true);
+
+            // Tie the rear cradle into the floor-anchored front PCB support.
+            // This bridge stays in the PCB/battery clearance gap.
+            if (bridge_l > 0.01 && rest_h > 0.01)
+                translate([x_sign * bridge_x, bridge_y, rest_z])
+                    cube([bridge_w, bridge_l, rest_h], center = true);
+
+            if (rest_depth > 0.01 && column_h > 0.01)
+                translate([x_sign * column_x, rest_y, column_z])
+                    cube([battery_guide_t, rest_depth, column_h], center = true);
         }
     }
 }

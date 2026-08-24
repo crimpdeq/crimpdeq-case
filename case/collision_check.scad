@@ -91,9 +91,15 @@ if (mode == "main_lid") {
 } else if (mode == "lid_screw_head_fit") {
     intersection() { lid_part(); lid_screw_head_fit_probe(); }
 } else if (mode == "lid_status_led_sightline") {
-    intersection() { lid_part(); led_sightline_probe(status_led_x, status_led_y); }
+    intersection() {
+        lid_part();
+        led_sightline_probe(status_led_x, status_led_y, max(status_led_w, status_led_l));
+    }
 } else if (mode == "lid_rgb_led_sightline") {
-    intersection() { lid_part(); led_sightline_probe(rgb_led_x, rgb_led_y); }
+    intersection() {
+        lid_part();
+        led_sightline_probe(rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l));
+    }
 } else if (mode == "loadcell_battery") {
     intersection() { asm_loadcell(); asm_battery(); }
 } else if (mode == "loadcell_pcb") {
