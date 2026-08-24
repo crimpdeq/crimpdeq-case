@@ -4,9 +4,9 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The compact central pod is approximately 52 × 70 mm. A fitted lid closes the
-electronics bay around the 80 mm load cell, while two isolated vertical tunnels
-keep both load-cell eyes accessible to the supplied carabiners.
+The compact central pod is approximately 50.4 × 68.8 × 29.8 mm. A fitted lid
+closes the electronics bay around the 80 mm load cell, while two isolated
+vertical tunnels keep both load-cell eyes accessible to the supplied carabiners.
 
 The repository contains:
 
