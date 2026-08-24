@@ -72,7 +72,7 @@ brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
 brand_size = 9.5;
 brand_depth = 0.8;
-brand_x = -10; // keep engraving clear of the two revision-3 LED view holes
+brand_x = 0;
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
