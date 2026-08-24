@@ -16,10 +16,20 @@ loadcell_lift = 2.5; // support structure height under load cell (from enclosure
 eye_d = 17;
 eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
+carabiner_shank_d = 12;
+carabiner_access_clear = 0.5;
+carabiner_access_d = carabiner_shank_d + 2 * carabiner_access_clear;
+eye_tunnel_radial_clear = 0.3;
+eye_tunnel_outer_d = eye_d - 2 * eye_tunnel_radial_clear;
 
 notch_d = 6;
 notch_xA = 20;
 notch_xB = 60;
+
+// Compact central pod: retain the load-cell notches while exposing both ends.
+loadcell_retain_half_x = 22;
+loadcell_channel_clear_y = 0.3;
+loadcell_channel_clear_z = 0.3;
 
 // Battery
 bat_L = 50;

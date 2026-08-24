@@ -12,6 +12,10 @@ loadcell_bottom_z = inner_z_min + loadcell_lift;
 loadcell_center_z = loadcell_bottom_z + lc_T / 2;
 loadcell_top_z = loadcell_bottom_z + lc_T;
 
+// The enclosure is a central pod; the load-cell ends pass through open side
+// channels instead of setting the enclosure width.
+case_inner_x_half = loadcell_retain_half_x + clear_x;
+
 // Revision 3 is shorter than the battery and load cell, so derive the cavity
 // and component positions from every front/rear envelope instead of the PCB.
 case_inner_y_max = max(
