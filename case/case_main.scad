@@ -14,8 +14,8 @@ render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
 /*** Enclosure parameters ***/
-wall_t = 3;
-floor_t = 3;
+wall_t = 2.4;
+floor_t = 2.4;
 corner_r = 6;
 
 notch_pin_clear = 0.2;
@@ -663,7 +663,7 @@ module loadcell_side_channels() {
 }
 
 module main_loadcell_eye_tunnel_walls() {
-    tunnel_z_min = outer_z_min - 0.1;
+    tunnel_z_min = outer_z_min;
     tunnel_z_max = loadcell_bottom_z - loadcell_channel_clear_z;
     tunnel_h = tunnel_z_max - tunnel_z_min;
     tunnel_z = (tunnel_z_min + tunnel_z_max) / 2;

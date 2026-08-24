@@ -11,7 +11,7 @@
 lc_L = 80;
 lc_W = 40;
 lc_T = 4;
-loadcell_lift = 2.5; // support structure height under load cell (from enclosure floor)
+loadcell_lift = 2.0; // support structure height under load cell (from enclosure floor)
 
 eye_d = 17;
 eye_edge_start = 6;
@@ -72,15 +72,15 @@ rgb_led_l = 5.0;
 rgb_led_h = 1.6;
 
 // Stack spacing
-loadcell_to_battery_gap = 2;
-battery_to_pcb_gap = 1.0; // small relief so the PCB does not rest directly on the battery
+loadcell_to_battery_gap = 1.5;
+battery_to_pcb_gap = 0.5; // relief so the PCB does not rest directly on the battery
 battery_rear_gap = 0.2; // target battery rear-edge gap to enclosure inner rear wall
 
 // Inner cavity clearances
 clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
-top_clear = 2.5; // PCB-to-lid gap, increased slightly to reduce lid pressure on the PCB
+top_clear = 2.0; // PCB-to-lid gap with room for clamps and print tolerance
 pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
 
 // Side switch (KCD11 10x15 mm)
@@ -92,5 +92,6 @@ switch_clear = 0.4;
 battery_switch_gap = 0.4;
 
 // Screw centers from outer walls (shared by main and lid).
-// 5.25 mm makes main screw posts merge into side walls for higher strength.
-screw_corner_inset = 5.25;
+// Compensates for the 2.4 mm shell so the screw centers remain at their
+// previous absolute X/Y positions and clear the battery.
+screw_corner_inset = 4.65;
