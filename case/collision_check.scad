@@ -20,6 +20,29 @@ module asm_loadcell() {
             loadcell_2d();
 }
 
+module asm_loadcell_arm(x_sign) {
+    arm_w = lc_L / 2 - case_inner_x_half + 0.2;
+    arm_x = x_sign * (case_inner_x_half + arm_w / 2 - 0.1);
+
+    intersection() {
+        asm_loadcell();
+        translate([arm_x, 0, loadcell_center_z])
+            cube([arm_w, lc_W + 1, lc_T + 1], center = true);
+    }
+}
+
+module carabiner_eye_probe(x_sign) {
+    eye_x = x_sign * (lc_L / 2 - eye_center_offset);
+    translate([eye_x, 0, loadcell_center_z])
+        cylinder(d = carabiner_shank_d, h = 100, center = true);
+}
+
+module side_channel_closure_probe(x_sign) {
+    probe_x = x_sign * (case_inner_x_half + 1.5);
+    translate([probe_x, 15, loadcell_top_z + 4])
+        cube([1, 2, 2], center = true);
+}
+
 module asm_battery() {
     translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T / 2])
         battery_model(rounded = true);
@@ -60,6 +83,18 @@ if (mode == "main_lid") {
     intersection() { main_part(); asm_all(); }
 } else if (mode == "main_loadcell") {
     intersection() { main_part(); asm_loadcell(); }
+} else if (mode == "main_loadcell_arm_x_neg") {
+    intersection() { main_part(); asm_loadcell_arm(-1); }
+} else if (mode == "main_loadcell_arm_x_pos") {
+    intersection() { main_part(); asm_loadcell_arm(1); }
+} else if (mode == "main_eye_access_x_neg") {
+    intersection() { main_part(); carabiner_eye_probe(-1); }
+} else if (mode == "main_eye_access_x_pos") {
+    intersection() { main_part(); carabiner_eye_probe(1); }
+} else if (mode == "main_notch_retention_y_neg") {
+    intersection() { notch_pins(); translate([0, -0.15, 0]) asm_loadcell(); }
+} else if (mode == "main_notch_retention_y_pos") {
+    intersection() { notch_pins(); translate([0, 0.15, 0]) asm_loadcell(); }
 } else if (mode == "main_loadcell_eps_z_plus") {
     intersection() { main_part(); translate([0, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_battery") {
@@ -78,6 +113,14 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_all(); }
 } else if (mode == "lid_loadcell") {
     intersection() { lid_part(); asm_loadcell(); }
+} else if (mode == "lid_eye_access_x_neg") {
+    intersection() { lid_part(); carabiner_eye_probe(-1); }
+} else if (mode == "lid_eye_access_x_pos") {
+    intersection() { lid_part(); carabiner_eye_probe(1); }
+} else if (mode == "lid_channel_closure_x_neg") {
+    intersection() { lid_part(); side_channel_closure_probe(-1); }
+} else if (mode == "lid_channel_closure_x_pos") {
+    intersection() { lid_part(); side_channel_closure_probe(1); }
 } else if (mode == "lid_battery") {
     intersection() { lid_part(); asm_battery(); }
 } else if (mode == "lid_pcb") {
