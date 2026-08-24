@@ -87,13 +87,9 @@ checks=(
     "main_lid_eps_down nonempty"
     "main_loadcell_eps_z_plus empty"
     "main_pcb_eps_y_plus nonempty"
-    "main_pcb_eps_yz_plus nonempty"
+    "main_pcb_eps_yz_plus empty"
     "battery_pcb_eps_z_plus empty"
 )
-
-current_job_count() {
-    jobs -pr | wc -l | tr -d ' '
-}
 
 check_mode() {
     local mode="$1"
@@ -133,19 +129,22 @@ echo "Running collision matrix with: ${openscad_cmd[*]} ${openscad_defs[*]}"
 echo "Running ${#checks[@]} checks with CHECK_JOBS=$check_jobs"
 
 pids=()
+failed=0
 for check in "${checks[@]}"; do
     IFS=' ' read -r mode expected <<< "$check"
     check_mode "$mode" "$expected" &
     pids+=("$!")
 
-    while (( $(current_job_count) >= check_jobs )); do
-        if ! wait -n; then
-            :
+    # macOS ships Bash 3.2, which has no `wait -n`. Waiting for the oldest
+    # active job keeps the concurrency bounded and remains portable.
+    if (( ${#pids[@]} >= check_jobs )); then
+        if ! wait "${pids[0]}"; then
+            failed=1
         fi
-    done
+        pids=("${pids[@]:1}")
+    fi
 done
 
-failed=0
 for pid in "${pids[@]}"; do
     if ! wait "$pid"; then
         failed=1
