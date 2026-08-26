@@ -26,9 +26,9 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 
-// PCB
-pcb_L = 64;
-pcb_W = 24;
+// PCB v2.0.0 Edge.Cuts envelope
+pcb_L = 63.8;
+pcb_W = 23.0;
 pcb_T = 5;
 
 // USB-C connector envelope
@@ -43,9 +43,14 @@ usb_cable_boot_w = 12.0;
 usb_cable_boot_h = 6.0;
 usb_cable_boot_corner_r = 1.0;
 
-// LED placement on PCB
-led_from_left = 5;
-led_from_usb_side = 15;
+// LED placement on PCB v2.0.0.
+// Coordinates are relative to the PCB center in case coordinates (+Y is USB side).
+// KiCad X is mirrored into case X; these match D1 at (134.4, 95.6)
+// and WS2812B/D4 at (147.6, 81.8) on a board centered at (140.7, 78.3).
+status_led_x = 6.3;
+status_led_y = 17.3;
+rgb_led_x = -6.9;
+rgb_led_y = 3.5;
 
 // Stack spacing
 loadcell_to_battery_gap = 2;

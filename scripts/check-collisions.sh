@@ -17,6 +17,11 @@ if ! command -v openscad >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 not found in PATH" >&2
+    exit 1
+fi
+
 openscad_cmd=(openscad)
 if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
     openscad_cmd=(xvfb-run -a openscad)
@@ -67,6 +72,10 @@ checks=(
     "lid_battery empty"
     "lid_pcb empty"
     "lid_switch empty"
+    "lid_screw_shank_fit empty"
+    "lid_screw_head_fit empty"
+    "lid_status_led_sightline empty"
+    "lid_rgb_led_sightline empty"
     "loadcell_battery empty"
     "loadcell_pcb empty"
     "loadcell_switch empty"
@@ -74,6 +83,7 @@ checks=(
     "battery_switch empty"
     "pcb_switch empty"
     "main_lid_eps_up empty"
+    "main_lid_eps_down nonempty"
     "main_loadcell_eps_z_plus empty"
     "main_pcb_eps_y_plus nonempty"
     "main_pcb_eps_yz_plus empty"
@@ -166,3 +176,12 @@ if (( failed )); then
 fi
 
 echo "Collision checks passed."
+
+echo "Checking exported STL connectivity"
+main_stl="$tmp_dir/case_main.stl"
+lid_stl="$tmp_dir/case_lid.stl"
+"${openscad_cmd[@]}" "${openscad_defs[@]}" -D "print_layout=true" -o "$main_stl" "$repo_root/case/case_main.scad" >/dev/null 2>&1
+"${openscad_cmd[@]}" "${openscad_defs[@]}" -D "print_layout=true" -o "$lid_stl" "$repo_root/case/case_lid.scad" >/dev/null 2>&1
+python3 "$repo_root/scripts/check-stl-components.py" "$main_stl" "$lid_stl"
+
+echo "STL connectivity checks passed."
