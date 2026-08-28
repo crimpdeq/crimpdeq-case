@@ -6,6 +6,7 @@ use <case_lid.scad>
 use <load_cell.scad>
 use <battery.scad>
 use <pcb.scad>
+use <assembly.scad>
 include <placement.scad>
 
 render_fn = is_undef(render_fn) ? 24 : render_fn;
@@ -32,15 +33,38 @@ module asm_loadcell_arm(x_sign) {
 }
 
 module carabiner_eye_probe(x_sign) {
-    eye_x = x_sign * (lc_L / 2 - eye_center_offset);
-    translate([eye_x, 0, loadcell_center_z])
-        cylinder(d = carabiner_shank_d, h = 100, center = true);
+    // Keep the fit probe just inside the nominal cutter profile. Exact,
+    // coincident OpenSCAD boundaries otherwise produce zero-volume contacts.
+    translate([0, 0, loadcell_center_z - 50])
+        linear_extrude(height = 100, center = false)
+            offset(delta = -0.05)
+                loadcell_eye_access_2d(x_sign);
 }
 
 module side_channel_closure_probe(x_sign) {
     probe_x = x_sign * (case_inner_x_half + 1.5);
     translate([probe_x, 15, loadcell_top_z + 4])
         cube([1, 2, 2], center = true);
+}
+
+module lid_eye_wall_tip_probe(x_sign, y_sign) {
+    probe_x = x_sign * (lc_L / 2 - 0.2);
+    probe_y = y_sign * (
+        carabiner_side_entry_w / 2 + eye_tunnel_wall_t / 2
+    );
+    probe_z = loadcell_top_z + loadcell_channel_clear_z + 0.6;
+
+    translate([probe_x, probe_y, probe_z])
+        cube([0.4, 0.4, 0.4], center = true);
+}
+
+module loadcell_corner_guard_probe(x_sign, y_sign) {
+    translate([
+        x_sign * (lc_L / 2 + loadcell_guard_wall_t / 2),
+        y_sign * (lc_W / 2 + loadcell_guard_wall_t / 2),
+        loadcell_center_z
+    ])
+        cube([0.6, 0.6, 0.6], center = true);
 }
 
 module asm_battery() {
@@ -55,8 +79,12 @@ module asm_pcb() {
 
 module asm_switch() {
     translate([switch_x, switch_y, switch_z])
-        rotate([0, switch_rot_y, 0])
-            cube([switch_w, switch_d, switch_h], center = true);
+        switch_model(show_travel = true);
+}
+
+module asm_switch_body() {
+    translate([switch_x, switch_y, switch_z])
+        cube([switch_w, switch_d, switch_h], center = true);
 }
 
 module led_sightline_probe(led_x, led_y, d = 1.0) {
@@ -76,7 +104,9 @@ module asm_all() {
 if (mode == "main_lid") {
     intersection() { main_part(); lid_part(); }
 } else if (mode == "main_lid_eps_up") {
-    intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
+    // Move beyond coincident CSG boundaries so a zero-area contact is not
+    // misreported as a solid intersection by OpenSCAD.
+    intersection() { main_part(); translate([0, 0, 0.02]) lid_part(); }
 } else if (mode == "main_lid_eps_down") {
     intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
 } else if (mode == "main_components") {
@@ -91,6 +121,26 @@ if (mode == "main_lid") {
     intersection() { main_part(); carabiner_eye_probe(-1); }
 } else if (mode == "main_eye_access_x_pos") {
     intersection() { main_part(); carabiner_eye_probe(1); }
+} else if (mode == "guard_corner_x_neg_y_neg") {
+    intersection() {
+        main_part();
+        loadcell_corner_guard_probe(-1, -1);
+    }
+} else if (mode == "guard_corner_x_neg_y_pos") {
+    intersection() {
+        main_part();
+        loadcell_corner_guard_probe(-1, 1);
+    }
+} else if (mode == "guard_corner_x_pos_y_neg") {
+    intersection() {
+        main_part();
+        loadcell_corner_guard_probe(1, -1);
+    }
+} else if (mode == "guard_corner_x_pos_y_pos") {
+    intersection() {
+        main_part();
+        loadcell_corner_guard_probe(1, 1);
+    }
 } else if (mode == "main_notch_retention_y_neg") {
     intersection() { notch_pins(); translate([0, -0.15, 0]) asm_loadcell(); }
 } else if (mode == "main_notch_retention_y_pos") {
@@ -107,6 +157,12 @@ if (mode == "main_lid") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_switch") {
     intersection() { main_part(); asm_switch(); }
+} else if (mode == "main_switch_snap_retention") {
+    intersection() {
+        switch_snap_hooks();
+        translate([0, 0, switch_fit_clear_top + 0.05])
+            asm_switch_body();
+    }
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
 } else if (mode == "lid_components") {
@@ -117,6 +173,14 @@ if (mode == "main_lid") {
     intersection() { lid_part(); carabiner_eye_probe(-1); }
 } else if (mode == "lid_eye_access_x_pos") {
     intersection() { lid_part(); carabiner_eye_probe(1); }
+} else if (mode == "lid_eye_wall_tip_x_neg_y_neg") {
+    intersection() { lid_part(); lid_eye_wall_tip_probe(-1, -1); }
+} else if (mode == "lid_eye_wall_tip_x_neg_y_pos") {
+    intersection() { lid_part(); lid_eye_wall_tip_probe(-1, 1); }
+} else if (mode == "lid_eye_wall_tip_x_pos_y_neg") {
+    intersection() { lid_part(); lid_eye_wall_tip_probe(1, -1); }
+} else if (mode == "lid_eye_wall_tip_x_pos_y_pos") {
+    intersection() { lid_part(); lid_eye_wall_tip_probe(1, 1); }
 } else if (mode == "lid_channel_closure_x_neg") {
     intersection() { lid_part(); side_channel_closure_probe(-1); }
 } else if (mode == "lid_channel_closure_x_pos") {

@@ -17,8 +17,9 @@ corner_r = 6;
 loadcell_hold_down_clear = 0.6;
 loadcell_hold_down_d = 8;
 loadcell_hold_down_wall_clear = 0.4;
-loadcell_hold_down_y_offset = 8;
+loadcell_hold_down_y_offset = 12; // spread clamping points along the compact load-cell bay
 loadcell_channel_closure_fit = 0.2;
+eye_tunnel_inboard_fit = 0.2; // avoid a coincident edge with the PCB support bridge
 
 screw_clear_d = 3.0; // slightly looser clearance so the lid seats more easily on the posts
 screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly
@@ -37,9 +38,9 @@ align_lip_t = 1.0;
 align_lip_clear = 0.6; // extra fit margin for print tolerances / elephant foot
 align_lip_front_back_len = 24;
 
-// Battery anti-slip tabs on lid underside (engage battery front corners when assembled).
-// Placed outside PCB width so they can extend down without colliding with the PCB.
-battery_front_stop_enable = true;
+// Battery front retention is floor-anchored in the main body. Keeping the lid
+// clear here lets the same-width battery and PCB drop in without a tight sequence.
+battery_front_stop_enable = false;
 battery_front_stop_t = 1.2;
 battery_front_stop_w = 1.0;
 battery_front_stop_x_inset = 0.3;
@@ -52,7 +53,7 @@ battery_side_wall_t = 1.2;
 battery_side_wall_clear = 0.7;
 
 // PCB top clamps near the USB side. They keep the PCB seated in its cradle while
-// leaving the connector, center routing area, and right-side battery/switch wire pads clear.
+// leaving the connector, center routing area, and battery/switch wire pads clear.
 pcb_top_clamp_enable = true;
 pcb_top_clamp_clear = 0.10;
 pcb_top_clamp_w = 3.2;
@@ -70,7 +71,7 @@ led_view_chamfer_delta = 0.6;
 
 brand_text = "Crimpdeq";
 brand_font = "Inter:style=Bold";
-brand_size = 9.5;
+brand_size = 7.0;
 brand_depth = 0.8;
 brand_x = 0;
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
@@ -93,7 +94,7 @@ outer_z_max = inner_z_max;
 
 lid_z_min = outer_z_max;
 lid_z_max = lid_z_min + lid_t;
-brand_y = 0;
+brand_y = (outer_y_min + outer_y_max) / 2;
 
 hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 hold_down_h = lid_z_min - hold_down_target_z;
@@ -102,10 +103,10 @@ hold_down_outer_x = inner_x_max - loadcell_hold_down_wall_clear;
 hold_down_w = hold_down_outer_x - hold_down_inner_x;
 hold_down_x = (hold_down_inner_x + hold_down_outer_x) / 2;
 
-screw_x1 = outer_x_min + screw_corner_inset;
-screw_x2 = outer_x_max - screw_corner_inset;
-screw_y1 = outer_y_min + screw_corner_inset;
-screw_y2 = outer_y_max - screw_corner_inset;
+screw_x1 = -lc_L / 2 + notch_xA;
+screw_x2 = -lc_L / 2 + notch_xB;
+screw_y1 = -lc_W / 2;
+screw_y2 = lc_W / 2;
 head_recess_depth = max(0, min(screw_head_recess, lid_t - 0.6));
 align_lip_h_eff = align_lip_enable ? max(0, min(align_lip_h, top_clear - 0.4)) : 0;
 battery_front_stop_x = bat_W / 2 - battery_front_stop_x_inset - battery_front_stop_w / 2;
@@ -142,6 +143,24 @@ assert(loadcell_channel_closure_fit >= 0
     && 2 * loadcell_channel_closure_fit < wall_t,
     str("loadcell_channel_closure_fit must leave a positive closure wall. fit=",
         loadcell_channel_closure_fit, " wall_t=", wall_t, " mm."));
+assert(loadcell_guard_clear >= loadcell_channel_clear_z
+    && loadcell_guard_wall_t > 0
+    && loadcell_guard_join_x < loadcell_guard_cavity_x_half,
+    str("Load-cell end guards need positive wall/clearance and must overlap the lid. clear=",
+        loadcell_guard_clear, " wall=", loadcell_guard_wall_t,
+        " join_x=", loadcell_guard_join_x, " cavity_x=", loadcell_guard_cavity_x_half));
+assert(eye_d < carabiner_access_d
+    && carabiner_access_d < eye_tunnel_outer_d,
+    str("Eye opening/tunnel diameters must satisfy eye < access < tunnel. Got ",
+        eye_d, ", ", carabiner_access_d, ", ", eye_tunnel_outer_d, " mm."));
+assert(eye_tunnel_inboard_fit >= 0
+    && eye_tunnel_inboard_fit < eye_tunnel_wall_t,
+    str("eye_tunnel_inboard_fit must be within the tunnel wall thickness. fit=",
+        eye_tunnel_inboard_fit, " wall=", eye_tunnel_wall_t, " mm."));
+assert(carabiner_side_entry_w > carabiner_access_d
+    && carabiner_side_entry_w < 2 * loadcell_guard_cavity_y_half,
+    str("Carabiner side entry must exceed the eye access while retaining corner guards. entry=",
+        carabiner_side_entry_w, " mm."));
 assert(screw_hole_lead_in_d >= screw_clear_d,
     str("screw_hole_lead_in_d must be >= screw_clear_d. lead_in_d=", screw_hole_lead_in_d,
         " clear_d=", screw_clear_d));
@@ -286,17 +305,15 @@ module led_view_holes() {
 }
 
 module lid_loadcell_eye_access_paths() {
-    access_z_min = loadcell_top_z - 0.1;
+    // Cut through the upper eye-tunnel isolation and the roof cap.
+    access_z_min = loadcell_guard_lower_top_z - 0.2;
     access_z_max = lid_z_max + 0.2;
     access_h = access_z_max - access_z_min;
-    access_z = (access_z_min + access_z_max) / 2;
 
-    for (eye_x = [
-        -lc_L / 2 + eye_center_offset,
-        lc_L / 2 - eye_center_offset
-    ])
-        translate([eye_x, 0, access_z])
-            cylinder(d = carabiner_access_d, h = access_h, center = true);
+    for (x_sign = [-1, 1])
+        translate([0, 0, access_z_min])
+            linear_extrude(height = access_h, center = false)
+                loadcell_eye_access_2d(x_sign);
 }
 
 module loadcell_channel_closures() {
@@ -318,35 +335,56 @@ module loadcell_channel_closures() {
                 cube([closure_x_t, closure_y, closure_h], center = true);
 }
 
+module lid_loadcell_end_guards() {
+    roof_guard_h = lid_z_max - lid_z_min;
+
+    for (x_sign = [-1, 1])
+        // The main body now owns the vertical corner walls. The lid contributes
+        // only a smooth roof cap that seats on those walls at the seam.
+        translate([0, 0, lid_z_min])
+            linear_extrude(height = roof_guard_h, center = false)
+                loadcell_end_guard_2d(
+                    x_sign,
+                    outer_x_max - corner_r,
+                    outer_y_min + corner_r,
+                    outer_y_max - corner_r,
+                    corner_r
+                );
+}
+
 module lid_loadcell_eye_tunnel_walls() {
     tunnel_z_min = loadcell_top_z + loadcell_channel_clear_z;
     tunnel_z_max = lid_z_max;
     tunnel_h = tunnel_z_max - tunnel_z_min;
-    tunnel_z = (tunnel_z_min + tunnel_z_max) / 2;
+    wall_x_inner = loadcell_eye_center_x
+        - eye_tunnel_outer_d / 2
+        + eye_tunnel_inboard_fit;
+    wall_x_span = lc_L / 2 - wall_x_inner;
 
     if (tunnel_h > 0)
-        for (eye_x = [
-            -lc_L / 2 + eye_center_offset,
-            lc_L / 2 - eye_center_offset
-        ])
-            intersection() {
-                difference() {
-                    translate([eye_x, 0, tunnel_z])
-                        cylinder(d = eye_tunnel_outer_d, h = tunnel_h, center = true);
-                    translate([eye_x, 0, tunnel_z])
-                        cylinder(d = carabiner_access_d, h = tunnel_h + 0.2, center = true);
-                }
-                translate([
-                    (outer_x_min + outer_x_max) / 2,
-                    (outer_y_min + outer_y_max) / 2,
-                    tunnel_z
-                ])
-                    cube([
-                        outer_x_max - outer_x_min,
-                        outer_y_max - outer_y_min,
-                        tunnel_h + 0.2
-                    ], center = true);
-            }
+        for (x_sign = [-1, 1])
+            translate([0, 0, tunnel_z_min])
+                linear_extrude(height = tunnel_h, center = false)
+                    intersection() {
+                        // Continue the upper isolation wall along both sides
+                        // of the flared carabiner path to the load-cell tip.
+                        difference() {
+                            offset(delta = eye_tunnel_wall_t)
+                                loadcell_eye_access_2d(x_sign);
+                            loadcell_eye_access_2d(x_sign);
+                        }
+
+                        // End the vertical wall at the physical 80 mm cell
+                        // envelope; the roof cap continues over the end guard.
+                        translate([
+                            x_sign < 0 ? -lc_L / 2 : wall_x_inner,
+                            -loadcell_guard_y_half
+                        ])
+                            square([
+                                wall_x_span,
+                                2 * loadcell_guard_y_half
+                            ], center = false);
+                    }
 }
 
 module loadcell_hold_downs() {
@@ -439,7 +477,9 @@ module lid_part() {
             // Close the main body's top-loading side channels around the
             // load cell, leaving only a tolerance-sized horizontal slot.
             loadcell_channel_closures();
-            // Isolate both vertical carabiner paths from the electronics bay.
+            // Smooth roof caps close the main-owned load-cell corner walls.
+            lid_loadcell_end_guards();
+            // Isolate the inboard side of both carabiner paths from the bay.
             lid_loadcell_eye_tunnel_walls();
             if (hold_down_h > 0) {
                 loadcell_hold_downs();

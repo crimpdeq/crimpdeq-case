@@ -68,15 +68,24 @@ checks=(
     "main_loadcell_arm_x_pos empty"
     "main_eye_access_x_neg empty"
     "main_eye_access_x_pos empty"
+    "guard_corner_x_neg_y_neg nonempty"
+    "guard_corner_x_neg_y_pos nonempty"
+    "guard_corner_x_pos_y_neg nonempty"
+    "guard_corner_x_pos_y_pos nonempty"
     "main_notch_retention_y_neg nonempty"
     "main_notch_retention_y_pos nonempty"
     "main_battery empty"
     "main_pcb nonempty"
     "main_switch empty"
+    "main_switch_snap_retention nonempty"
     "main_usb_cable empty"
     "lid_loadcell empty"
     "lid_eye_access_x_neg empty"
     "lid_eye_access_x_pos empty"
+    "lid_eye_wall_tip_x_neg_y_neg nonempty"
+    "lid_eye_wall_tip_x_neg_y_pos nonempty"
+    "lid_eye_wall_tip_x_pos_y_neg nonempty"
+    "lid_eye_wall_tip_x_pos_y_pos nonempty"
     "lid_channel_closure_x_neg nonempty"
     "lid_channel_closure_x_pos nonempty"
     "lid_battery empty"
@@ -111,7 +120,14 @@ check_mode() {
     local result
 
     if "${openscad_cmd[@]}" "${openscad_defs[@]}" -D "mode=\"${mode}\"" -o "$out_file" "$scad_file" >"$log_file" 2>&1; then
-        result="nonempty"
+        # OpenSCAD can return success for a boundary-only intersection while
+        # exporting an ASCII STL with no facets. Treat that as empty rather
+        # than accepting a zero-area contact as solid geometry.
+        if [[ -f "$out_file" ]] && grep -q "facet normal" "$out_file"; then
+            result="nonempty"
+        else
+            result="empty"
+        fi
     else
         if grep -q "Current top level object is empty" "$log_file"; then
             result="empty"

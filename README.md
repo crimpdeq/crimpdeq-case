@@ -4,9 +4,15 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The compact central pod is approximately 50.4 × 68.8 × 29.8 mm. A fitted lid
+The compact central pod is approximately 50.4 × 53.3 × 24.3 mm. A fitted lid
 closes the electronics bay around the 80 mm load cell, while two isolated
-vertical tunnels keep both load-cell eyes accessible to the supplied carabiners.
+vertical tunnels keep both load-cell eyes accessible. Each tunnel opens into a
+smoothly flared 30 mm circular mouth so the supplied carabiner gate can pass
+through the guard without abrupt shoulders or sharp 90-degree corners.
+Rounded end guards wrap all four load-cell corners without obstructing the eyes,
+using tangent blends around the four screw/notch locations instead of stepped
+90-degree shoulders. Their vertical walls are integrated into the main body;
+the lid adds only the matching roof caps and upper eye-tunnel isolation.
 
 The repository contains:
 
@@ -20,9 +26,22 @@ Prebuilt STL files are published in [GitHub Releases](https://github.com/crimpde
 ## Components
 
 - [Crimpdeq PCB revision 3](https://github.com/crimpdeq/crimpdeq-pcb/pull/23), installed bottom-side up so both LEDs face the lid
-- [2000mAh battery](https://www.aliexpress.us/item/3256809404408618.html?spm=a2g0o.order_list.order_list_main.5.1406194d6kJ2h0&gatewayAdapt=glo2usa4itemAdapt)
-- [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html?spm=a2g0o.order_list.order_list_main.11.1406194d6kJ2h0&gatewayAdapt=glo2usa4itemAdapt)
+- [Protected 603040 800mAh battery](https://es.aliexpress.com/item/1005010306922880.html) (6 × 30 × 42 mm overall)
+- [K139b600-G8 / SS12D10 compact slide switch](https://es.aliexpress.com/item/1005012390864392.html)
 - Load cell from this [hanging scale](https://www.aliexpress.us/item/3256802533330674.html?spm=a2g0o.order_list.order_list_main.35.1406194d6kJ2h0&gatewayAdapt=glo2usa4itemAdapt)
+
+The slide switch mounts without hardware against the rear wall: insert its
+actuator into the recessed slot, then pivot the body into the printed snap
+cradle. Trim its 7.9 mm PCB terminals to a 0.5 mm installed length and solder
+the wires upward so they clear the load cell.
+For ON/OFF operation, connect the center terminal and either outer terminal.
+
+The battery sits on four floor-anchored edge ledges with 0.5 mm guide
+clearance. Compact front PCB columns share the space beyond the battery edge.
+These supports stay outside the load-cell channel, so the switch, load cell,
+battery, and PCB can all be installed from above before fitting the lid. The
+M2.5 posts share the four load-cell notch axes, retaining the cell without
+requiring a larger screw-corner envelope.
 
 ## Requirements
 
@@ -66,7 +85,7 @@ Print layout places:
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including exposed load-cell arm clearance, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including compact-switch snap retention, exposed load-cell arm clearance, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

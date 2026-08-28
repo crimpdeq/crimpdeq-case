@@ -12,11 +12,11 @@ render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
 loadcell_y_max = lc_W / 2;
-switch_y_min = switch_y - switch_d / 2;
-switch_top_z = switch_z + switch_h_eff / 2;
+switch_top_z = switch_z + switch_h / 2;
 
-assert(switch_y_min >= loadcell_y_max,
-    str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));
+assert(switch_terminal_y_max <= -loadcell_y_max,
+    str("Switch terminals overlap the load cell by ",
+        switch_terminal_y_max + loadcell_y_max, " mm (Y)."));
 assert(switch_top_z <= pcb_bottom_z,
     str("Switch overlaps PCB by ", switch_top_z - pcb_bottom_z, " mm (Z)."));
 
@@ -26,10 +26,38 @@ module loadcell_model() {
             loadcell_2d();
 }
 
-module switch_model() {
-    color("red")
-        rotate([0, switch_rot_y, 0])
+module switch_model(show_travel = false) {
+    // Switch-local +Y points through the actuator. Rotate it toward case -Y
+    // while keeping the snap-in model and raw component dimensions.
+    rotate([0, 0, 180]) {
+        color("silver")
             cube([switch_w, switch_d, switch_h], center = true);
+
+        color("black")
+            translate([
+                show_travel ? 0 : -switch_travel / 2,
+                switch_d / 2 + switch_actuator_d / 2,
+                0
+            ])
+                cube([
+                    switch_actuator_w + (show_travel ? switch_travel : 0),
+                    switch_actuator_d,
+                    switch_actuator_h
+                ], center = true);
+
+        color("silver")
+            for (pin_x = [-switch_terminal_pitch, 0, switch_terminal_pitch])
+                translate([
+                    pin_x,
+                    -switch_d / 2 - switch_terminal_installed_d / 2,
+                    0
+                ])
+                    cube([
+                        switch_terminal_w,
+                        switch_terminal_installed_d,
+                        switch_terminal_h
+                    ], center = true);
+    }
 }
 
 module full_assembly(show_pcb = true) {
@@ -45,7 +73,7 @@ module full_assembly(show_pcb = true) {
         translate([0, pcb_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T/2])
             pcb_model(show_usb = true);
 
-    // Side switch inside enclosure.
+    // Compact slide switch inside the enclosure.
     translate([switch_x, switch_y, switch_z])
         switch_model();
 }
