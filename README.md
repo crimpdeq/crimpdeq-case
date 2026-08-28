@@ -4,7 +4,7 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The compact central pod is approximately 50.4 × 53.3 × 24.3 mm. A fitted lid
+The compact central pod is approximately 50.4 × 53.3 × 27.2 mm. A fitted lid
 closes the electronics bay around the 80 mm load cell, while two isolated
 vertical tunnels keep both load-cell eyes accessible. Each tunnel opens into a
 smoothly flared 30 mm circular mouth so the supplied carabiner gate can pass
@@ -21,7 +21,8 @@ The repository contains:
 - Collision/fit validation script (`scripts/check-collisions.sh`)
 - GitHub Actions workflows that build STL artifacts and release assets
 
-Prebuilt STL files are published in [GitHub Releases](https://github.com/crimpdeq/crimpdeq-case/releases) for tagged versions.
+Prebuilt, print-oriented STL files are published in
+[GitHub Releases](https://github.com/crimpdeq/crimpdeq-case/releases) for tagged versions.
 
 ## Components
 
@@ -32,16 +33,41 @@ Prebuilt STL files are published in [GitHub Releases](https://github.com/crimpde
 
 The slide switch mounts without hardware against the rear wall: insert its
 actuator into the recessed slot, then pivot the body into the printed snap
-cradle. Trim its 7.9 mm PCB terminals to a 0.5 mm installed length and solder
+cradle. Its reinforced continuous rails replace separate fragile rear tabs.
+Trim its 7.9 mm PCB terminals to a 0.5 mm installed length and solder
 the wires upward so they clear the load cell.
 For ON/OFF operation, connect the center terminal and either outer terminal.
 
-The battery sits on four floor-anchored edge ledges with 0.5 mm guide
-clearance. Compact front PCB columns share the space beyond the battery edge.
-These supports stay outside the load-cell channel, so the switch, load cell,
-battery, and PCB can all be installed from above before fitting the lid. The
-M2.5 posts share the four load-cell notch axes, retaining the cell without
-requiring a larger screw-corner envelope.
+The battery sits on four floor-anchored edge ledges with 0.75 mm guide
+clearance and is retained entirely by the main body, leaving the lid free of
+battery walls that could pinch leads. The conservative square battery envelope
+includes its protection-board end and a short lead exit toward the USB side.
+
+The PCB snaps into the lid using three roof pads, one fixed 45-degree side hook,
+one short opposite datum, and one accessible flexible rear clip. This removes
+the former unsupported main-body PCB shelves. A 2 mm wiring corridor runs inward below the PCB's
+case-local -X edge, with 0.5 mm clearance above the battery. The PCB should be
+pre-wired with enough slack to snap it into the removed lid before the lid is
+lowered onto the enclosure. Two floor-to-wall front reaction ribs and two
+lid-mounted rear reaction points bracket the USB connector, limiting axial PCB
+travel to 0.35 mm during cable insertion and removal.
+
+The four M2.5 posts remain on the load-cell notch axes, but smaller screw bosses
+and tapered clearance pins no longer tightly wedge the stamped notches. Two
+diagonal lid stops limit shock movement without preloading the load cell.
+The USB-C opening includes a 13 × 7.5 mm recessed pocket for a typical molded
+cable boot.
+
+## Assembly
+
+1. Trim, wire, and snap the slide switch into the rear-wall cradle.
+2. Lower the load cell over the four tapered notch pins.
+3. Install the battery with its protection-board and lead end toward the USB wall.
+4. Route insulated wiring inward below the PCB's -X edge; keep it out of the screw axes.
+5. Connect the PCB, slide its +X edge under the fixed lid hook, then press its rear edge into the flexible clip.
+6. Lower the lid vertically, checking that no leads cross the perimeter or load-cell channels.
+7. Install the four M2.5×10 screws gradually in a cross pattern.
+8. Attach the carabiners and calibrate only after final assembly.
 
 ## Requirements
 
@@ -85,7 +111,11 @@ Print layout places:
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including compact-switch snap retention, exposed load-cell arm clearance, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts and clearances between the enclosure parts and
+internal components, including square battery and lead clearance, lid-mounted
+PCB support and snap retention, solder/wire service space, relaxed load-cell
+notch fit, compact-switch snap retention, exposed load-cell arm clearance,
+USB-C shell and molded-boot insertion, and separate lid view holes for both LEDs.
 
 ```bash
 bash scripts/check-collisions.sh
@@ -113,10 +143,10 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 
 - `.github/workflows/cad_ci.yml`
   - Runs collision checks
-  - Builds `case_main.stl` and `case_lid.stl`
+  - Builds print-oriented `case_main.stl` and `case_lid.stl`
   - Uploads STL artifacts for CI runs
 - `.github/workflows/release.yml`
-  - Builds release STL files when a GitHub Release is created
+  - Revalidates and builds print-oriented STL files when a GitHub Release is created
   - Uploads the generated STL files to the release assets
 
 ## License

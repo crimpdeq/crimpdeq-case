@@ -68,13 +68,18 @@ module loadcell_corner_guard_probe(x_sign, y_sign) {
 }
 
 module asm_battery() {
-    translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T / 2])
-        battery_model(rounded = true);
+    translate([0, battery_y_offset, battery_center_z])
+        battery_keepout_model(include_leads = true);
 }
 
 module asm_pcb() {
-    translate([0, pcb_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T / 2])
+    translate([0, pcb_y_offset, pcb_center_z])
         pcb_model(show_usb = true);
+}
+
+module asm_pcb_service_keepouts() {
+    translate([0, pcb_y_offset, pcb_center_z])
+        pcb_service_keepouts();
 }
 
 module asm_switch() {
@@ -92,15 +97,6 @@ module led_sightline_probe(led_x, led_y, d = 1.0) {
         cylinder(d = d, h = top_clear + 3.4, center = false);
 }
 
-module asm_all() {
-    union() {
-        asm_loadcell();
-        asm_battery();
-        asm_pcb();
-        asm_switch();
-    }
-}
-
 if (mode == "main_lid") {
     intersection() { main_part(); lid_part(); }
 } else if (mode == "main_lid_eps_up") {
@@ -109,8 +105,6 @@ if (mode == "main_lid") {
     intersection() { main_part(); translate([0, 0, 0.02]) lid_part(); }
 } else if (mode == "main_lid_eps_down") {
     intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
-} else if (mode == "main_components") {
-    intersection() { main_part(); asm_all(); }
 } else if (mode == "main_loadcell") {
     intersection() { main_part(); asm_loadcell(); }
 } else if (mode == "main_loadcell_arm_x_neg") {
@@ -142,19 +136,25 @@ if (mode == "main_lid") {
         loadcell_corner_guard_probe(1, 1);
     }
 } else if (mode == "main_notch_retention_y_neg") {
-    intersection() { notch_pins(); translate([0, -0.15, 0]) asm_loadcell(); }
+    intersection() { notch_pins(); translate([0, -0.40, 0]) asm_loadcell(); }
 } else if (mode == "main_notch_retention_y_pos") {
-    intersection() { notch_pins(); translate([0, 0.15, 0]) asm_loadcell(); }
+    intersection() { notch_pins(); translate([0, 0.40, 0]) asm_loadcell(); }
+} else if (mode == "main_notch_nominal_clearance") {
+    intersection() { notch_pins(); asm_loadcell(); }
 } else if (mode == "main_loadcell_eps_z_plus") {
     intersection() { main_part(); translate([0, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_battery") {
     intersection() { main_part(); asm_battery(); }
 } else if (mode == "main_pcb") {
     intersection() { main_part(); asm_pcb(); }
-} else if (mode == "main_pcb_eps_y_plus") {
-    intersection() { main_part(); translate([0, 0.05, 0]) asm_pcb(); }
-} else if (mode == "main_pcb_eps_yz_plus") {
-    intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_front_axial_retention") {
+    intersection() {
+        pcb_front_reaction_stops();
+        translate([0, pcb_axial_stop_clear + 0.05, 0])
+            asm_pcb();
+    }
+} else if (mode == "main_pcb_service_keepouts") {
+    intersection() { main_part(); asm_pcb_service_keepouts(); }
 } else if (mode == "main_switch") {
     intersection() { main_part(); asm_switch(); }
 } else if (mode == "main_switch_snap_retention") {
@@ -165,8 +165,8 @@ if (mode == "main_lid") {
     }
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
-} else if (mode == "lid_components") {
-    intersection() { lid_part(); asm_all(); }
+} else if (mode == "main_usb_boot") {
+    intersection() { main_part(); usb_boot_fit_probe(); }
 } else if (mode == "lid_loadcell") {
     intersection() { lid_part(); asm_loadcell(); }
 } else if (mode == "lid_eye_access_x_neg") {
@@ -190,7 +190,31 @@ if (mode == "main_lid") {
 } else if (mode == "lid_pcb") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_pcb_eps_z_plus") {
-    intersection() { lid_part(); translate([0, 0, 0.15]) asm_pcb(); }
+    intersection() {
+        pcb_cradle_roof_pads();
+        translate([0, 0, pcb_cradle_top_clear + 0.05])
+            asm_pcb();
+    }
+} else if (mode == "lid_pcb_fixed_retention") {
+    intersection() {
+        pcb_cradle_fixed_side();
+        translate([0, 0, -(pcb_cradle_top_clear + pcb_cradle_hook_h / 2)])
+            asm_pcb();
+    }
+} else if (mode == "lid_pcb_rear_retention") {
+    intersection() {
+        pcb_cradle_rear_clip();
+        translate([0, 0, -(pcb_cradle_top_clear + pcb_cradle_hook_h / 2)])
+            asm_pcb();
+    }
+} else if (mode == "lid_pcb_rear_axial_retention") {
+    intersection() {
+        pcb_cradle_rear_reaction_stops();
+        translate([0, -(pcb_axial_stop_clear + 0.05), 0])
+            asm_pcb();
+    }
+} else if (mode == "lid_pcb_service_keepouts") {
+    intersection() { lid_part(); asm_pcb_service_keepouts(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
 } else if (mode == "lid_screw_shank_fit") {

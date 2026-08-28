@@ -51,21 +51,14 @@ case_inner_y_max = max(
     lc_W / 2 + rear_clear,
     battery_y_offset + bat_L / 2 + battery_end_case_clear
 );
-pcb_y_offset = case_inner_y_max - pcb_front_gap - pcb_L / 2;
+usb_front_y = usb_y + usb_d / 2;
+pcb_y_offset = case_inner_y_max - usb_face_wall_gap - usb_front_y;
 case_inner_y_min = min(
     -lc_W / 2 - rear_clear,
     -lc_W / 2 - rear_fastener_clear,
     pcb_y_offset - pcb_L / 2 - rear_clear,
     battery_y_offset - bat_L / 2 - battery_rear_gap
 );
-
-battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
-battery_top_z = battery_bottom_z + bat_T;
-battery_front_y = battery_y_offset + bat_L / 2;
-
-pcb_bottom_z = battery_top_z + battery_to_pcb_gap;
-pcb_center_z = pcb_bottom_z + pcb_T / 2;
-pcb_top_z = pcb_bottom_z + pcb_T;
 
 // Rotate the switch 180 degrees around Z so its actuator exits through the
 // rear wall. The body occupies the existing fastener-clearance strip behind
@@ -79,6 +72,80 @@ switch_y_min = switch_y - switch_d / 2;
 switch_y_max = switch_y + switch_d / 2;
 switch_actuator_y = switch_y_min - switch_actuator_d / 2;
 switch_terminal_y_max = switch_y_max + switch_terminal_installed_d;
+switch_bottom_z = switch_z - switch_h / 2;
+switch_top_z = switch_z + switch_h / 2;
+
+// Raise the square battery envelope above both the load cell and switch.
+battery_bottom_z = max(
+    loadcell_top_z + loadcell_to_battery_gap,
+    switch_top_z + battery_switch_clear_z
+);
+battery_center_z = battery_bottom_z + bat_T / 2;
+battery_top_z = battery_bottom_z + bat_T;
+battery_front_y = battery_y_offset + bat_L / 2;
+battery_rear_y = battery_y_offset - bat_L / 2;
+battery_pcm_y = battery_front_y - bat_pcm_L / 2;
+battery_lead_y_min = battery_front_y;
+battery_lead_y_max = battery_front_y + bat_lead_exit_l;
+battery_lead_y = (battery_lead_y_min + battery_lead_y_max) / 2;
+
+pcb_bottom_z = battery_top_z + battery_to_pcb_gap;
+pcb_center_z = pcb_bottom_z + pcb_T / 2;
+pcb_top_z = pcb_bottom_z + pcb_T;
+pcb_front_y = pcb_y_offset + pcb_L / 2;
+pcb_rear_y = pcb_y_offset - pcb_L / 2;
+pcb_axial_left_x = usb_x - usb_boot_w / 2
+    - pcb_axial_stop_port_clear - pcb_axial_stop_w / 2;
+pcb_axial_right_x = max(
+    usb_x + usb_boot_w / 2
+        + pcb_axial_stop_port_clear + pcb_axial_stop_w / 2,
+    bat_lead_pair_w / 2 + fdm_rigid_clear + pcb_axial_stop_w / 2
+);
+
+// Shared enclosure and fastener coordinates.
+inner_x_min = -case_inner_x_half;
+inner_x_max = case_inner_x_half;
+inner_y_min = case_inner_y_min;
+inner_y_max = case_inner_y_max;
+inner_z_max = pcb_top_z + top_clear;
+
+outer_x_min = inner_x_min - case_wall_t;
+outer_x_max = inner_x_max + case_wall_t;
+outer_y_min = inner_y_min - case_wall_t;
+outer_y_max = inner_y_max + case_wall_t;
+outer_z_min = inner_z_min - case_floor_t;
+outer_z_max = inner_z_max;
+inner_corner_r = max(0, case_corner_r - case_wall_t);
+lid_z_min = outer_z_max;
+lid_z_max = lid_z_min + case_lid_t;
+brand_y = (outer_y_min + outer_y_max) / 2;
+
+loadcell_notch_x1 = -lc_L / 2 + notch_xA;
+loadcell_notch_x2 = -lc_L / 2 + notch_xB;
+loadcell_notch_y1 = -lc_W / 2;
+loadcell_notch_y2 = lc_W / 2;
+screw_x1 = loadcell_notch_x1;
+screw_x2 = loadcell_notch_x2;
+screw_y1 = loadcell_notch_y1;
+screw_y2 = loadcell_notch_y2;
+
+// PCB service envelopes. The solder zone sits below the PCB; the wire race
+// continues toward case -X where it remains accessible with the lid removed.
+pcb_solder_keepout_x = -pcb_W / 2 + pcb_solder_keepout_w / 2;
+pcb_solder_keepout_z = pcb_bottom_z - pcb_solder_keepout_h / 2;
+pcb_wire_race_x = -pcb_W / 2 + pcb_wire_exit_l / 2;
+pcb_wire_race_l = pcb_wire_exit_l;
+pcb_wire_race_y = pcb_y_offset;
+pcb_wire_race_z = pcb_bottom_z - pcb_wire_race_d / 2;
+
+assert(battery_bottom_z >= switch_top_z + battery_switch_clear_z - 0.001,
+    str("Battery must clear switch. battery_bottom=", battery_bottom_z,
+        " switch_top=", switch_top_z, " mm."));
+assert(pcb_wire_race_l > 0,
+    str("PCB wire race collapsed. length=", pcb_wire_race_l, " mm."));
+assert(screw_x1 == loadcell_notch_x1 && screw_x2 == loadcell_notch_x2
+    && screw_y1 == loadcell_notch_y1 && screw_y2 == loadcell_notch_y2,
+    "Screw centers must remain on all four load-cell notch axes.");
 
 // Shared plan profile for one protective end cap. Four tangent corner arcs
 // blend the screw-bearing pod into the narrower eye guard without stepped

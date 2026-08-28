@@ -19,17 +19,23 @@ jobs:
             - name: Prepare output folder
               run: mkdir -p artifacts
 
+            - name: Install OpenSCAD
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y openscad xvfb
+
+            - name: Validate enclosure geometry
+              run: CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
+
             - name: Build case_main.stl
-              uses: flat35hd99/openscad-actions@v1.4
-              with:
-                  scad_file: case/case_main.scad
-                  output_file: artifacts/case_main.stl
+              run: >-
+                  xvfb-run -a openscad -D 'print_layout=true'
+                  -o artifacts/case_main.stl case/case_main.scad
 
             - name: Build case_lid.stl
-              uses: flat35hd99/openscad-actions@v1.4
-              with:
-                  scad_file: case/case_lid.scad
-                  output_file: artifacts/case_lid.stl
+              run: >-
+                  xvfb-run -a openscad -D 'print_layout=true'
+                  -o artifacts/case_lid.stl case/case_lid.scad
 
             - name: Upload case release files
               uses: actions/upload-artifact@v6

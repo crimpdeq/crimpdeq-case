@@ -60,18 +60,23 @@ module switch_model(show_travel = false) {
     }
 }
 
-module full_assembly(show_pcb = true) {
+module full_assembly(show_pcb = true, show_service_keepouts = false) {
     translate([0, 0, loadcell_center_z])
         loadcell_model();
 
     // Battery laying flat on top of the load cell.
-    translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T/2])
+    translate([0, battery_y_offset, battery_center_z])
         battery_model(rounded = true);
 
     if (show_pcb)
         // PCB laying flat on top of the battery.
-        translate([0, pcb_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T/2])
+        translate([0, pcb_y_offset, pcb_center_z])
             pcb_model(show_usb = true);
+
+    if (show_pcb && show_service_keepouts)
+        translate([0, pcb_y_offset, pcb_center_z])
+            color([1, 0.4, 0, 0.35])
+                pcb_service_keepouts();
 
     // Compact slide switch inside the enclosure.
     translate([switch_x, switch_y, switch_z])
