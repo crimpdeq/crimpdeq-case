@@ -51,11 +51,6 @@ switch_snap_hook_d = switch_d - 0.8;
 switch_front_stop_w = 2.0;
 switch_front_stop_h = switch_h - 1.0;
 
-rear_brand_text = "crimpdeq.com";
-rear_brand_font = brand_font;
-rear_brand_size = 3.0;
-rear_brand_depth = brand_depth;
-
 // Parameters
 show_assembly = true;
 show_lid_preview = true;
@@ -156,8 +151,8 @@ assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
     "Load-cell notch screw coordinates must define four distinct centers.");
-assert(rear_brand_depth > 0 && rear_brand_depth < case_wall_t,
-    str("rear_brand_depth must be > 0 and < wall_t (", case_wall_t, " mm)."));
+assert(side_brand_depth > 0 && side_brand_depth < case_wall_t,
+    str("side_brand_depth must be > 0 and < wall_t (", case_wall_t, " mm)."));
 assert(case_inner_x_half >= abs(loadcell_notch_x2) + notch_pin_d / 2 - notch_pin_radial_clear,
     str("Compact pod does not retain the load-cell notches. inner_half=", case_inner_x_half, " mm."));
 assert(case_inner_x_half >= bat_W / 2 + battery_guide_clear + battery_guide_t,
@@ -659,15 +654,19 @@ module brand_engrave_main() {
                     text(brand_text, size = brand_size, font = brand_font, halign = "center", valign = "center");
 }
 
-module brand_engrave_main_rear_wall() {
-    rear_brand_z = (outer_z_min + outer_z_max) / 2;
-
-    // Carved above the recessed switch opening on the outer rear wall (-Y).
-    // Start from inside the wall and extrude outward so the recess depth stays controlled.
-    translate([0, outer_y_min + rear_brand_depth, rear_brand_z])
+module brand_engrave_main_side_walls() {
+    // Center the website across the complete assembled height, including the lid.
+    // The front copy is turned in-plane so both engravings read upright from outside.
+    translate([0, outer_y_min + side_brand_depth, side_brand_z])
         rotate([90, 0, 0])
-            linear_extrude(height = rear_brand_depth + 0.2, center = false)
-                text(rear_brand_text, size = rear_brand_size, font = rear_brand_font, halign = "center", valign = "center");
+            linear_extrude(height = side_brand_depth + 0.2, center = false)
+                text(side_brand_text, size = side_brand_size, font = side_brand_font, halign = "center", valign = "center");
+
+    translate([0, outer_y_max - side_brand_depth, side_brand_z])
+        rotate([-90, 0, 0])
+            linear_extrude(height = side_brand_depth + 0.2, center = false)
+                rotate([0, 0, 180])
+                    text(side_brand_text, size = side_brand_size, font = side_brand_font, halign = "center", valign = "center");
 }
 
 module main_part() {
@@ -719,8 +718,8 @@ module main_part() {
 
         // Brand engraving on outer bottom face.
         brand_engrave_main();
-        // Rear wall engraving above the switch opening.
-        brand_engrave_main_rear_wall();
+        // Website engraving on both front and rear walls.
+        brand_engrave_main_side_walls();
     }
 }
 

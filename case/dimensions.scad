@@ -27,6 +27,10 @@ brand_text = "Crimpdeq";
 brand_font = "Liberation Sans:style=Bold";
 brand_size = 7.0;
 brand_depth = 0.4;
+side_brand_text = "crimpdeq.com";
+side_brand_font = brand_font;
+side_brand_size = 3.0;
+side_brand_depth = brand_depth;
 
 // Load cell
 lc_L = 80;

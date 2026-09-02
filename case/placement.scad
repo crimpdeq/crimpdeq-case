@@ -119,6 +119,7 @@ inner_corner_r = max(0, case_corner_r - case_wall_t);
 lid_z_min = outer_z_max;
 lid_z_max = lid_z_min + case_lid_t;
 brand_y = (outer_y_min + outer_y_max) / 2;
+side_brand_z = (outer_z_min + lid_z_max) / 2;
 
 loadcell_notch_x1 = -lc_L / 2 + notch_xA;
 loadcell_notch_x2 = -lc_L / 2 + notch_xB;
