@@ -4,9 +4,11 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The compact central pod is approximately 50.4 × 68.8 × 29.8 mm. A fitted lid
-closes the electronics bay around the 80 mm load cell, while two isolated
-vertical tunnels keep both load-cell eyes accessible to the supplied carabiners.
+The enclosure is approximately 85.8 × 68.8 × 29.8 mm: a central electronics
+pod plus full-height end guards that enclose the whole 80 mm load cell,
+including all four corners. Each eye stays reachable through an isolated
+vertical slot that opens through the case end, so a loaded carabiner bears on
+the metal eye ring rather than the plastic and its curve can leave the case.
 
 The repository contains:
 
@@ -66,7 +68,7 @@ Print layout places:
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including exposed load-cell arm clearance, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

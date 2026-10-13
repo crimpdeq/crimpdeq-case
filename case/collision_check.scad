@@ -31,16 +31,40 @@ module asm_loadcell_arm(x_sign) {
     }
 }
 
+// Shank poses through the case height: centered in the eye, bearing on the
+// outer side of the eye ring, and tilted outward around that contact.
+carabiner_probe_z_min = loadcell_center_z - 6.5; // just below the floor
+carabiner_probe_z_max = loadcell_center_z + 24; // just above the lid
+carabiner_probe_tilt = 15;
+
 module carabiner_eye_probe(x_sign) {
-    eye_x = x_sign * (lc_L / 2 - eye_center_offset);
-    translate([eye_x, 0, loadcell_center_z])
-        cylinder(d = carabiner_shank_d, h = 100, center = true);
+    module shank(x_bottom, x_top) {
+        hull() {
+            translate([x_sign * x_bottom, 0, carabiner_probe_z_min])
+                cylinder(d = carabiner_shank_d, h = 0.01, center = true);
+            translate([x_sign * x_top, 0, carabiner_probe_z_max])
+                cylinder(d = carabiner_shank_d, h = 0.01, center = true);
+        }
+    }
+
+    tilt = tan(carabiner_probe_tilt);
+    shank(eye_x, eye_x);
+    shank(carabiner_loaded_x, carabiner_loaded_x);
+    shank(
+        carabiner_loaded_x + tilt * (carabiner_probe_z_min - loadcell_center_z),
+        carabiner_loaded_x + tilt * (carabiner_probe_z_max - loadcell_center_z)
+    );
 }
 
-module side_channel_closure_probe(x_sign) {
-    probe_x = x_sign * (case_inner_x_half + 1.5);
-    translate([probe_x, 15, loadcell_top_z + 4])
-        cube([1, 2, 2], center = true);
+// Rods leaving one load-cell corner outward along X and upward along Z.
+module corner_end_probe(x_sign, y_sign) {
+    translate([x_sign * (lc_L / 2 + 5), y_sign * (lc_W / 2 - 1), loadcell_center_z])
+        cube([10, 1, 1], center = true);
+}
+
+module corner_roof_probe(x_sign, y_sign) {
+    translate([x_sign * (lc_L / 2 - 1), y_sign * (lc_W / 2 - 1), loadcell_top_z + 15])
+        cube([1, 1, 30], center = true);
 }
 
 module asm_battery() {
@@ -117,10 +141,22 @@ if (mode == "main_lid") {
     intersection() { lid_part(); carabiner_eye_probe(-1); }
 } else if (mode == "lid_eye_access_x_pos") {
     intersection() { lid_part(); carabiner_eye_probe(1); }
-} else if (mode == "lid_channel_closure_x_neg") {
-    intersection() { lid_part(); side_channel_closure_probe(-1); }
-} else if (mode == "lid_channel_closure_x_pos") {
-    intersection() { lid_part(); side_channel_closure_probe(1); }
+} else if (mode == "main_corner_end_xn_yn") {
+    intersection() { main_part(); corner_end_probe(-1, -1); }
+} else if (mode == "main_corner_end_xn_yp") {
+    intersection() { main_part(); corner_end_probe(-1, 1); }
+} else if (mode == "main_corner_end_xp_yn") {
+    intersection() { main_part(); corner_end_probe(1, -1); }
+} else if (mode == "main_corner_end_xp_yp") {
+    intersection() { main_part(); corner_end_probe(1, 1); }
+} else if (mode == "lid_corner_roof_xn_yn") {
+    intersection() { lid_part(); corner_roof_probe(-1, -1); }
+} else if (mode == "lid_corner_roof_xn_yp") {
+    intersection() { lid_part(); corner_roof_probe(-1, 1); }
+} else if (mode == "lid_corner_roof_xp_yn") {
+    intersection() { lid_part(); corner_roof_probe(1, -1); }
+} else if (mode == "lid_corner_roof_xp_yp") {
+    intersection() { lid_part(); corner_roof_probe(1, 1); }
 } else if (mode == "lid_battery") {
     intersection() { lid_part(); asm_battery(); }
 } else if (mode == "lid_pcb") {

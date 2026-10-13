@@ -16,20 +16,26 @@ loadcell_lift = 2.0; // support structure height under load cell (from enclosure
 eye_d = 17;
 eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
+eye_ring_bore_d = 15; // pressed-in eye ring, not modelled in load_cell.scad
 carabiner_shank_d = 12;
-carabiner_access_clear = 0.5;
-carabiner_access_d = carabiner_shank_d + 2 * carabiner_access_clear;
-eye_tunnel_radial_clear = 0.3;
-eye_tunnel_outer_d = eye_d - 2 * eye_tunnel_radial_clear;
+// Radial clearance around the shank while it bears on the outer side of the ring.
+carabiner_slot_clear = 2.0;
 
 notch_d = 6;
 notch_xA = 20;
 notch_xB = 60;
 
-// Compact central pod: retain the load-cell notches while exposing both ends.
-loadcell_retain_half_x = 22;
-loadcell_channel_clear_y = 0.3;
-loadcell_channel_clear_z = 0.3;
+// Shell shared by the main body and lid.
+wall_t = 2.4;
+corner_r = 6;
+outer_fillet_r = 4; // concave blend between the pod and the end guards
+
+// Electronics pod half-width: battery guides plus corner screw posts.
+pod_half_x = 22;
+// End guards enclose the whole load cell, including all four corners.
+loadcell_guard_clear = 0.5;
+loadcell_slot_wall_t = 1.2;
+loadcell_slot_clear_z = 0.3;
 
 // Battery
 bat_L = 50;

@@ -7,9 +7,9 @@
 
 ## Enclosure invariants
 
-- Keep the electronics bay closed: the main body's top-loading load-cell channels must be closed by the lid skirts.
-- Keep both load-cell eyes accessible through isolated vertical tunnels. Current fit assumes a 12 mm carabiner shank and a 13 mm access path.
-- The load-cell ends must clear both side walls, while all four edge notches remain retained.
+- Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay.
+- Keep both load-cell eyes accessible through isolated vertical slots that open through each case end. Current fit assumes a 12 mm carabiner shank bearing on a 15 mm eye-ring bore with 2 mm radial clearance.
+- The end guards must enclose all four load-cell corners and clear the load cell, while all four edge notches remain retained.
 - The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable.
 - Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.
 - Keep each `Crimpdeq` title centered on its intended enclosure face.
