@@ -71,9 +71,8 @@ brand_size = 9.5;
 brand_depth = 0.8;
 rear_brand_text = "crimpdeq.com";
 rear_brand_font = brand_font;
-rear_brand_w = 32; // fixed width so the text fits the rear wall
 rear_brand_depth = 0.8;
-rear_brand_margin = 3;
+rear_brand_margin = 2; // from each end of the flat rear wall
 
 // Parameters
 show_assembly = true;
@@ -84,6 +83,8 @@ print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 
 /*** Derived placement ***/
 usb_front_y = usb_y + usb_d / 2;
+// Span the flat rear wall up to where the facets start.
+rear_brand_w = 2 * (rear_face_x - rear_brand_margin);
 
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
 inner_z_max = pcb_top_z + top_clear;
@@ -173,8 +174,6 @@ assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(thread_depth <= outer_z_max - outer_z_min - 1,
     str("Screw pilot depth ", thread_depth, " mm does not fit the post."));
-assert(rear_brand_w <= 2 * (rear_face_x - rear_brand_margin),
-    str("Rear brand is wider than the rear wall. w=", rear_brand_w, " face=", 2 * rear_face_x, " mm."));
 assert(rear_brand_depth > 0 && rear_brand_depth < wall_t,
     str("rear_brand_depth must be > 0 and < wall_t (", wall_t, " mm)."));
 assert(case_inner_x_half >= bat_W / 2 + battery_guide_clear + battery_guide_t,
