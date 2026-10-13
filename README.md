@@ -15,9 +15,9 @@ The PCB is modelled with its real stack: underside parts over the battery, the
 USB-C connector hanging in front of it, and the ESP32 module facing the lid.
 Case supports and lid clamps touch the board only at bare areas taken from the
 KiCad courtyards, and rear stops take USB-C insertion loads. The USB-C
-connector reaches into the front wall, and a 13 × 7.3 mm pocket around it lets
-a cable's molded overmold (up to the 12.35 × 6.5 mm the USB Type-C
-specification recommends) reach within 0.3 mm of the receptacle face, so
+connector reaches into the front wall, and a 13.65 × 7.8 mm pocket around it
+lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
+Type-C plug dimensions update) reach within 0.3 mm of the receptacle face, so
 standard cables seat fully.
 
 The repository contains:

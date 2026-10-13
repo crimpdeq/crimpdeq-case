@@ -81,12 +81,13 @@ usb_x = -4.55;
 usb_y = 12.135;
 
 // USB-C cable plug. The metal shell enters the receptacle; the overmold is the
-// largest that the USB Type-C specification recommends (12.35 x 6.5 mm).
+// largest envelope in the USB Type-C plug dimensions update ECN
+// (12.85 x 7.0 mm, up from 12.35 x 6.5 mm).
 usb_plug_shell_w = 8.6;
 usb_plug_shell_h = 3.0;
 usb_plug_shell_corner_r = 0.7;
-usb_overmold_w = 12.35;
-usb_overmold_h = 6.5;
+usb_overmold_w = 12.85;
+usb_overmold_h = 7.0;
 usb_overmold_corner_r = 1.0;
 // The fully mated overmold may stop this far in front of the receptacle
 // face. Keep it small: plugs have well under a millimeter of spare length.
