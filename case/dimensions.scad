@@ -91,6 +91,11 @@ usb_overmold_corner_r = 1.0;
 // The fully mated overmold may stop this far in front of the receptacle
 // face. Keep it small: plugs have well under a millimeter of spare length.
 usb_overmold_stop_gap = 0.3;
+// The connector body continues into a front-wall through-hole; a pocket in
+// front of it lets the cable overmold reach the receptacle face.
+usb_hole_clear = 0.55; // around the connector body
+usb_pocket_clear = 0.4; // around the cable overmold
+usb_pocket_min_web = 0.8; // front wall left behind the pocket
 
 // Bottom-mounted LED positions, transformed into case-local coordinates.
 // D1 is the battery-status LED; D4 is the WS2812B RGB LED.

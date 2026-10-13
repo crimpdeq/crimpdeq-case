@@ -48,12 +48,7 @@ pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 
 internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
 
-// The connector body continues into a through-hole; a pocket in front of it
-// lets the cable overmold reach the receptacle face.
-usb_hole_clear = 0.55; // around the connector body
 usb_hole_corner_r = 0.8;
-usb_pocket_clear = 0.4; // around the cable overmold
-usb_pocket_min_web = 0.8; // front wall left behind the pocket
 
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
@@ -95,14 +90,6 @@ notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
 notch_pin_d = max(0.2, notch_d - notch_pin_clear);
 notch_pin_h = 6 + loadcell_lift;
-
-usb_center_z = pcb_board_bottom_z - usb_h / 2;
-usb_face_y = pcb_y_offset + usb_y + usb_d / 2; // receptacle mating face
-usb_hole_w = usb_w + 2 * usb_hole_clear;
-usb_hole_h = usb_h + 2 * usb_hole_clear;
-usb_pocket_floor_y = usb_face_y + usb_overmold_stop_gap;
-usb_pocket_w = usb_overmold_w + 2 * usb_pocket_clear;
-usb_pocket_h = usb_overmold_h + 2 * usb_pocket_clear;
 
 // The screw passes the lid material under its head recess, then threads in.
 thread_depth = screw_len - (lid_t - screw_head_recess) + screw_thread_tip_clear;
