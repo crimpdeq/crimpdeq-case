@@ -1,7 +1,7 @@
 //
 // Main enclosure part (base body)
 // - USB-C opening
-// - central load-cell saddle with exposed ends
+// - load-cell saddle with end guards and open carabiner slots
 // - corner threaded pilot holes for M2.5x10 screws
 //
 
@@ -14,9 +14,7 @@ render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
 /*** Enclosure parameters ***/
-wall_t = 2.4;
 floor_t = 2.4;
-corner_r = 6;
 
 notch_pin_clear = 0.2;
 notch_pin_embed = 0.4;
@@ -88,24 +86,13 @@ lid_preview_alpha = 0.8; // higher alpha = more opaque
 print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 
 /*** Derived placement ***/
-inner_x_min = -case_inner_x_half;
-inner_x_max = case_inner_x_half;
-
-inner_y_min = case_inner_y_min;
-inner_y_max = case_inner_y_max;
 usb_front_y = usb_y + usb_d / 2;
-brand_y = 0;
 
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
 inner_z_max = pcb_top_z + top_clear;
 
-outer_x_min = inner_x_min - wall_t;
-outer_x_max = inner_x_max + wall_t;
-outer_y_min = inner_y_min - wall_t;
-outer_y_max = inner_y_max + wall_t;
 outer_z_min = inner_z_min - floor_t;
 outer_z_max = inner_z_max;
-inner_corner_r = max(0, corner_r - wall_t);
 
 notch_x1 = -lc_L / 2 + notch_xA;
 notch_x2 = -lc_L / 2 + notch_xB;
@@ -113,7 +100,6 @@ notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
 notch_pin_d = max(0.2, notch_d - notch_pin_clear);
 notch_pin_h = 6 + loadcell_lift;
-loadcell_protrusion = lc_L / 2 - outer_x_max;
 
 usb_center_z = pcb_center_z - (pcb_T / 2 + usb_h / 2 - usb_inset);
 usb_hole_w = usb_w + 2 * usb_clear_x + usb_hole_extra_w;
@@ -203,40 +189,8 @@ assert(screw_x1 < screw_x2 && screw_y1 < screw_y2,
     str("screw_corner_inset too large for enclosure footprint. inset=", screw_corner_inset, " mm."));
 assert(rear_brand_depth > 0 && rear_brand_depth < wall_t,
     str("rear_brand_depth must be > 0 and < wall_t (", wall_t, " mm)."));
-assert(case_inner_x_half >= abs(notch_x2) + notch_pin_d / 2 - notch_pin_clear,
-    str("Compact pod does not retain the load-cell notches. inner_half=", case_inner_x_half, " mm."));
 assert(case_inner_x_half >= bat_W / 2 + battery_guide_clear + battery_guide_t,
-    str("Compact pod is too narrow for the battery guides. inner_half=", case_inner_x_half, " mm."));
-assert(loadcell_protrusion > 0,
-    str("Load-cell ends must protrude beyond the pod. protrusion=", loadcell_protrusion, " mm."));
-assert(loadcell_channel_clear_y > 0 && loadcell_channel_clear_z > 0,
-    "Load-cell channel clearances must be positive.");
-assert(carabiner_shank_d < carabiner_access_d
-    && carabiner_access_d < eye_tunnel_outer_d
-    && eye_tunnel_outer_d < eye_d,
-    str("Carabiner tunnel diameters must satisfy shank < access < tunnel < eye. Got ",
-        carabiner_shank_d, ", ", carabiner_access_d, ", ",
-        eye_tunnel_outer_d, ", ", eye_d, " mm."));
-
-module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
-    w = x_max - x_min;
-    h = y_max - y_min;
-    rr = max(0, min(r, min(w, h) / 2 - 0.01));
-    if (rr > 0) {
-        translate([x_min + rr, y_min + rr])
-            offset(r = rr)
-                square([w - 2 * rr, h - 2 * rr], center = false);
-    } else {
-        translate([x_min, y_min])
-            square([w, h], center = false);
-    }
-}
-
-module rounded_block_xy(min_v, max_v, r) {
-    translate([0, 0, min_v[2]])
-        linear_extrude(height = max_v[2] - min_v[2], center = false)
-            rounded_rect_2d(min_v[0], max_v[0], min_v[1], max_v[1], r);
-}
+    str("Electronics pod is too narrow for the battery guides. inner_half=", case_inner_x_half, " mm."));
 
 module bottom_rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
     w = x_max - x_min;
@@ -340,32 +294,13 @@ module loadcell_support() {
         support_xy = loadcell_support_corner_size;
         support_h = loadcell_lift + internal_feature_embed;
         support_z = inner_z_min - internal_feature_embed + support_h / 2;
-        support_x = loadcell_retain_half_x - loadcell_support_corner_inset - support_xy / 2;
+        support_x = pod_half_x - loadcell_support_corner_inset - support_xy / 2;
         support_y = lc_W / 2 - loadcell_support_corner_inset - support_xy / 2;
 
         for (x_sign = [-1, 1])
             for (y_sign = [-1, 1])
-                let(
-                    sx = x_sign * support_x,
-                    sy = y_sign * support_y,
-                    x0 = sx - support_xy / 2,
-                    x1 = sx + support_xy / 2,
-                    y0 = sy - support_xy / 2,
-                    y1 = sy + support_xy / 2,
-                    gap_x_min = x0 - inner_x_min,
-                    gap_x_max = inner_x_max - x1,
-                    gap_y_min = y0 - inner_y_min,
-                    gap_y_max = inner_y_max - y1,
-                    use_x_min = gap_x_min <= gap_x_max && gap_x_min <= gap_y_min && gap_x_min <= gap_y_max,
-                    use_x_max = !use_x_min && gap_x_max <= gap_y_min && gap_x_max <= gap_y_max,
-                    use_y_min = !use_x_min && !use_x_max && gap_y_min <= gap_y_max,
-                    span_x = use_x_min ? (x1 - inner_x_min) : use_x_max ? (inner_x_max - x0) : support_xy,
-                    span_y = use_y_min ? (y1 - inner_y_min) : (!use_x_min && !use_x_max && !use_y_min) ? (inner_y_max - y0) : support_xy,
-                    center_x = use_x_min ? (inner_x_min + x1) / 2 : use_x_max ? (x0 + inner_x_max) / 2 : sx,
-                    center_y = use_y_min ? (inner_y_min + y1) / 2 : (!use_x_min && !use_x_max && !use_y_min) ? (y0 + inner_y_max) / 2 : sy
-                )
-                    translate([center_x, center_y, support_z])
-                        cube([span_x, span_y, support_h], center = true);
+                translate([x_sign * support_x, y_sign * support_y, support_z])
+                    cube([support_xy, support_xy, support_h], center = true);
     }
 }
 
@@ -646,63 +581,27 @@ module corner_screw_posts(d, z0, z1) {
     }
 }
 
-module loadcell_side_channels() {
-    channel_y = lc_W + 2 * loadcell_channel_clear_y;
-    channel_z_min = loadcell_bottom_z - loadcell_channel_clear_z;
-    channel_z_max = outer_z_max + 0.2;
-    channel_h = channel_z_max - channel_z_min;
-    channel_x = wall_t + 0.4;
+module main_carabiner_slot_walls() {
+    wall_z_min = outer_z_min;
+    wall_z_max = loadcell_bottom_z - loadcell_slot_clear_z;
 
-    for (x_sign = [-1, 1])
-        translate([
-            x_sign * (case_inner_x_half + wall_t / 2),
-            0,
-            channel_z_min + channel_h / 2
-        ])
-            cube([channel_x, channel_y, channel_h], center = true);
-}
-
-module main_loadcell_eye_tunnel_walls() {
-    tunnel_z_min = outer_z_min;
-    tunnel_z_max = loadcell_bottom_z - loadcell_channel_clear_z;
-    tunnel_h = tunnel_z_max - tunnel_z_min;
-    tunnel_z = (tunnel_z_min + tunnel_z_max) / 2;
-
-    if (tunnel_h > 0)
-        for (eye_x = [
-            -lc_L / 2 + eye_center_offset,
-            lc_L / 2 - eye_center_offset
-        ])
+    // Close the electronics bay below the load cell around each slot.
+    translate([0, 0, wall_z_min])
+        linear_extrude(height = wall_z_max - wall_z_min)
             intersection() {
-                difference() {
-                    translate([eye_x, 0, tunnel_z])
-                        cylinder(d = eye_tunnel_outer_d, h = tunnel_h, center = true);
-                    translate([eye_x, 0, tunnel_z])
-                        cylinder(d = carabiner_access_d, h = tunnel_h + 0.2, center = true);
+                union() {
+                    carabiner_slot_wall_2d(-1);
+                    carabiner_slot_wall_2d(1);
                 }
-                translate([
-                    (outer_x_min + outer_x_max) / 2,
-                    (outer_y_min + outer_y_max) / 2,
-                    tunnel_z
-                ])
-                    cube([
-                        outer_x_max - outer_x_min,
-                        outer_y_max - outer_y_min,
-                        tunnel_h + 0.2
-                    ], center = true);
+                case_outline_2d();
             }
 }
 
-module main_loadcell_eye_access_paths() {
-    access_h = outer_z_max - outer_z_min + 0.4;
-    access_z = (outer_z_min + outer_z_max) / 2;
-
-    for (eye_x = [
-        -lc_L / 2 + eye_center_offset,
-        lc_L / 2 - eye_center_offset
-    ])
-        translate([eye_x, 0, access_z])
-            cylinder(d = carabiner_access_d, h = access_h, center = true);
+module carabiner_slot_cuts() {
+    translate([0, 0, outer_z_min - 0.2])
+        linear_extrude(height = outer_z_max - outer_z_min + 0.4)
+            for (x_sign = [-1, 1])
+                carabiner_slot_2d(x_sign);
 }
 
 module brand_engrave_main() {
@@ -730,16 +629,12 @@ module main_part() {
     difference() {
         union() {
             difference() {
-                rounded_block_xy(
-                    [outer_x_min, outer_y_min, outer_z_min],
-                    [outer_x_max, outer_y_max, outer_z_max],
-                    corner_r
-                );
-                rounded_block_xy(
-                    [inner_x_min, inner_y_min, inner_z_min],
-                    [inner_x_max, inner_y_max, outer_z_max + 0.1],
-                    inner_corner_r
-                );
+                translate([0, 0, outer_z_min])
+                    linear_extrude(height = outer_z_max - outer_z_min)
+                        case_outline_2d();
+                translate([0, 0, inner_z_min])
+                    linear_extrude(height = outer_z_max - inner_z_min + 0.1)
+                        case_outline_2d(wall_t);
             }
 
             loadcell_support();
@@ -748,9 +643,7 @@ module main_part() {
             pcb_rear_corner_cradles();
             notch_pins();
             loadcell_notch_guides();
-            // The lower half of each carabiner tunnel closes the electronics
-            // cavity below the load-cell eye without touching the metal eye.
-            main_loadcell_eye_tunnel_walls();
+            main_carabiner_slot_walls();
 
             // Internal cylindrical bosses for screw engagement.
             corner_screw_posts(screw_post_d, outer_z_min, outer_z_max);
@@ -758,11 +651,7 @@ module main_part() {
 
         corner_thread_holes(screw_thread_d, outer_z_max, thread_depth);
 
-        // Open-top channels allow top-down assembly. Matching skirts on the lid
-        // close these channels above the load cell in the assembled enclosure.
-        loadcell_side_channels();
-        // Clear a generous path for the non-climbing carabiner shanks.
-        main_loadcell_eye_access_paths();
+        carabiner_slot_cuts();
 
         // Internal cavity for side switch (KCD11, 10x15 face).
         translate([switch_x, switch_y, switch_z])
