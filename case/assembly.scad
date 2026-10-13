@@ -42,8 +42,8 @@ module full_assembly(show_pcb = true) {
 
     if (show_pcb)
         // PCB laying flat on top of the battery.
-        translate([0, pcb_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T/2])
-            pcb_model(show_usb = true);
+        translate([0, pcb_y_offset, pcb_board_bottom_z])
+            pcb_model();
 
     // Side switch inside enclosure.
     translate([switch_x, switch_y, switch_z])

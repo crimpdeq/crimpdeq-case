@@ -27,10 +27,12 @@ notch_xB = 60;
 
 // Shell shared by the main body and lid.
 wall_t = 2.4;
-corner_r = 6;
-outer_fillet_r = 4; // concave blend between the pod and the end guards
+lid_t = 2.4;
+// Faceted hexagonal plan: each end face meets its facets at 120 degrees.
+case_facet_angle = 30; // facet angle from the X axis
 
-// Electronics pod half-width: battery guides plus corner screw posts.
+// Electronics bay half-width around the battery guides. Beyond it, nothing in
+// the main body may touch the load cell.
 pod_half_x = 22;
 // End guards enclose the whole load cell, including all four corners.
 loadcell_guard_clear = 0.5;
@@ -42,17 +44,36 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 
-// PCB revision 3.0 (PR crimpdeq/crimpdeq-pcb#23).
-// The board is installed bottom-side up so its two bottom-mounted LEDs face the lid.
+// PCB revision 3.0 (crimpdeq-pcb feat/revision-3).
+// The board is installed bottom-side up: KiCad F.Cu faces the battery and
+// B.Cu (LEDs and ESP32 module) faces the lid. Rectangles below are
+// [x_min, x_max, y_min, y_max] relative to the board center in case
+// orientation, taken from the KiCad courtyards.
 pcb_L = 30;
 pcb_W = 30;
-pcb_T = 5;
+pcb_board_t = 1.6;
+pcb_bottom_parts_h = 1.8; // tallest F.Cu part over the battery (L1, Bourns SRN4018)
+pcb_top_parts_h = 1.5; // B.Cu SOT-23-5/SOD-123 parts, below the module and RGB LED
+pcb_module_h = 2.4; // ESP32-C3-MINI-1
+pcb_module_rect = [-5.95, 7.25, -20.2, -3.6]; // its antenna overhangs the rear edge
+// Bare F.Cu areas that case supports may touch.
+pcb_support_windows = [
+    [12.5, 15, -15, -12.5],
+    [-15, -12.5, -15, -12.5],
+    [12.9, 15, 7.3, 11.4],
+    [-12.9, -10.0, 7.3, 11.4]
+];
+// Bare B.Cu areas that lid clamps may press, above the front-right and
+// rear-left support windows.
+pcb_clamp_windows = [
+    [12.2, 14.6, 7.3, 11.3],
+    [-14.5, -11.3, -14.5, -11.5]
+];
 
-// USB-C connector envelope
+// USB-C connector envelope (GCT USB4105-GF-A, F.Cu)
 usb_w = 9;
-usb_h = 3.2;
+usb_h = 3.31;
 usb_d = 7.73;
-usb_inset = 3.2;
 // Case-local coordinates after flipping the PCB bottom-side up while keeping
 // the USB edge toward +Y. Source board center: (142.45, 67.40).
 usb_x = -4.55;
@@ -86,7 +107,7 @@ battery_rear_gap = 0.2; // target battery rear-edge gap to enclosure inner rear 
 clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
-top_clear = 2.0; // PCB-to-lid gap with room for clamps and print tolerance
+top_clear = 0.5; // ESP32 module-to-lid gap
 pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
 
 // Side switch (KCD11 10x15 mm)
@@ -97,7 +118,9 @@ switch_rot_y = 0;
 switch_clear = 0.4;
 battery_switch_gap = 0.4;
 
-// Screw centers from outer walls (shared by main and lid).
-// Compensates for the 2.4 mm shell so the screw centers remain at their
-// previous absolute X/Y positions and clear the battery.
-screw_corner_inset = 4.65;
+// M2.5x10 fasteners shared by main and lid, one at each faceted corner.
+screw_corner_inset = 4.65; // center inset from the front and rear walls
+screw_len = 10; // under the head
+screw_head_d = 5.2; // typical M2.5 button/pan head clearance
+screw_head_recess = 1.8; // recess depth so heads do not protrude
+screw_head_wall = 0.8; // minimum shell outside each head recess

@@ -1,5 +1,5 @@
 //
-// Revision 3 PCB model with USB-C connector and both visible LEDs
+// Revision 3 PCB with its component envelopes
 // Units: mm
 //
 
@@ -8,53 +8,54 @@ include <dimensions.scad>
 render_fn = is_undef(render_fn) ? 64 : render_fn;
 $fn = render_fn;
 
-module pcb_model(show_usb=true) {
-    assert(usb_inset >= 0 && usb_inset <= pcb_T, "usb_inset must be between 0 and pcb_T");
-    assert(status_led_h <= pcb_T, "Status LED must fit within the PCB assembly envelope");
-    assert(rgb_led_h <= pcb_T, "RGB LED must fit within the PCB assembly envelope");
+module pcb_rect_2d(r) {
+    translate([r[0], r[2]])
+        square([r[1] - r[0], r[3] - r[2]]);
+}
 
-    // The PCB is bottom-side up: the LEDs face +Z (the lid) and the top-side
-    // USB connector sits toward -Z.
-    usb_z = -pcb_T / 2 - usb_h / 2 + usb_inset;
+// Board footprint minus the bare areas the case is allowed to touch.
+module pcb_parts_2d(windows) {
+    difference() {
+        square([pcb_W, pcb_L], center = true);
+        for (w = windows)
+            pcb_rect_2d(w);
+    }
+}
 
-    pcb_usb_pocket_z = -pcb_T / 2 + usb_inset / 2;
-    status_led_z = pcb_T / 2 - status_led_h / 2;
-    rgb_led_z = pcb_T / 2 - rgb_led_h / 2;
+// Origin: board center on its underside (KiCad F.Cu, toward the battery).
+module pcb_model() {
+    color("green")
+        translate([0, 0, pcb_board_t / 2])
+            cube([pcb_W, pcb_L, pcb_board_t], center = true);
 
-    union() {
+    // F.Cu parts below the board; only the support windows are bare.
+    color("darkgreen")
+        translate([0, 0, -pcb_bottom_parts_h])
+            linear_extrude(height = pcb_bottom_parts_h)
+                pcb_parts_2d(pcb_support_windows);
 
-        // PCB body (centered)
-        color("green")
-            difference() {
-                cube([pcb_W, pcb_L, pcb_T], center=true);
+    color("silver")
+        translate([usb_x, usb_y, -usb_h / 2])
+            cube([usb_w, usb_d, usb_h], center = true);
 
-                if (show_usb && usb_inset > 0) {
-                    translate([usb_x, usb_y, pcb_usb_pocket_z])
-                        cube([usb_w, usb_d, usb_inset + 0.02], center=true);
-                }
-            }
+    // B.Cu parts face the lid; only the clamp windows are bare.
+    translate([0, 0, pcb_board_t]) {
+        color("darkgreen")
+            linear_extrude(height = pcb_top_parts_h)
+                pcb_parts_2d(pcb_clamp_windows);
 
-        // USB-C connector block
-        if (show_usb) {
-            translate([
-                usb_x,
-                usb_y,
-                usb_z
-            ])
-            color("silver")
-                cube([usb_w, usb_d, usb_h], center=true);
-        }
+        color("lightgray")
+            linear_extrude(height = pcb_module_h)
+                pcb_rect_2d(pcb_module_rect);
 
-        // Bottom-side LEDs face the lid after installation.
-        translate([status_led_x, status_led_y, status_led_z])
+        translate([status_led_x, status_led_y, status_led_h / 2])
             color("yellow")
                 cube([status_led_w, status_led_l, status_led_h], center = true);
 
-        translate([rgb_led_x, rgb_led_y, rgb_led_z])
+        translate([rgb_led_x, rgb_led_y, rgb_led_h / 2])
             color("white")
                 cube([rgb_led_w, rgb_led_l, rgb_led_h], center = true);
     }
 }
 
-// Render PCB
 pcb_model();

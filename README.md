@@ -4,11 +4,17 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The enclosure is approximately 85.8 × 68.8 × 29.8 mm: a central electronics
-pod plus full-height end guards that enclose the whole 80 mm load cell,
-including all four corners. Each eye stays reachable through an isolated
-vertical slot that opens through the case end, so a loaded carabiner bears on
-the metal eye ring rather than the plastic and its curve can leave the case.
+The enclosure is approximately 85.8 × 68.8 × 29.1 mm with a faceted,
+hexagon-style plan: flat end walls meet 30° corner facets at 120°, and the
+facets are the tightest lines that still enclose all four corners of the 80 mm
+load cell. Each eye stays reachable through an isolated vertical slot that
+opens through the case end, so a loaded carabiner bears on the metal eye ring
+rather than the plastic and its curve can leave the case.
+
+The PCB is modelled with its real stack: underside parts over the battery, the
+USB-C connector hanging in front of it, and the ESP32 module facing the lid.
+Case supports and lid clamps touch the board only at bare areas taken from the
+KiCad courtyards, and rear stops take USB-C insertion loads.
 
 The repository contains:
 
@@ -68,7 +74,7 @@ Print layout places:
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, PCB support pads, rear stops and lid clamps, screw pilot depth, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

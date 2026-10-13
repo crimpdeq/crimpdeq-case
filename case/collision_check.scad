@@ -67,14 +67,21 @@ module corner_roof_probe(x_sign, y_sign) {
         cube([1, 1, 30], center = true);
 }
 
+// Core of each M2.5x10 screw, from its seated head to its tip.
+module screw_core_probe() {
+    head_seat_z = pcb_top_z + top_clear + lid_t - screw_head_recess;
+    each_corner(head_seat_z - screw_len)
+        cylinder(d = 1.0, h = screw_len);
+}
+
 module asm_battery() {
     translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T / 2])
         battery_model(rounded = true);
 }
 
 module asm_pcb() {
-    translate([0, pcb_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T + battery_to_pcb_gap + pcb_T / 2])
-        pcb_model(show_usb = true);
+    translate([0, pcb_y_offset, pcb_board_bottom_z])
+        pcb_model();
 }
 
 module asm_switch() {
@@ -83,9 +90,9 @@ module asm_switch() {
             cube([switch_w, switch_d, switch_h], center = true);
 }
 
-module led_sightline_probe(led_x, led_y, d = 1.0) {
-    translate([led_x, pcb_y_offset + led_y, pcb_top_z - 0.1])
-        cylinder(d = d, h = top_clear + 3.4, center = false);
+module led_sightline_probe(led_x, led_y, d, led_h) {
+    translate([led_x, pcb_y_offset + led_y, pcb_board_top_z + led_h])
+        cylinder(d = d, h = 10, center = false);
 }
 
 module asm_all() {
@@ -123,14 +130,16 @@ if (mode == "main_lid") {
     intersection() { main_part(); translate([0, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_battery") {
     intersection() { main_part(); asm_battery(); }
-} else if (mode == "main_pcb") {
-    intersection() { main_part(); asm_pcb(); }
-} else if (mode == "main_pcb_eps_y_plus") {
-    intersection() { main_part(); translate([0, 0.05, 0]) asm_pcb(); }
+} else if (mode == "main_pcb_eps_z_minus") {
+    intersection() { main_part(); translate([0, 0, -0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_rear_stop") {
+    intersection() { main_part(); translate([0, -0.3, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_eps_yz_plus") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_switch") {
     intersection() { main_part(); asm_switch(); }
+} else if (mode == "main_screw_pilot_fit") {
+    intersection() { main_part(); screw_core_probe(); }
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
 } else if (mode == "lid_components") {
@@ -172,12 +181,12 @@ if (mode == "main_lid") {
 } else if (mode == "lid_status_led_sightline") {
     intersection() {
         lid_part();
-        led_sightline_probe(status_led_x, status_led_y, max(status_led_w, status_led_l));
+        led_sightline_probe(status_led_x, status_led_y, max(status_led_w, status_led_l), status_led_h);
     }
 } else if (mode == "lid_rgb_led_sightline") {
     intersection() {
         lid_part();
-        led_sightline_probe(rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l));
+        led_sightline_probe(rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l), rgb_led_h);
     }
 } else if (mode == "loadcell_battery") {
     intersection() { asm_loadcell(); asm_battery(); }
