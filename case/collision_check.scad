@@ -142,6 +142,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); screw_core_probe(); }
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
+} else if (mode == "main_usb_overmold_stop") {
+    intersection() { main_part(); translate([0, -0.05, 0]) usb_cable_fit_probe(); }
 } else if (mode == "lid_components") {
     intersection() { lid_part(); asm_all(); }
 } else if (mode == "lid_loadcell") {

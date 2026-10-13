@@ -79,6 +79,7 @@ checks=(
     "main_corner_end_xp_yp nonempty"
     "main_screw_pilot_fit empty"
     "main_usb_cable empty"
+    "main_usb_overmold_stop nonempty"
     "lid_loadcell empty"
     "lid_eye_access_x_neg empty"
     "lid_eye_access_x_pos empty"

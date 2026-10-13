@@ -70,20 +70,27 @@ pcb_clamp_windows = [
     [-14.5, -11.3, -14.5, -11.5]
 ];
 
-// USB-C connector envelope (GCT USB4105-GF-A, F.Cu)
-usb_w = 9;
+// USB-C connector body (GCT USB4105-GF-A, F.Cu) from its F.Fab outline. Its
+// front face overhangs the board edge by 0.9 mm. Case-local coordinates after
+// flipping the PCB bottom-side up while keeping the USB edge toward +Y.
+// Source board center: (142.45, 67.40).
+usb_w = 9.58;
 usb_h = 3.31;
-usb_d = 7.73;
-// Case-local coordinates after flipping the PCB bottom-side up while keeping
-// the USB edge toward +Y. Source board center: (142.45, 67.40).
+usb_d = 7.53;
 usb_x = -4.55;
-usb_y = 11.135;
+usb_y = 12.135;
 
-// USB-C plug metal shell envelope used for port fit checks.
-// The molded cable boot stays outside the case; only the plug shell enters the hole.
+// USB-C cable plug. The metal shell enters the receptacle; the overmold is the
+// largest that the USB Type-C specification recommends (12.35 x 6.5 mm).
 usb_plug_shell_w = 8.6;
 usb_plug_shell_h = 3.0;
 usb_plug_shell_corner_r = 0.7;
+usb_overmold_w = 12.35;
+usb_overmold_h = 6.5;
+usb_overmold_corner_r = 1.0;
+// The fully mated overmold may stop this far in front of the receptacle
+// face. Keep it small: plugs have well under a millimeter of spare length.
+usb_overmold_stop_gap = 0.3;
 
 // Bottom-mounted LED positions, transformed into case-local coordinates.
 // D1 is the battery-status LED; D4 is the WS2812B RGB LED.
@@ -108,7 +115,7 @@ clear_x = 0.8;
 rear_clear = 0.8;
 front_clear = 2.0;
 top_clear = 0.5; // ESP32 module-to-lid gap
-pcb_front_gap = 0.2; // target USB connector face gap before connector-overhang case fit
+pcb_front_gap = 0.2; // board front edge to the inner front wall; the USB-C connector continues into the wall opening
 
 // Side switch (KCD11 10x15 mm)
 switch_w = 15;
