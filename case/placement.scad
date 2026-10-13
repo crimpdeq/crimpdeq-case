@@ -47,6 +47,15 @@ pcb_top_z = pcb_board_top_z + pcb_module_h;
 pcb_rear_y = pcb_y_offset - pcb_L / 2;
 usb_rear_y = pcb_y_offset + usb_y - usb_d / 2;
 
+// USB-C receptacle, its front-wall opening, and the cable overmold pocket.
+usb_center_z = pcb_board_bottom_z - usb_h / 2;
+usb_face_y = pcb_y_offset + usb_y + usb_d / 2; // receptacle mating face
+usb_hole_w = usb_w + 2 * usb_hole_clear;
+usb_hole_h = usb_h + 2 * usb_hole_clear;
+usb_pocket_floor_y = usb_face_y + usb_overmold_stop_gap;
+usb_pocket_w = usb_overmold_w + 2 * usb_pocket_clear;
+usb_pocket_h = usb_overmold_h + 2 * usb_pocket_clear;
+
 switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
 switch_x = 0;
 switch_z = inner_z_min + switch_h_eff / 2;

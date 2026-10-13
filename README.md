@@ -14,7 +14,11 @@ rather than the plastic and its curve can leave the case.
 The PCB is modelled with its real stack: underside parts over the battery, the
 USB-C connector hanging in front of it, and the ESP32 module facing the lid.
 Case supports and lid clamps touch the board only at bare areas taken from the
-KiCad courtyards, and rear stops take USB-C insertion loads.
+KiCad courtyards, and rear stops take USB-C insertion loads. The USB-C
+connector reaches into the front wall, and a 13.65 × 7.8 mm pocket around it
+lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
+Type-C plug dimensions update) reach within 0.3 mm of the receptacle face, so
+standard cables seat fully.
 
 The repository contains:
 
@@ -102,7 +106,7 @@ and the carabiner slots.
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, PCB support pads, rear stops and lid clamps, screw pilot depth, a USB-C cable plug housing fit check at the offset port opening, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, PCB support pads, rear stops and lid clamps, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh
