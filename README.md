@@ -81,7 +81,7 @@ python3 scripts/export-bambu-project.py
 
 This writes `exports/crimpdeq-case.3mf` (gitignored): both parts in print
 layout on one plate, set up for a Bambu Lab A1 with a 0.4 mm nozzle, Generic
-PETG and the textured PEI plate. The script slices the plate to confirm it is
+PLA and the textured PEI plate. The script slices the plate to confirm it is
 printable. If `bambu-studio` on `PATH` is a wrapper script, point
 `BAMBU_STUDIO` at the real executable, for example
 `BAMBU_STUDIO=/opt/bambustudio-bin/AppRun` on Arch.
