@@ -14,7 +14,8 @@
 - Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.
 - Keep each `Crimpdeq` title centered on its intended enclosure face.
 - The KCD11 switch must remain accessible through an aligned wall opening, with clearance from the USB-C opening.
-- Fasteners are M2.5×10. Keep screw centers aligned between main and lid and clear of the battery.
+- Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, and with pilot holes deeper than the seated screw.
+- Case supports and lid clamps may touch the PCB only inside the bare-board windows in `case/dimensions.scad`; re-derive the windows and PCB stack heights from the KiCad courtyards whenever the PCB changes.
 - Preserve `print_layout=true`: main floor at Z=0; lid outer face on the bed.
 
 ## Validation
