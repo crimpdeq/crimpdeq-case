@@ -28,7 +28,7 @@ MACOS_APP = Path("/Applications/BambuStudio.app/Contents/MacOS/BambuStudio")
 
 PRINTER = "Bambu Lab A1 0.4 nozzle"
 PROCESS = "0.20mm Standard @BBL A1"
-FILAMENT = "Generic PETG @BBL A1"
+FILAMENT = "Generic PLA @BBL A1"
 PROJECT_PROCESS = "Crimpdeq case @BBL A1"
 BED_TYPE = "Textured PEI Plate"
 PLATE_NAME = "Main body and lid"
