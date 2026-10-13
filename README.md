@@ -71,6 +71,34 @@ openscad -D 'print_layout=true' -o /tmp/case_lid_print_layout.stl case/case_lid.
 Print layout places:
 - `case_main.scad`: upright with the floor on the build plate (`Z=0`)
 - `case_lid.scad`: flipped so the outer top face is on the build plate (support-free)
+- The main body needs support under its PCB rails; see the Bambu Studio project below
+
+### Build the Bambu Studio project
+
+```bash
+python3 scripts/export-bambu-project.py
+```
+
+This writes `exports/crimpdeq-case.3mf` (gitignored): both parts in print
+layout on one plate, set up for a Bambu Lab A1 with a 0.4 mm nozzle, Generic
+PETG and the textured PEI plate. The script slices the plate to confirm it is
+printable. If `bambu-studio` on `PATH` is a wrapper script, point
+`BAMBU_STUDIO` at the real executable, for example
+`BAMBU_STUDIO=/opt/bambustudio-bin/AppRun` on Arch.
+
+| Setting | Value |
+|---|---|
+| Layer height | 0.2 mm |
+| Walls | 6 (solid 2.4 mm shell) |
+| Top/bottom layers | 6 (solid floor and lid) |
+| Infill | 20% |
+| Supports | Tree (auto), critical regions only, no bridge support; off for the lid |
+| Brim | None |
+
+Only the main body needs support: under the PCB side rails, rear stops and
+rear pads, and under the battery-front props. These hang over the load-cell
+space, which is empty while printing. Remove the supports through the open top
+and the carabiner slots.
 
 ### Run collision checks
 
@@ -97,6 +125,7 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 - `case/collision_check.scad`: geometry intersections used for automated collision checks
 - `case/dimensions.scad`: shared dimensions and clearances
 - `scripts/check-collisions.sh`: CI/local collision validation script
+- `scripts/export-bambu-project.py`: Bambu Studio project with the print settings
 
 ## CI and Releases
 
