@@ -57,7 +57,10 @@ if [[ ! "$check_jobs" =~ ^[0-9]+$ ]] || (( check_jobs < 1 )); then
     exit 1
 fi
 
+# A warning such as an undefined value can silently drop a probe and turn a
+# real collision into an empty result, so treat warnings as errors.
 openscad_defs=(
+    --hardwarnings
     -D "render_fn=${render_fn}"
 )
 
@@ -75,6 +78,9 @@ checks=(
     "main_pcb_drop_in empty"
     "main_pcb_eps_z_minus nonempty"
     "main_switch empty"
+    "main_cable_pad_wires empty"
+    "main_switch_wires empty"
+    "main_battery_wires empty"
     "main_corner_end_xn_yn nonempty"
     "main_corner_end_xn_yp nonempty"
     "main_corner_end_xp_yn nonempty"
@@ -95,6 +101,8 @@ checks=(
     "lid_pcb_rear_travel empty"
     "lid_pcb_rear_stop nonempty"
     "lid_switch empty"
+    "lid_switch_wires empty"
+    "lid_battery_wires empty"
     "lid_screw_shank_fit empty"
     "lid_screw_head_fit empty"
     "lid_status_led_sightline empty"

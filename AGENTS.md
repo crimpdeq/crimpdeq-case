@@ -18,6 +18,7 @@
 - Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, and with pilot holes deeper than the seated screw.
 - Case supports and lid clamps may touch the PCB only inside the bare-board windows in `case/dimensions.scad`; re-derive the windows, cable-pad clearances, component positions and PCB stack heights from the KiCad board in `crimpdeq-pcb` whenever the PCB changes. The board is flipped about the X axis, so a KiCad offset (dx, dy) from the board center is case-local (dx, dy); never mirror X.
 - Nothing in the main body may hang over the battery: PCB supports stand on the floor in front of it, and the battery and board must drop in from above.
+- Keep wire routes from the switch and the battery's rear leads to the cable pads open, and leave room under every cable pad for its solder joint.
 - Preserve `print_layout=true`: main floor at Z=0; lid outer face on the bed.
 
 ## Validation
@@ -25,7 +26,7 @@
 - Run the full check after substantive geometry or clearance changes:
   `CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh`
 - Use a timeout of 550 seconds for that command.
-- A deliberately empty OpenSCAD intersection exits non-zero; let `scripts/check-collisions.sh` interpret it.
+- A deliberately empty OpenSCAD intersection exits non-zero; let `scripts/check-collisions.sh` interpret it. It runs OpenSCAD with `--hardwarnings`, because a warning can silently drop a probe and fake an empty result.
 - Add collision modes in both `case/collision_check.scad` and `scripts/check-collisions.sh` when introducing a new fit invariant.
 - Both exported STLs must contain exactly one connected component.
 - Keep `scripts/check-collisions.sh` compatible with macOS Bash 3.2; do not use `wait -n`.

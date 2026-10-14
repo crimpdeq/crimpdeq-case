@@ -21,7 +21,11 @@ clear of the cable pads, and the outer two guide its side edges. Lid clamps
 directly above them press the board with a one-layer (0.1 mm) preload, so it
 cannot rattle. Chamfered lid tabs behind the board's rear edge take USB-C
 insertion loads and push a board that slid back forward as the lid closes.
-Nothing hangs over the battery,
+The columns leave room for the cable wires: the
+switch wires run along the switch's right side and under the right-edge pads,
+and the battery leads, which must leave the battery's rear end because its
+front faces the switch, run over its right edge beside the board. Nothing
+hangs over the battery,
 so the battery drops straight in and the board only tilts to seat its USB-C
 connector, which reaches into the front wall. A 13.65 × 7.8 mm pocket around it
 lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
@@ -113,7 +117,7 @@ through the open top. The PCB columns stand on the floor and need none.
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, switch and battery wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

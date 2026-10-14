@@ -297,10 +297,11 @@ module pcb_supports() {
 
     difference() {
         for (c = pcb_support_columns) {
-            box([c[0], c[1]],
-                [max(pcb_y_offset + c[2], battery_stop_y), pcb_y_offset + c[3]],
+            col_y0 = max(pcb_y_offset + c[2], battery_stop_y);
+            box([c[0], c[1]], [col_y0, pcb_y_offset + c[3]],
                 [inner_z_min - internal_feature_embed, pcb_guide_top_z]);
-            box([c[0], c[1]], tongue_y, tongue_z);
+            if (col_y0 == battery_stop_y)
+                box([c[0], c[1]], tongue_y, tongue_z);
         }
         pcb_keepout();
     }

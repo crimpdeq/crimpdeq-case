@@ -72,13 +72,22 @@ pcb_support_windows = [
 ];
 // Floor-anchored column under each support window. The board keepout carves
 // their tops, so they touch only the windows; their rear ends stop at the
-// battery front. The outer columns rise past the board as edge guides, and
-// the middle one runs into the front wall. All keep clear of the cable pads.
+// battery front. The outer columns rise past the board as edge guides and
+// stop and prop the battery. The middle one starts at its window, leaving a
+// wire channel from the switch to the cable pads, and runs into the front
+// wall. All keep clear of the cable pads.
 pcb_support_columns = [
     [-16.5, -8.3, -pcb_L / 2, 12.1],
-    [8.3, 12.3, -pcb_L / 2, pcb_L / 2 + 1],
+    [8.3, 12.3, 7.0, pcb_L / 2 + 1],
     [12.9, 16.5, -pcb_L / 2, 4.6]
 ];
+// THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
+// and E-, A-, A+, E+ on the front edge (J12, J10, J9, J11).
+pcb_cable_pads = [
+    [13.75, 6.1], [13.75, 8.6], [13.75, 11.15], [13.75, 13.7],
+    [-13.65, 13.7], [-10.85, 13.7], [-8.05, 13.7], [-5.25, 13.7]
+];
+wire_d = 1.6; // 24 AWG silicone hookup wire
 // Bare B.Cu areas that lid clamps may press, above the support windows.
 pcb_clamp_windows = [
     [-14.6, -9.9, 4.2, 12.2],

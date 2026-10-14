@@ -125,6 +125,47 @@ module lid_pcb_outside_clamps(dy) {
     }
 }
 
+// Wire routes, wire_d thick. Each cable pad needs room below for its solder
+// joint and the wire bend.
+module cable_pad_wire_probe() {
+    for (p = pcb_cable_pads)
+        translate([p[0], pcb_y_offset + p[1], pcb_board_bottom_z - 4])
+            cylinder(d = wire_d, h = 4);
+}
+
+// Switch wires leave its rear terminals along its right side, cross under the
+// B- pad and run under the right-edge pads up to SW-.
+module switch_wire_probe() {
+    x0 = switch_w / 2 + switch_clear + 0.05;
+    pad_x = pcb_cable_pads[0][0];
+    lane_y = pcb_y_offset + pcb_cable_pads[0][1];
+    z = [inner_z_min + 0.05, switch_z + switch_h / 2];
+    box([x0, x0 + wire_d], [switch_y - switch_d / 2, lane_y + wire_d / 2], z);
+    box([x0, pad_x + wire_d / 2], [lane_y - wire_d / 2, lane_y + wire_d / 2], z);
+    box([pad_x - wire_d / 2, pad_x + wire_d / 2],
+        [lane_y - wire_d / 2, pcb_y_offset + pcb_cable_pads[3][1] + wire_d / 2],
+        [z[0], pcb_board_bottom_z - 0.05]);
+}
+
+// Battery leads leave its rear end (its front faces the switch), rise behind
+// it and run forward over its right edge, beside the board and outside the
+// right-edge column, to the B pads.
+module battery_wire_probe() {
+    rear_y = [battery_y_offset - bat_L / 2 - 0.2 - wire_d, battery_y_offset - bat_L / 2 - 0.2];
+    lane_x = pcb_W / 2 + 0.3;
+    outer_x = 16.6;
+    turn_y = 12.2;
+    pad_x = pcb_cable_pads[0][0];
+    lane_y = pcb_y_offset + pcb_cable_pads[0][1];
+    z = [battery_top_z + 0.05, battery_top_z + 0.05 + wire_d];
+    box([-wire_d / 2, wire_d / 2], rear_y, [battery_bottom_z, z[1]]);
+    box([-wire_d / 2, lane_x + wire_d], rear_y, z);
+    box([lane_x, lane_x + wire_d], [rear_y[0], turn_y + wire_d], z);
+    box([lane_x, outer_x + wire_d], [turn_y, turn_y + wire_d], z);
+    box([outer_x, outer_x + wire_d], [turn_y, lane_y + wire_d / 2], z);
+    box([pad_x - wire_d / 2, outer_x + wire_d], [lane_y - wire_d / 2, lane_y + wire_d / 2], z);
+}
+
 module led_sightline_probe(led_x, led_y, d, led_h) {
     translate([led_x, pcb_y_offset + led_y, pcb_board_top_z + led_h])
         cylinder(d = d, h = 10, center = false);
@@ -181,6 +222,12 @@ if (mode == "main_lid") {
     intersection() { main_part(); translate([0.3, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_eps_yz_plus") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
+} else if (mode == "main_cable_pad_wires") {
+    intersection() { main_part(); cable_pad_wire_probe(); }
+} else if (mode == "main_switch_wires") {
+    intersection() { main_part(); switch_wire_probe(); }
+} else if (mode == "main_battery_wires") {
+    intersection() { main_part(); battery_wire_probe(); }
 } else if (mode == "main_switch") {
     intersection() { main_part(); asm_switch(); }
 } else if (mode == "main_screw_pilot_fit") {
@@ -223,6 +270,10 @@ if (mode == "main_lid") {
     lid_pcb_outside_clamps(-0.24);
 } else if (mode == "lid_pcb_rear_stop") {
     intersection() { pcb_rear_stops(); translate([0, -0.3, 0]) asm_pcb(); }
+} else if (mode == "lid_switch_wires") {
+    intersection() { lid_part(); switch_wire_probe(); }
+} else if (mode == "lid_battery_wires") {
+    intersection() { lid_part(); battery_wire_probe(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
 } else if (mode == "lid_screw_shank_fit") {
