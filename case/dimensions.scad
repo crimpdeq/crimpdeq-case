@@ -162,13 +162,19 @@ switch_depth = 15.2;
 switch_d = switch_depth - wall_t; // behind the inner wall face
 switch_rot_y = 0;
 switch_clear = 0.4;
+// The bezel is held only by friction in its wall opening. v2.0.0's 3.0 mm
+// wall held it; a collar behind the thinner front wall restores that length.
+switch_grip_len = 3.0;
+switch_collar_t = 1.2;
 // Room behind the solder joints for the wires to turn up, in front of the
 // load cell and battery.
 switch_wire_bend = 3.5;
 
 // M2.5x10 fasteners shared by main and lid, one at each faceted corner.
-screw_corner_inset = 4.65; // center inset from the front and rear walls
+// Each center sits this far inside both the front or rear face and the facet
+// face, as in v2.0.0. Screwing into a pilot 3.4 mm from the facet split the
+// facet wall along a layer line.
+screw_edge_inset = 5.25;
 screw_len = 10; // under the head
 screw_head_d = 5.2; // typical M2.5 button/pan head clearance
 screw_head_recess = 1.8; // recess depth so heads do not protrude
-screw_head_wall = 0.8; // minimum shell outside each head recess
