@@ -32,12 +32,18 @@ align_lip_front_back_len = 24;
 // Battery side walls (lid underside), running parallel to battery length.
 battery_side_wall_enable = true;
 battery_side_wall_t = 1.2;
-battery_side_wall_clear = 0.7;
 battery_side_wall_l = 24;
 
-// PCB clamps press the bare pcb_clamp_windows, directly above support pads.
+// PCB clamps press the bare pcb_clamp_windows, directly above the support columns.
 pcb_top_clamp_clear = 0.10;
 pcb_top_clamp_inset = 0.2; // clearance to the B.Cu parts around each window
+
+// Tabs behind the board's rear edge take USB-C insertion loads, one each side
+// of the ESP32 antenna overhang.
+pcb_rear_stop_x = [8.5, 13.5]; // |x| span
+pcb_rear_stop_t = 2.0;
+pcb_rear_stop_clear = 0.25;
+pcb_rear_stop_below = 0.5; // reach below the board underside
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
@@ -65,7 +71,7 @@ hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 head_recess_depth = screw_head_recess;
 // The rear lip sits behind the PCB, above the battery.
 align_lip_h_eff = align_lip_enable ? max(0, min(align_lip_h, lid_z_min - battery_top_z - 0.4)) : 0;
-battery_side_wall_x = bat_W / 2 + battery_side_wall_clear + battery_side_wall_t / 2;
+battery_side_wall_x = bat_W / 2 + battery_side_clear + battery_side_wall_t / 2;
 // Extend through the lid thickness so the walls fuse into the roof; their
 // lower ends also stop the load cell from lifting.
 battery_side_wall_h = lid_z_max - hold_down_target_z;
@@ -74,6 +80,7 @@ status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
 pcb_top_clamp_h = lid_z_min - (pcb_board_top_z + pcb_top_clamp_clear);
+pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 
 assert(head_recess_depth < lid_t - 0.5,
     str("screw_head_recess must leave lid material under the head. recess=", head_recess_depth, " mm."));
@@ -96,9 +103,14 @@ assert(screw_fit_head_d > 0 && screw_fit_head_d < screw_head_d,
 assert(screw_fit_head_h > 0 && screw_fit_head_h < head_recess_depth,
     str("screw_fit_head_h must be > 0 and < head_recess_depth. fit=", screw_fit_head_h,
         " recess=", head_recess_depth));
-assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 2 <= inner_x_max + 0.001,
-    str("Battery side walls overlap main side wall by ",
-        battery_side_wall_x + battery_side_wall_t / 2 - inner_x_max, " mm (X)."));
+assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 2 <= carabiner_slot_inner_x + 0.001,
+    str("Battery side walls reach into the carabiner slots by ",
+        battery_side_wall_x + battery_side_wall_t / 2 - carabiner_slot_inner_x, " mm (X)."));
+assert(pcb_rear_stop_x[0] >= max(-pcb_module_rect[0], pcb_module_rect[1]) + 1
+    && pcb_rear_stop_x[1] <= pcb_W / 2,
+    "PCB rear stops must sit behind the board, clear of the antenna overhang.");
+assert(pcb_rear_stop_z_min >= battery_top_z + 1,
+    "PCB rear stops must stay above the battery.");
 assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
     str("Battery side wall length exceeds inner cavity span by ",
         battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
@@ -245,6 +257,17 @@ module pcb_top_clamps() {
                     pcb_rect_2d(w);
 }
 
+module pcb_rear_stops() {
+    y_max = pcb_rear_y - pcb_rear_stop_clear;
+    for (s = [-1, 1])
+        translate([s > 0 ? pcb_rear_stop_x[0] : -pcb_rear_stop_x[1], y_max - pcb_rear_stop_t, pcb_rear_stop_z_min])
+            cube([
+                pcb_rear_stop_x[1] - pcb_rear_stop_x[0],
+                pcb_rear_stop_t,
+                lid_z_min - pcb_rear_stop_z_min + internal_feature_embed
+            ]);
+}
+
 module brand_engrave_lid() {
     // Carved on outer top face (same plane as load cell), horizontal and centered.
     translate([brand_x, brand_y, lid_z_max - brand_depth - 0.1])
@@ -262,6 +285,7 @@ module lid_part() {
             lid_alignment_lips();
             battery_side_wall_features();
             pcb_top_clamps();
+            pcb_rear_stops();
             lid_carabiner_slot_walls();
         }
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);

@@ -18,8 +18,10 @@ eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
 eye_ring_bore_d = 15; // pressed-in eye ring, not modelled in load_cell.scad
 carabiner_shank_d = 12;
-// Radial clearance around the shank while it bears on the outer side of the ring.
-carabiner_slot_clear = 2.0;
+// Radial clearance from each eye hole to its slot wall. The battery sides line
+// up with the inner edges of the eyes, so the battery bay cuts each slot short
+// on its inboard side.
+eye_slot_clear = 2.5;
 
 notch_d = 6;
 notch_xA = 20;
@@ -28,13 +30,14 @@ notch_xB = 60;
 // Shell shared by the main body and lid.
 wall_t = 2.4;
 lid_t = 2.4;
-// Faceted hexagonal plan: each end face meets its facets at 120 degrees.
-case_facet_angle = 30; // facet angle from the X axis
+// Symmetric hexagonal plan: flat front and rear walls and a point at each
+// end. 60 degrees from the X axis makes every interior angle 120 degrees.
+case_facet_angle = 60;
 
 // Electronics bay half-width around the battery guides. Beyond it, nothing in
 // the main body may touch the load cell.
 pod_half_x = 22;
-// End guards enclose the whole load cell, including all four corners.
+// The facets enclose the whole load cell, including all four corners.
 loadcell_guard_clear = 0.5;
 loadcell_slot_wall_t = 1.2;
 loadcell_slot_clear_z = 0.3;
@@ -43,41 +46,49 @@ loadcell_slot_clear_z = 0.3;
 bat_L = 50;
 bat_W = 34;
 bat_T = 10;
+battery_side_clear = 0.5; // to the bay walls beside the eye slots
 
-// PCB revision 3.0 (crimpdeq-pcb feat/revision-3).
-// The board is installed bottom-side up: KiCad F.Cu faces the battery and
-// B.Cu (LEDs and ESP32 module) faces the lid. Rectangles below are
-// [x_min, x_max, y_min, y_max] relative to the board center in case
-// orientation, taken from the KiCad courtyards.
+// PCB revision 3 (crimpdeq-pcb pcb/crimpdeq, board center (142.45, 67.40)).
+// The board is installed bottom-side up with its USB-C edge toward the front
+// wall: KiCad F.Cu faces the battery and B.Cu (LEDs and ESP32 module) faces
+// the lid. That flip turns about the X axis, and KiCad's Y axis points down,
+// so a KiCad offset (dx, dy) from the board center is case-local (dx, dy).
+// Rectangles below are [x_min, x_max, y_min, y_max] in that frame, taken
+// from the KiCad courtyards.
 pcb_L = 30;
 pcb_W = 30;
 pcb_board_t = 1.6;
 pcb_bottom_parts_h = 1.8; // tallest F.Cu part over the battery (L1, Bourns SRN4018)
 pcb_top_parts_h = 1.5; // B.Cu SOT-23-5/SOD-123 parts, below the module and RGB LED
 pcb_module_h = 2.4; // ESP32-C3-MINI-1
-pcb_module_rect = [-5.95, 7.25, -20.2, -3.6]; // its antenna overhangs the rear edge
-// Bare F.Cu areas that case supports may touch.
+pcb_module_rect = [-7.25, 5.95, -20.2, -3.6]; // its antenna overhangs the rear edge
+// Bare F.Cu areas in front of the battery that case supports may touch:
+// left of the ADS1220 and the 100R filter resistors, and between the USB-C
+// connector and the right-edge cable pads.
 pcb_support_windows = [
-    [12.5, 15, -15, -12.5],
-    [-15, -12.5, -15, -12.5],
-    [12.9, 15, 7.3, 11.4],
-    [-12.9, -10.0, 7.3, 11.4]
+    [-15, -8.3, 4.0, 12.2],
+    [9.9, 12.3, 7.0, 15]
 ];
-// Bare B.Cu areas that lid clamps may press, above the front-right and
-// rear-left support windows.
+// Floor-anchored column under each support window. The board keepout carves
+// their tops, so they touch only the windows; their rear ends stop at the
+// battery front. The left column also guides the board's left edge, and the
+// right one runs into the front wall. Both keep clear of the cable pads.
+pcb_support_columns = [
+    [-16.5, -8.3, -pcb_L / 2, 12.1],
+    [8.3, 12.3, -pcb_L / 2, pcb_L / 2 + 1]
+];
+// Bare B.Cu areas that lid clamps may press, above the support windows.
 pcb_clamp_windows = [
-    [12.2, 14.6, 7.3, 11.3],
-    [-14.5, -11.3, -14.5, -11.5]
+    [-14.6, -9.9, 4.2, 12.2],
+    [9.9, 12.3, 7.0, 14.6]
 ];
 
 // USB-C connector body (GCT USB4105-GF-A, F.Cu) from its F.Fab outline. Its
-// front face overhangs the board edge by 0.9 mm. Case-local coordinates after
-// flipping the PCB bottom-side up while keeping the USB edge toward +Y.
-// Source board center: (142.45, 67.40).
+// front face overhangs the board edge by 0.9 mm.
 usb_w = 9.58;
 usb_h = 3.31;
 usb_d = 7.53;
-usb_x = -4.55;
+usb_x = 4.55;
 usb_y = 12.135;
 
 // USB-C cable plug. The metal shell enters the receptacle; the overmold is the
@@ -98,14 +109,14 @@ usb_hole_clear = 0.55; // around the connector body
 usb_pocket_clear = 0.4; // around the cable overmold
 usb_pocket_min_web = 0.8; // front wall left behind the pocket
 
-// Bottom-mounted LED positions, transformed into case-local coordinates.
-// D1 is the battery-status LED; D4 is the WS2812B RGB LED.
-status_led_x = 7.65;
+// B.Cu LED positions. D1 is the battery-status LED, a 0603 turned 90 degrees;
+// D4 is the WS2812B RGB LED.
+status_led_x = -7.65;
 status_led_y = -1.40;
-status_led_w = 1.6;
-status_led_l = 0.8;
+status_led_w = 0.8;
+status_led_l = 1.6;
 status_led_h = 0.8;
-rgb_led_x = 11.95;
+rgb_led_x = -11.95;
 rgb_led_y = -10.90;
 rgb_led_w = 5.0;
 rgb_led_l = 5.0;
@@ -114,7 +125,7 @@ rgb_led_h = 1.6;
 // Stack spacing
 loadcell_to_battery_gap = 1.5;
 battery_to_pcb_gap = 0.5; // relief so the PCB does not rest directly on the battery
-battery_rear_gap = 0.2; // target battery rear-edge gap to enclosure inner rear wall
+battery_rear_gap = 0.2; // minimum battery rear-edge gap to the inner rear wall
 
 // Inner cavity clearances
 clear_x = 0.8;

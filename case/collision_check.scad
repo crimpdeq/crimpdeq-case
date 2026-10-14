@@ -90,6 +90,21 @@ module asm_switch() {
             cube([switch_w, switch_d, switch_h], center = true);
 }
 
+// Vertical drop-in paths from each seat to above the case. The board path
+// leaves out the USB-C connector, which is tilted into the front wall.
+module battery_drop_in_probe() {
+    hull() {
+        asm_battery();
+        translate([0, 0, 30]) asm_battery();
+    }
+}
+
+module pcb_board_drop_in_probe() {
+    translate([0, pcb_y_offset, pcb_board_bottom_z + 0.05])
+        linear_extrude(height = 30)
+            square([pcb_W, pcb_L], center = true);
+}
+
 module led_sightline_probe(led_x, led_y, d, led_h) {
     translate([led_x, pcb_y_offset + led_y, pcb_board_top_z + led_h])
         cylinder(d = d, h = 10, center = false);
@@ -132,8 +147,10 @@ if (mode == "main_lid") {
     intersection() { main_part(); asm_battery(); }
 } else if (mode == "main_pcb_eps_z_minus") {
     intersection() { main_part(); translate([0, 0, -0.05]) asm_pcb(); }
-} else if (mode == "main_pcb_rear_stop") {
-    intersection() { main_part(); translate([0, -0.3, 0.05]) asm_pcb(); }
+} else if (mode == "main_battery_drop_in") {
+    intersection() { main_part(); battery_drop_in_probe(); }
+} else if (mode == "main_pcb_drop_in") {
+    intersection() { main_part(); pcb_board_drop_in_probe(); }
 } else if (mode == "main_pcb_eps_yz_plus") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_switch") {
@@ -174,6 +191,8 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_pcb_eps_z_plus") {
     intersection() { lid_part(); translate([0, 0, 0.15]) asm_pcb(); }
+} else if (mode == "lid_pcb_rear_stop") {
+    intersection() { lid_part(); translate([0, -0.3, 0]) asm_pcb(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
 } else if (mode == "lid_screw_shank_fit") {
