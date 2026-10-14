@@ -41,9 +41,9 @@ PROCESS_OVERRIDES = {
     "top_shell_layers": "6",
     "bottom_shell_layers": "6",
     "sparse_infill_density": "20%",
-    # The PCB side rails, rear stops and rear pads hang about 10 mm above the
-    # main-body floor. Tree supports grow from the floor and come out through
-    # the open top; nothing else needs them.
+    # The battery-front props hang about 6 mm above the main-body floor. Tree
+    # supports grow from the floor and come out through the open top; nothing
+    # else needs them.
     "enable_support": "1",
     "support_type": "tree(auto)",
     "support_on_build_plate_only": "0",

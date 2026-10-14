@@ -1,7 +1,7 @@
 //
 // Main enclosure part (base body)
 // - USB-C opening
-// - load-cell saddle with end guards and open carabiner slots
+// - load-cell saddle with open carabiner U-slots
 // - corner threaded pilot holes for M2.5x10 screws
 //
 
@@ -28,8 +28,7 @@ loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
 battery_support_corner_size = 8;
 battery_support_corner_inset = 1;
-battery_support_front_column_clear = 0.3; // also the battery front stop gap
-battery_support_bottom_gap = 0.5;
+battery_support_front_column_clear = 0.3; // battery front stop gap to the PCB columns
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
 battery_guide_h = bat_T * 0.6;
@@ -37,14 +36,16 @@ pcb_guide_clear = 0.25;
 pcb_guide_above = 1.0; // edge guides rise above the board top face
 pcb_guide_lead_in = 0.6;
 pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
-// Parts can also slide by the guide clearance before the rear stops engage.
+// Parts can also slide by the guide clearance before the lid rear stops engage.
 pcb_part_clear_xy = pcb_guide_clear + pcb_part_clear;
-pcb_rail_battery_clear = 0.2;
-pcb_rear_stop_depth = 0.8;
-pcb_rear_stop_w = 4;
-pcb_battery_tongue_front_clear = 3.5; // overlap under battery front edge
+pcb_battery_tongue_front_clear = 3.0; // overlap under battery front edge, in front of the load-cell wires
 pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
 pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
+// Low rib from the battery front to the front wall under the battery's
+// front-right corner, fused to the right PCB column and the notch guide. It
+// stops and props the battery like the left column but stays below it, so
+// the switch and battery wires pass over it.
+battery_front_rib_x = [12.0, 16.5];
 
 internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
 
@@ -76,7 +77,7 @@ print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 
 /*** Derived placement ***/
 // Span the flat rear wall up to where the facets start.
-rear_brand_w = 2 * (rear_face_x - rear_brand_margin);
+rear_brand_w = 2 * (case_corner_x - rear_brand_margin);
 
 // Top of stacked electronics (battery + PCB) used to size enclosure height.
 inner_z_max = pcb_top_z + top_clear;
@@ -107,10 +108,9 @@ battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
 pcb_guide_top_z = pcb_board_top_z + pcb_guide_above;
-bat_col_x = bat_W / 2 - battery_support_corner_inset - battery_support_corner_size / 2;
-bat_col_y = bat_L / 2 - battery_support_corner_inset - battery_support_corner_size / 2;
-front_column_min_y = loadcell_y_max + battery_support_front_column_clear + battery_support_corner_size / 2;
-front_anchor_y = max(battery_y_offset + bat_col_y, front_column_min_y);
+battery_stop_y = battery_front_y + battery_support_front_column_clear;
+battery_tongue_y = [battery_front_y - pcb_battery_tongue_front_clear, battery_stop_y + 0.01];
+battery_tongue_z = [loadcell_top_z + pcb_battery_tongue_bottom_clear, battery_bottom_z - pcb_battery_tongue_top_clear];
 
 assert(switch_y_min >= loadcell_y_max,
     str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));
@@ -132,8 +132,13 @@ assert(usb_pocket_floor_y - inner_y_max >= usb_pocket_min_web && usb_pocket_floo
     str("USB-C pocket must leave a front-wall web. web=", usb_pocket_floor_y - inner_y_max, " mm."));
 assert(usb_center_z + usb_pocket_h / 2 <= outer_z_max - 1,
     "USB-C pocket must stay below the lid seam.");
-assert(abs(usb_x) + usb_pocket_w / 2 <= front_face_x - 1,
+assert(abs(usb_x) + usb_pocket_w / 2 <= case_corner_x - 1,
     "USB-C pocket must stay on the flat front wall.");
+assert(battery_stop_y >= loadcell_y_max,
+    "PCB columns must stand in front of the load cell.");
+for (c = pcb_support_columns)
+    assert(min(abs(c[0]), abs(c[1])) >= switch_w / 2 + switch_clear + 0.3,
+        str("PCB column must clear the switch cavity: ", c));
 assert(pcb_guide_top_z < outer_z_max - 0.5,
     "PCB edge guides must stay below the lid.");
 assert(pcb_battery_tongue_front_clear >= 0,
@@ -217,107 +222,32 @@ module loadcell_support() {
     }
 }
 
-module battery_support_bed() {
-    if (loadcell_to_battery_gap > 0) {
-        support_xy = battery_support_corner_size;
-        pad_bottom_gap = max(0, min(battery_support_bottom_gap, loadcell_to_battery_gap - 0.2));
-        pad_h = max(0.2, loadcell_to_battery_gap - pad_bottom_gap);
-        brace_t = max(0.2, min(0.8, pad_h));
-        pad_bottom_z = loadcell_top_z + pad_bottom_gap;
-        pad_z = loadcell_top_z + pad_bottom_gap + pad_h / 2;
-        guide_h = min(battery_guide_h, bat_T);
-        guide_bottom_z = battery_bottom_z;
-        guide_z = battery_bottom_z + guide_h / 2;
-        support_x = bat_W / 2 - battery_support_corner_inset - support_xy / 2;
-        support_y = bat_L / 2 - battery_support_corner_inset - support_xy / 2;
-        front_column_min_y = loadcell_y_max + battery_support_front_column_clear + support_xy / 2;
-
-        for (x_sign = [-1, 1])
-            for (y_sign = [-1, 1])
-                let(
-                    pad_y = battery_y_offset + y_sign * support_y,
-                    col_y = (y_sign > 0) ? max(pad_y, front_column_min_y) : pad_y,
-                    col_h = (loadcell_top_z + loadcell_to_battery_gap) - (inner_z_min - internal_feature_embed),
-                    col_z = inner_z_min - internal_feature_embed + col_h / 2,
-                    shelf_len = abs(col_y - pad_y) + support_xy,
-                    shelf_y = (col_y + pad_y) / 2,
-                    x_leg_x = x_sign * (bat_W / 2 + battery_guide_clear + battery_guide_t / 2),
-                    y_leg_y = battery_y_offset + y_sign * (bat_L / 2 + battery_guide_clear + battery_guide_t / 2),
-                    x_bridge_x0 = x_sign * (support_x + support_xy / 2),
-                    x_bridge_x1 = x_sign * (bat_W / 2 + battery_guide_clear),
-                    x_bridge_len = abs(x_bridge_x1 - x_bridge_x0),
-                    x_bridge_x = (x_bridge_x0 + x_bridge_x1) / 2,
-                    y_bridge_y0 = pad_y + y_sign * support_xy / 2,
-                    y_bridge_y1 = battery_y_offset + y_sign * (bat_L / 2 + battery_guide_clear),
-                    y_bridge_len = abs(y_bridge_y1 - y_bridge_y0),
-                    y_bridge_y = (y_bridge_y0 + y_bridge_y1) / 2,
-                    x_leg_col_h = max(0, guide_bottom_z - (inner_z_min - internal_feature_embed)),
-                    x_leg_col_z = inner_z_min - internal_feature_embed + x_leg_col_h / 2,
-                    y_leg_col_h = max(0, guide_bottom_z - (inner_z_min - internal_feature_embed)),
-                    y_leg_col_z = inner_z_min - internal_feature_embed + y_leg_col_h / 2
-                ) {
-                    // Floor-anchored column.
-                    translate([x_sign * support_x, col_y, col_z])
-                        cube([support_xy, support_xy, col_h], center = true);
-
-                    // Keep the load-cell top insertion path clear:
-                    // only support/guide the battery from the rear corners (outside load-cell Y footprint).
-                    if (y_sign < 0) {
-                        // Battery corner support pad in the 2 mm gap (rear only).
-                        translate([x_sign * support_x, pad_y, pad_z])
-                            cube([support_xy, support_xy, pad_h], center = true);
-
-                        // Brace column to rear pad to avoid a flat bridge.
-                        if (abs(col_y - pad_y) > 0.01)
-                            hull() {
-                                translate([x_sign * support_x, col_y, guide_bottom_z - brace_t / 2])
-                                    cube([support_xy, support_xy, brace_t], center = true);
-                                translate([x_sign * support_x, pad_y, pad_bottom_z + brace_t / 2])
-                                    cube([support_xy, support_xy, brace_t], center = true);
-                            }
-
-                        // Rear corner guides keep the battery located without blocking top load-cell insertion.
-                        translate([x_leg_x, pad_y, guide_z])
-                            cube([battery_guide_t, support_xy, guide_h], center = true);
-                        translate([x_sign * support_x, y_leg_y, guide_z])
-                            cube([support_xy, battery_guide_t, guide_h], center = true);
-
-                        // Fully support the horizontal guide tabs to improve printability.
-                        if (x_leg_col_h > 0.01)
-                            translate([x_leg_x, pad_y, x_leg_col_z])
-                                cube([battery_guide_t, support_xy, x_leg_col_h], center = true);
-                        if (y_leg_col_h > 0.01)
-                            translate([x_sign * support_x, y_leg_y, y_leg_col_z])
-                                cube([support_xy, battery_guide_t, y_leg_col_h], center = true);
-                        if (x_bridge_len > 0.01 && x_leg_col_h > 0.01)
-                            translate([x_bridge_x, pad_y, x_leg_col_z])
-                                cube([x_bridge_len, support_xy, x_leg_col_h], center = true);
-                        if (y_bridge_len > 0.01 && y_leg_col_h > 0.01)
-                            translate([x_sign * support_x, y_bridge_y, y_leg_col_z])
-                                cube([support_xy, y_bridge_len, y_leg_col_h], center = true);
-
-                        if (x_bridge_len > 0.01)
-                            hull() {
-                                translate([x_leg_x, pad_y, guide_bottom_z - brace_t / 2])
-                                    cube([battery_guide_t, support_xy, brace_t], center = true);
-                                translate([x_sign * support_x, pad_y, pad_bottom_z + brace_t / 2])
-                                    cube([support_xy, support_xy, brace_t], center = true);
-                            }
-                        if (y_bridge_len > 0.01)
-                            hull() {
-                                translate([x_sign * support_x, y_leg_y, guide_bottom_z - brace_t / 2])
-                                    cube([support_xy, battery_guide_t, brace_t], center = true);
-                                translate([x_sign * support_x, pad_y, pad_bottom_z + brace_t / 2])
-                                    cube([support_xy, support_xy, brace_t], center = true);
-                            }
-                    }
-                }
-    }
-}
-
 module box(x, y, z) {
     translate([min(x), min(y), min(z)])
         cube([abs(x[1] - x[0]), abs(y[1] - y[0]), abs(z[1] - z[0])]);
+}
+
+// Floor-anchored pads under the rear battery corners, behind the load cell,
+// with guides beside and behind each corner. The PCB columns stop and prop
+// the battery front.
+module battery_rear_supports() {
+    floor_z = inner_z_min - internal_feature_embed;
+    guide_top_z = battery_bottom_z + min(battery_guide_h, bat_T);
+    pad_x1 = bat_W / 2 - battery_support_corner_inset;
+    pad_x = [pad_x1 - battery_support_corner_size, pad_x1];
+    pad_y0 = battery_y_offset - bat_L / 2 + battery_support_corner_inset;
+    pad_y = [pad_y0, pad_y0 + battery_support_corner_size];
+    side_x0 = bat_W / 2 + battery_guide_clear;
+    side_x = [side_x0, side_x0 + battery_guide_t];
+    rear_y1 = battery_y_offset - bat_L / 2 - battery_guide_clear;
+    rear_y = [rear_y1 - battery_guide_t, rear_y1];
+
+    for (s = [-1, 1]) {
+        box(s * [pad_x[0], side_x[0]], pad_y, [floor_z, battery_bottom_z]);
+        box(s * pad_x, [rear_y[1], pad_y[0]], [floor_z, battery_bottom_z]);
+        box(s * side_x, pad_y, [floor_z, guide_top_z]);
+        box(s * pad_x, rear_y, [floor_z, guide_top_z]);
+    }
 }
 
 // Everything the PCB occupies, plus its vertical drop-in path. Supports are
@@ -363,38 +293,28 @@ module pcb_keepout() {
     }
 }
 
-// Front columns stop the battery and carry the front PCB pads; rails over the
-// battery edges guide the PCB sides and carry the rear pads and rear stops.
+// Floor-anchored columns in front of the battery carry the board under its
+// support windows. A column that reaches the battery front stops it, with a
+// tongue propping its underside. Nothing hangs over the battery, so they
+// print without support and the battery drops straight in. Lid tabs behind
+// the board take USB-C insertion loads.
 module pcb_supports() {
-    col_x = [bat_col_x - battery_support_corner_size / 2, bat_col_x + battery_support_corner_size / 2];
-    col_y = [front_anchor_y - battery_support_corner_size / 2, front_anchor_y + battery_support_corner_size / 2];
-    rail_x = [pcb_W / 2 + pcb_guide_clear, bat_W / 2 + battery_guide_clear];
-    rail_z = [battery_top_z + pcb_rail_battery_clear, pcb_guide_top_z];
-    stop_y = [pcb_rear_y - pcb_guide_clear - pcb_rear_stop_depth, pcb_rear_y];
-    tongue_y = [battery_front_y - pcb_battery_tongue_front_clear, col_y[0] + 0.01];
-    tongue_z = [loadcell_top_z + pcb_battery_tongue_bottom_clear, battery_bottom_z - pcb_battery_tongue_top_clear];
-
     difference() {
-        union() {
-            for (s = [-1, 1]) {
-                box(s * col_x, col_y, [battery_bottom_z, pcb_guide_top_z]);
-                box(s * rail_x, [stop_y[0], col_y[0] + 0.01], rail_z);
-                box(s * [pcb_W / 2 - pcb_rear_stop_w, rail_x[1]], stop_y, rail_z);
-                // Prop the battery front underside.
-                box(s * col_x, tongue_y, tongue_z);
-            }
-
-            // Pads under the windows that sit over the battery, tied to the rails.
-            for (w = pcb_support_windows)
-                if (pcb_y_offset + w[2] < battery_front_y)
-                    box(
-                        w[0] > 0 ? [w[0], rail_x[0] + 0.01] : [-rail_x[0] - 0.01, w[1]],
-                        [pcb_y_offset + w[2], pcb_y_offset + w[3]],
-                        [rail_z[0], pcb_board_bottom_z]
-                    );
+        for (c = pcb_support_columns) {
+            col_y0 = max(pcb_y_offset + c[2], battery_stop_y);
+            box([c[0], c[1]], [col_y0, pcb_y_offset + c[3]],
+                [inner_z_min - internal_feature_embed, pcb_guide_top_z]);
+            if (col_y0 == battery_stop_y)
+                box([c[0], c[1]], battery_tongue_y, battery_tongue_z);
         }
         pcb_keepout();
     }
+}
+
+module battery_front_rib() {
+    box(battery_front_rib_x, [battery_stop_y, inner_y_max + internal_feature_embed],
+        [inner_z_min - internal_feature_embed, battery_bottom_z]);
+    box(battery_front_rib_x, battery_tongue_y, battery_tongue_z);
 }
 
 module notch_pins() {
@@ -494,8 +414,9 @@ module main_part() {
             }
 
             loadcell_support();
-            battery_support_bed();
+            battery_rear_supports();
             pcb_supports();
+            battery_front_rib();
             notch_pins();
             loadcell_notch_guides();
             main_carabiner_slot_walls();

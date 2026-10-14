@@ -41,5 +41,11 @@ module loadcell_2d() {
     }
 }
 
+// Gauge cover; origin at the center of the load-cell face it sits on.
+module loadcell_gauge_cover() {
+    translate([-gauge_cover_w / 2, gauge_cover_y - gauge_cover_l / 2, 0])
+        cube([gauge_cover_w, gauge_cover_l, gauge_cover_h]);
+}
+
 // Render the load cell plane
 loadcell_2d();

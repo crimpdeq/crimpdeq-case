@@ -12,27 +12,24 @@ loadcell_bottom_z = inner_z_min + loadcell_lift;
 loadcell_center_z = loadcell_bottom_z + lc_T / 2;
 loadcell_top_z = loadcell_bottom_z + lc_T;
 
-// The electronics sit in a central pod; the end faces enclose the rest of
-// the load cell so only the eyes remain exposed.
+// The electronics sit in a central pod; the facets enclose the rest of the
+// load cell so only the eyes remain exposed.
 case_inner_x_half = pod_half_x + clear_x;
-guard_inner_x_half = lc_L / 2 + loadcell_guard_clear;
-guard_inner_y_half = lc_W / 2 + loadcell_guard_clear;
-guard_outer_x_half = guard_inner_x_half + wall_t;
 
 // Revision 3 is shorter than the battery and load cell, so derive the cavity
-// and component positions from every front/rear envelope instead of the PCB.
+// and component positions from every front envelope instead of the PCB.
 case_inner_y_max = max(
     pcb_L / 2 + front_clear,
-    lc_W / 2 + switch_d + 2 * switch_clear
+    lc_W / 2 + switch_wire_bend + switch_d
 );
-switch_y = case_inner_y_max - switch_d / 2 - switch_clear;
+switch_y = case_inner_y_max - switch_d / 2;
 pcb_y_offset = case_inner_y_max - pcb_front_gap - pcb_L / 2;
-battery_y_offset = switch_y - switch_d / 2 - battery_switch_gap - bat_L / 2;
-case_inner_y_min = min(
-    -lc_W / 2 - rear_clear,
-    pcb_y_offset - pcb_L / 2 - rear_clear,
-    battery_y_offset - bat_L / 2 - battery_rear_gap
-);
+// The battery front lines up with the load-cell front edge, behind the
+// switch wire bend.
+battery_y_offset = lc_W / 2 - bat_L / 2;
+// The plan is symmetric about the load cell, so the rear wall mirrors the
+// front one and every rear envelope must fit inside it.
+case_inner_y_min = -case_inner_y_max;
 
 battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
 battery_top_z = battery_bottom_z + bat_T;
@@ -69,49 +66,50 @@ outer_y_min = inner_y_min - wall_t;
 outer_y_max = inner_y_max + wall_t;
 brand_y = (outer_y_min + outer_y_max) / 2;
 
-// Faceted plan: flat front and rear walls, flat end walls, and one facet per
-// corner. The facets are the tightest lines at case_facet_angle that keep the
-// load-cell corners inside the cavity.
-facet_n = [sin(case_facet_angle), cos(case_facet_angle)]; // outward normal, +X/+Y corner
+// Hexagonal plan: flat front and rear walls and a point at each end, where
+// the carabiner slot leaves the case. The facets are the tightest lines at
+// case_facet_angle that keep the load-cell corners inside the cavity.
+facet_n = [sin(case_facet_angle), cos(case_facet_angle)]; // outward normal, +X/+Y facet
 facet_k = facet_n * [lc_L / 2, lc_W / 2] + loadcell_guard_clear + wall_t;
-front_face_x = (facet_k - facet_n[1] * outer_y_max) / facet_n[0];
-rear_face_x = (facet_k + facet_n[1] * outer_y_min) / facet_n[0];
-end_face_y_max = (facet_k - facet_n[0] * guard_outer_x_half) / facet_n[1];
-end_face_y_min = -end_face_y_max;
+case_tip_x = facet_k / facet_n[0];
+case_corner_x = (facet_k - facet_n[1] * outer_y_max) / facet_n[0];
 
 // Each screw sits one head radius plus a shell inside its facet, so the post
 // merges into the facet wall.
-function facet_screw_x(y) =
-    (facet_k - screw_head_d / 2 - screw_head_wall - facet_n[1] * abs(y)) / facet_n[0];
-screw_y1 = outer_y_min + screw_corner_inset;
-screw_y2 = outer_y_max - screw_corner_inset;
-screw_x_front = facet_screw_x(screw_y2);
-screw_x_rear = facet_screw_x(screw_y1);
+screw_y = outer_y_max - screw_corner_inset;
+screw_x = (facet_k - screw_head_d / 2 - screw_head_wall - facet_n[1] * screw_y) / facet_n[0];
 screw_centers = [
-    [-screw_x_rear, screw_y1], [screw_x_rear, screw_y1],
-    [-screw_x_front, screw_y2], [screw_x_front, screw_y2]
+    [-screw_x, -screw_y], [screw_x, -screw_y],
+    [-screw_x, screw_y], [screw_x, screw_y]
 ];
 
-// A carabiner under load bears on the outer side of the eye ring. Each
-// vertical slot is centered there and runs out through the case end, so the
-// shank only touches metal and the carabiner curve can leave the case.
+// Each eye is reached through a vertical U-slot round the eye that runs out
+// through the case end, so the carabiner curve can leave the case. Its
+// inboard edge is the battery bay wall. A carabiner under load bears on the
+// outer side of the eye ring.
 eye_x = lc_L / 2 - eye_center_offset;
 carabiner_loaded_x = eye_x + (eye_ring_bore_d - carabiner_shank_d) / 2;
-carabiner_slot_d = carabiner_shank_d + 2 * carabiner_slot_clear;
+carabiner_slot_d = eye_d + 2 * eye_slot_clear;
+carabiner_slot_inner_x = bat_W / 2 + battery_side_clear + loadcell_slot_wall_t;
 
-assert(guard_inner_x_half > lc_L / 2 && guard_inner_y_half > lc_W / 2,
-    "End guards must enclose all four load-cell corners.");
+assert(case_inner_y_min <= min(
+        -lc_W / 2 - rear_clear,
+        pcb_y_offset - pcb_L / 2 - rear_clear,
+        battery_y_offset - bat_L / 2 - battery_rear_gap),
+    "The mirrored rear wall must enclose the load cell, PCB and battery.");
+assert(switch_y - switch_d / 2 - switch_wire_bend >= max(lc_W / 2, battery_front_y),
+    "The switch wire bend must stay clear of the load cell and battery.");
 assert(usb_rear_y >= battery_front_y + 0.5,
     "The USB-C connector must hang in front of the battery.");
-assert(front_face_x > 0 && front_face_x < guard_outer_x_half
-    && rear_face_x > 0 && rear_face_x < guard_outer_x_half,
-    str("Facets must leave flat front and rear walls. front=", front_face_x, " rear=", rear_face_x, " mm."));
-assert(end_face_y_max > carabiner_slot_d / 2 && -end_face_y_min > carabiner_slot_d / 2,
-    "Facets must leave end walls beside each carabiner slot.");
+assert(case_corner_x > case_inner_x_half && case_corner_x < case_tip_x,
+    str("Facets must leave flat front and rear walls wider than the bay. corner_x=", case_corner_x, " mm."));
 assert(carabiner_shank_d < eye_ring_bore_d && eye_ring_bore_d < eye_d,
     str("Carabiner diameters must satisfy shank < ring bore < eye. Got ",
         carabiner_shank_d, ", ", eye_ring_bore_d, ", ", eye_d, " mm."));
-assert(carabiner_slot_d / 2 + loadcell_slot_wall_t < guard_inner_y_half,
+assert(carabiner_slot_inner_x < eye_x - carabiner_shank_d / 2,
+    str("A carabiner centered in the eye must clear the slot's inboard edge. inner_x=",
+        carabiner_slot_inner_x, " mm."));
+assert(carabiner_slot_d / 2 + loadcell_slot_wall_t < lc_W / 2 + loadcell_guard_clear,
     "Carabiner slot walls must leave the load-cell corners covered.");
 
 module each_corner(z_pos) {
@@ -122,22 +120,25 @@ module each_corner(z_pos) {
 
 // inset = wall_t gives the inner cavity.
 module case_outline_2d(inset = 0) {
-    E = guard_outer_x_half;
+    T = case_tip_x;
+    C = case_corner_x;
     offset(delta = -inset)
         polygon([
-            [E, end_face_y_min], [E, end_face_y_max],
-            [front_face_x, outer_y_max], [-front_face_x, outer_y_max],
-            [-E, end_face_y_max], [-E, end_face_y_min],
-            [-rear_face_x, outer_y_min], [rear_face_x, outer_y_min]
+            [T, 0], [C, outer_y_max], [-C, outer_y_max],
+            [-T, 0], [-C, outer_y_min], [C, outer_y_min]
         ]);
 }
 
 module carabiner_slot_2d(x_sign) {
-    hull() {
-        translate([x_sign * carabiner_loaded_x, 0])
-            circle(d = carabiner_slot_d);
-        translate([x_sign * (guard_outer_x_half + 1), 0])
-            square([0.01, carabiner_slot_d], center = true);
+    intersection() {
+        hull() {
+            translate([x_sign * eye_x, 0])
+                circle(d = carabiner_slot_d);
+            translate([x_sign * (case_tip_x + 1), 0])
+                square([0.01, carabiner_slot_d], center = true);
+        }
+        translate([x_sign * (carabiner_slot_inner_x + case_tip_x + 2) / 2, 0])
+            square([case_tip_x + 2 - carabiner_slot_inner_x, carabiner_slot_d + 1], center = true);
     }
 }
 
