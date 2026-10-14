@@ -20,11 +20,13 @@ case_inner_x_half = pod_half_x + clear_x;
 // and component positions from every front envelope instead of the PCB.
 case_inner_y_max = max(
     pcb_L / 2 + front_clear,
-    lc_W / 2 + switch_d + 2 * switch_clear
+    lc_W / 2 + switch_wire_bend + switch_d
 );
-switch_y = case_inner_y_max - switch_d / 2 - switch_clear;
+switch_y = case_inner_y_max - switch_d / 2;
 pcb_y_offset = case_inner_y_max - pcb_front_gap - pcb_L / 2;
-battery_y_offset = switch_y - switch_d / 2 - battery_switch_gap - bat_L / 2;
+// The battery front lines up with the load-cell front edge, behind the
+// switch wire bend.
+battery_y_offset = lc_W / 2 - bat_L / 2;
 // The plan is symmetric about the load cell, so the rear wall mirrors the
 // front one and every rear envelope must fit inside it.
 case_inner_y_min = -case_inner_y_max;
@@ -95,6 +97,8 @@ assert(case_inner_y_min <= min(
         pcb_y_offset - pcb_L / 2 - rear_clear,
         battery_y_offset - bat_L / 2 - battery_rear_gap),
     "The mirrored rear wall must enclose the load cell, PCB and battery.");
+assert(switch_y - switch_d / 2 - switch_wire_bend >= max(lc_W / 2, battery_front_y),
+    "The switch wire bend must stay clear of the load cell and battery.");
 assert(usb_rear_y >= battery_front_y + 0.5,
     "The USB-C connector must hang in front of the battery.");
 assert(case_corner_x > case_inner_x_half && case_corner_x < case_tip_x,

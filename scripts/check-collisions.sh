@@ -123,7 +123,7 @@ checks=(
     "main_pcb_eps_x_neg empty"
     "main_pcb_eps_x_pos empty"
     "main_pcb_guide_x_neg nonempty"
-    "main_pcb_guide_x_pos nonempty"
+    "main_pcb_usb_side_stop nonempty"
     "battery_pcb_eps_z_plus empty"
 )
 

@@ -135,37 +135,61 @@ module cable_pad_wire_probe() {
             cylinder(d = wire_d, h = 4);
 }
 
-// Switch wires leave its rear terminals along its right side, cross under the
-// B- pad and run under the right-edge pads up to SW-.
-module switch_wire_probe() {
-    x0 = switch_w / 2 + switch_clear + 0.05;
-    pad_x = pcb_cable_pads[0][0];
-    lane_y = pcb_y_offset + pcb_cable_pads[0][1];
-    z = [inner_z_min + 0.05, switch_z + switch_h / 2];
-    box([x0, x0 + wire_d], [switch_y - switch_d / 2, lane_y + wire_d / 2], z);
-    box([x0, pad_x + wire_d / 2], [lane_y - wire_d / 2, lane_y + wire_d / 2], z);
-    box([pad_x - wire_d / 2, pad_x + wire_d / 2],
-        [lane_y - wire_d / 2, pcb_y_offset + pcb_cable_pads[3][1] + wire_d / 2],
-        [z[0], pcb_board_bottom_z - 0.05]);
+// A wire bundle swept through points; each cube is its envelope.
+module wire_path(points, size) {
+    for (i = [0 : len(points) - 2])
+        hull() {
+            translate(points[i]) cube(size, center = true);
+            translate(points[i + 1]) cube(size, center = true);
+        }
 }
 
-// Battery leads leave its rear end (its front faces the switch), rise behind
-// it and run forward over its right edge, beside the board and outside the
-// right-edge column, to the B pads.
+wire_env = wire_d + 0.1;
+wire_pair = [2, 2, 2] * wire_env; // two wires in any orientation
+wire_pair_stacked = [1, 1, 2] * wire_env; // two wires stacked in Z
+
+function pad_point(i, z) = [pcb_cable_pads[i][0], pcb_y_offset + pcb_cable_pads[i][1], z];
+
+// Switch wires turn up behind the joints, in the bend zone in front of the
+// battery and load cell, run right over the battery-front rib and forward
+// beside the right PCB column, then split to the SW+ and SW- pads.
+module switch_wire_probe() {
+    bend_y = switch_y - switch_d / 2 - switch_wire_bend / 2;
+    run_z = switch_z + switch_h / 2 + switch_clear + wire_pair[2] / 2 + 0.05;
+    lane_x = pcb_cable_pads[2][0] + 1;
+    split = [lane_x, pcb_y_offset + pcb_cable_pads[2][1], run_z];
+    pad_z = pcb_board_bottom_z - wire_env / 2 - 0.05;
+    wire_path([
+        [0, bend_y, switch_z],
+        [0, bend_y, run_z],
+        [lane_x, bend_y, run_z],
+        split
+    ], wire_pair);
+    for (i = [2, 3])
+        wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
+}
+
+// Battery leads leave its rear end, rise behind it and run forward over its
+// right edge, beside the board, then drop in front of it and split to the
+// B- and B+ pads.
 module battery_wire_probe() {
-    rear_y = [battery_y_offset - bat_L / 2 - 0.2 - wire_d, battery_y_offset - bat_L / 2 - 0.2];
-    lane_x = pcb_W / 2 + 0.3;
-    outer_x = 16.6;
-    turn_y = 12.2;
-    pad_x = pcb_cable_pads[0][0];
-    lane_y = pcb_y_offset + pcb_cable_pads[0][1];
-    z = [battery_top_z + 0.05, battery_top_z + 0.05 + wire_d];
-    box([-wire_d / 2, wire_d / 2], rear_y, [battery_bottom_z, z[1]]);
-    box([-wire_d / 2, lane_x + wire_d], rear_y, z);
-    box([lane_x, lane_x + wire_d], [rear_y[0], turn_y + wire_d], z);
-    box([lane_x, outer_x + wire_d], [turn_y, turn_y + wire_d], z);
-    box([outer_x, outer_x + wire_d], [turn_y, lane_y + wire_d / 2], z);
-    box([pad_x - wire_d / 2, outer_x + wire_d], [lane_y - wire_d / 2, lane_y + wire_d / 2], z);
+    rear_y = battery_y_offset - bat_L / 2 - 0.25 - wire_pair[1] / 2;
+    over_z = battery_top_z + 0.05 + wire_pair_stacked[2] / 2;
+    lane_x = pcb_W / 2 + 0.3 + wire_env / 2;
+    split = [lane_x, pcb_y_offset + pcb_cable_pads[0][1], battery_top_z];
+    pad_z = pcb_board_bottom_z - wire_env / 2 - 0.05;
+    wire_path([
+        [0, rear_y, battery_bottom_z + wire_pair[2] / 2],
+        [0, rear_y, over_z]
+    ], wire_pair);
+    wire_path([
+        [0, rear_y, over_z],
+        [lane_x, rear_y, over_z],
+        [lane_x, battery_front_y + wire_env, over_z],
+        split
+    ], wire_pair_stacked);
+    for (i = [0, 1])
+        wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
 }
 
 // Load-cell wires leave the gauge cover toward the front, run left under the
@@ -241,8 +265,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); translate([0.2, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_guide_x_neg") {
     intersection() { main_part(); translate([-0.3, 0, 0.05]) asm_pcb(); }
-} else if (mode == "main_pcb_guide_x_pos") {
-    intersection() { main_part(); translate([0.3, 0, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_usb_side_stop") {
+    intersection() { main_part(); translate([0.5, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_eps_yz_plus") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_cable_pad_wires") {

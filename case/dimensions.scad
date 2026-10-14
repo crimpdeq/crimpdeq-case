@@ -25,10 +25,11 @@ eye_slot_clear = 2.5;
 
 // Silicone-covered strain gauge at the load-cell center, on the face toward
 // the battery. Its four wires leave the cover's +Y side, toward the front
-// wall. Footprint from the assembly photos; the height is an estimate.
+// wall. Footprint from the assembly photos; the height is measured (6.5 mm
+// across the plate and cover).
 gauge_cover_w = 14; // along X
 gauge_cover_l = 21; // along Y
-gauge_cover_h = 1.5;
+gauge_cover_h = 2.5;
 gauge_cover_y = 4.3; // center, offset toward the wire exit
 loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, height
 
@@ -76,19 +77,17 @@ pcb_module_rect = [-7.25, 5.95, -20.2, -3.6]; // its antenna overhangs the rear 
 // connector and the right-edge cable pads, and behind those pads.
 pcb_support_windows = [
     [-15, -8.3, 4.0, 12.2],
-    [9.9, 12.3, 7.0, 15],
-    [12.9, 15, 1.7, 4.6]
+    [9.9, 12.3, 7.0, 15]
 ];
 // Floor-anchored column under each support window. The board keepout carves
-// their tops, so they touch only the windows; their rear ends stop at the
-// battery front. The outer columns rise past the board as edge guides and
-// stop and prop the battery. The middle one starts at its window, leaving a
-// wire channel from the switch to the cable pads, and runs into the front
-// wall. All keep clear of the cable pads.
+// their tops, so they touch only the windows. The left column rises past the
+// board as its left-edge guide, and its rear end stops and props the battery.
+// The right one starts at its window and runs into the front wall; it stops
+// the board moving right through the USB-C shell, whose legs are
+// through-hole. Both keep clear of the cable pads.
 pcb_support_columns = [
     [-16.5, -8.3, -pcb_L / 2, 12.1],
-    [8.3, 12.3, 7.0, pcb_L / 2 + 1],
-    [12.9, 16.5, -pcb_L / 2, 4.6]
+    [8.3, 12.3, 7.0, pcb_L / 2 + 1]
 ];
 // THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
 // and E-, A-, A+, E+ on the front edge (J12, J10, J9, J11).
@@ -154,13 +153,18 @@ front_clear = 2.0;
 top_clear = 0.5; // ESP32 module-to-lid gap
 pcb_front_gap = 0.2; // board front edge to the inner front wall; the USB-C connector continues into the wall opening
 
-// Side switch (KCD11 10x15 mm)
+// Side switch (KCD11 10x15 mm). Measured 15.2 mm from its front to the end of
+// its heat-shrunk solder joints; all of it is taken as behind the outer wall
+// face, the worst case.
 switch_w = 15;
-switch_d = 13;
 switch_h = 10;
+switch_depth = 15.2;
+switch_d = switch_depth - wall_t; // behind the inner wall face
 switch_rot_y = 0;
 switch_clear = 0.4;
-battery_switch_gap = 0.4;
+// Room behind the solder joints for the wires to turn up, in front of the
+// load cell and battery.
+switch_wire_bend = 3.5;
 
 // M2.5x10 fasteners shared by main and lid, one at each faceted corner.
 screw_corner_inset = 4.65; // center inset from the front and rear walls
