@@ -78,6 +78,7 @@ checks=(
     "main_pcb_drop_in empty"
     "main_pcb_eps_z_minus nonempty"
     "main_switch empty"
+    "main_switch_grip nonempty"
     "main_cable_pad_wires empty"
     "main_switch_wires empty"
     "main_battery_wires empty"

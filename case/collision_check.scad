@@ -76,6 +76,15 @@ module screw_core_probe() {
         cylinder(d = 1.0, h = screw_len);
 }
 
+// Strips beside each side of the switch opening at its inner end. Only the
+// collar is there, so they find material only if the opening grips the bezel
+// over the whole switch_grip_len.
+module switch_grip_probe() {
+    for (x_sign = [-1, 1])
+        translate([x_sign * (switch_w / 2 + 0.06), switch_grip_y + 0.06, switch_z])
+            cube([0.1, 0.1, switch_h - 1], center = true);
+}
+
 module asm_battery() {
     translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T / 2])
         battery_model(rounded = true);
@@ -277,6 +286,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); battery_wire_probe(); }
 } else if (mode == "main_loadcell_wires") {
     intersection() { main_part(); loadcell_wire_probe(); }
+} else if (mode == "main_switch_grip") {
+    intersection() { main_part(); switch_grip_probe(); }
 } else if (mode == "main_switch") {
     // The bezel is a press fit in the opening, so it may touch its sides.
     intersection() { main_part(); asm_switch(inset = 0.01); }
