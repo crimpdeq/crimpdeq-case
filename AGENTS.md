@@ -18,7 +18,7 @@
 - Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, and with pilot holes deeper than the seated screw.
 - Case supports and lid clamps may touch the PCB only inside the bare-board windows in `case/dimensions.scad`; re-derive the windows, cable-pad clearances, component positions and PCB stack heights from the KiCad board in `crimpdeq-pcb` whenever the PCB changes. The board is flipped about the X axis, so a KiCad offset (dx, dy) from the board center is case-local (dx, dy); never mirror X.
 - Nothing in the main body may hang over the battery: PCB supports stand on the floor in front of it, and the battery and board must drop in from above.
-- Keep wire routes from the switch and the battery's rear leads to the cable pads open, and leave room under every cable pad for its solder joint.
+- Keep wire routes from the switch, the battery's rear leads and the load-cell strain gauge to the cable pads open, and leave room under every cable pad for its solder joint. The battery must clear the strain-gauge cover; re-measure `gauge_cover_*` if the load cell changes.
 - Preserve `print_layout=true`: main floor at Z=0; lid outer face on the bed.
 
 ## Validation

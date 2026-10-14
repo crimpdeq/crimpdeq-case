@@ -23,6 +23,15 @@ carabiner_shank_d = 12;
 // on its inboard side.
 eye_slot_clear = 2.5;
 
+// Silicone-covered strain gauge at the load-cell center, on the face toward
+// the battery. Its four wires leave the cover's +Y side, toward the front
+// wall. Footprint from the assembly photos; the height is an estimate.
+gauge_cover_w = 14; // along X
+gauge_cover_l = 21; // along Y
+gauge_cover_h = 1.5;
+gauge_cover_y = 4.3; // center, offset toward the wire exit
+loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, height
+
 notch_d = 6;
 notch_xA = 20;
 notch_xB = 60;
@@ -134,7 +143,7 @@ rgb_led_l = 5.0;
 rgb_led_h = 1.6;
 
 // Stack spacing
-loadcell_to_battery_gap = 1.5;
+loadcell_to_battery_gap = gauge_cover_h + 0.5; // the battery clears the gauge cover
 battery_to_pcb_gap = 0.5; // relief so the PCB does not rest directly on the battery
 battery_rear_gap = 0.2; // minimum battery rear-edge gap to the inner rear wall
 

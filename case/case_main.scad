@@ -38,7 +38,7 @@ pcb_guide_lead_in = 0.6;
 pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
 // Parts can also slide by the guide clearance before the lid rear stops engage.
 pcb_part_clear_xy = pcb_guide_clear + pcb_part_clear;
-pcb_battery_tongue_front_clear = 3.5; // overlap under battery front edge
+pcb_battery_tongue_front_clear = 3.0; // overlap under battery front edge, in front of the load-cell wires
 pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
 pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
 

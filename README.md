@@ -4,7 +4,7 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The enclosure is approximately 97.1 × 72.4 × 29.1 mm with a symmetric
+The enclosure is approximately 97.1 × 72.4 × 29.6 mm with a symmetric
 hexagonal plan: flat front and rear walls, a point at each end, and 120°
 interior angles. The facets are the tightest lines that still enclose all four
 corners of the 80 mm load cell. Each eye stays reachable through an isolated
@@ -23,8 +23,12 @@ cannot rattle. Chamfered lid tabs behind the board's rear edge take USB-C
 insertion loads and push a board that slid back forward as the lid closes.
 The columns leave room for the cable wires: the
 switch wires run along the switch's right side and under the right-edge pads,
-and the battery leads, which must leave the battery's rear end because its
-front faces the switch, run over its right edge beside the board. Nothing
+the battery leads, which must leave the battery's rear end because its
+front faces the switch, run over its right edge beside the board. The load
+cell goes in with its strain-gauge cover facing the battery and its wires
+toward the front; they run left under the battery, forward outside the left
+column and under the board to the front-edge pads. The battery clears the
+gauge cover by 0.5 mm. Nothing
 hangs over the battery,
 so the battery drops straight in and the board only tilts to seat its USB-C
 connector, which reaches into the front wall. A 13.65 × 7.8 mm pocket around it
@@ -117,7 +121,7 @@ through the open top. The PCB columns stand on the floor and need none.
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, switch and battery wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, switch, battery and load-cell wire routes to the cable pads, battery clearance over the strain-gauge cover, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

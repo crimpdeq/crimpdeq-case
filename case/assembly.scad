@@ -24,6 +24,9 @@ module loadcell_model() {
     color("silver")
         linear_extrude(height = lc_T, center = true)
             loadcell_2d();
+    color("white")
+        translate([0, 0, lc_T / 2])
+            loadcell_gauge_cover();
 }
 
 module switch_model() {

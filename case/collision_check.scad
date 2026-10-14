@@ -18,6 +18,8 @@ module asm_loadcell() {
     translate([0, 0, loadcell_center_z])
         linear_extrude(height = lc_T, center = true)
             loadcell_2d();
+    translate([0, 0, loadcell_top_z])
+        loadcell_gauge_cover();
 }
 
 module asm_loadcell_arm(x_sign) {
@@ -166,6 +168,27 @@ module battery_wire_probe() {
     box([pad_x - wire_d / 2, outer_x + wire_d], [lane_y - wire_d / 2, lane_y + wire_d / 2], z);
 }
 
+// Load-cell wires leave the gauge cover toward the front, run left under the
+// battery behind its front props, rise beyond its side, run forward outside
+// the left PCB column and cross under the board to the front-edge pads.
+module loadcell_wire_probe() {
+    w = loadcell_wire_bundle[0];
+    h = loadcell_wire_bundle[1];
+    exit_y = gauge_cover_y + gauge_cover_l / 2;
+    lane_y = [exit_y, exit_y + w];
+    side_x = -(bat_W / 2 + 2.5);
+    run_x = [side_x - w / 2, side_x + w / 2];
+    pad_y = pcb_y_offset + pcb_cable_pads[4][1];
+    cross_y = [pad_y - w / 2, pad_y + w / 2];
+    cross_z = pcb_board_bottom_z - 4;
+    under_z = [loadcell_top_z + 0.05, loadcell_top_z + 0.05 + h];
+    box([run_x[0], w / 2], lane_y, under_z);
+    box(run_x, lane_y, [under_z[0], battery_bottom_z + h]);
+    box(run_x, [exit_y, pad_y + w / 2], [battery_bottom_z, battery_bottom_z + h]);
+    box(run_x, cross_y, [battery_bottom_z, cross_z + h]);
+    box([run_x[0], pcb_cable_pads[7][0] + w / 2], cross_y, [cross_z, cross_z + h]);
+}
+
 module led_sightline_probe(led_x, led_y, d, led_h) {
     translate([led_x, pcb_y_offset + led_y, pcb_board_top_z + led_h])
         cylinder(d = d, h = 10, center = false);
@@ -228,6 +251,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); switch_wire_probe(); }
 } else if (mode == "main_battery_wires") {
     intersection() { main_part(); battery_wire_probe(); }
+} else if (mode == "main_loadcell_wires") {
+    intersection() { main_part(); loadcell_wire_probe(); }
 } else if (mode == "main_switch") {
     intersection() { main_part(); asm_switch(); }
 } else if (mode == "main_screw_pilot_fit") {
@@ -274,6 +299,8 @@ if (mode == "main_lid") {
     intersection() { lid_part(); switch_wire_probe(); }
 } else if (mode == "lid_battery_wires") {
     intersection() { lid_part(); battery_wire_probe(); }
+} else if (mode == "lid_loadcell_wires") {
+    intersection() { lid_part(); loadcell_wire_probe(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
 } else if (mode == "lid_screw_shank_fit") {
@@ -300,6 +327,8 @@ if (mode == "main_lid") {
     intersection() { asm_battery(); asm_pcb(); }
 } else if (mode == "battery_pcb_eps_z_plus") {
     intersection() { asm_battery(); translate([0, 0, 0.05]) asm_pcb(); }
+} else if (mode == "battery_wires") {
+    intersection() { asm_battery(); union() { loadcell_wire_probe(); switch_wire_probe(); battery_wire_probe(); } }
 } else if (mode == "battery_switch") {
     intersection() { asm_battery(); asm_switch(); }
 } else if (mode == "pcb_switch") {
