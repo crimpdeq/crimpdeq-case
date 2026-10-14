@@ -103,7 +103,6 @@ switch_y_min = switch_y - switch_d / 2;
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
 switch_hole_usb_gap = usb_center_z - usb_pocket_h / 2 - (switch_hole_z + switch_hole_h / 2);
-switch_grip_y = outer_y_max - switch_grip_len; // inner end of the opening
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
@@ -150,10 +149,6 @@ assert(pcb_battery_tongue_bottom_clear >= 0,
     str("pcb_battery_tongue_bottom_clear must be >= 0. Got ", pcb_battery_tongue_bottom_clear, " mm."));
 assert(pcb_guide_lead_in > 0 && pcb_guide_lead_in < pcb_guide_above + pcb_board_t,
     str("pcb_guide_lead_in must stay within the edge guides. Got ", pcb_guide_lead_in, " mm."));
-assert(switch_grip_len >= wall_t,
-    str("switch_grip_len must be at least wall_t. Got ", switch_grip_len, " mm."));
-assert(screw_edge_inset - screw_post_d / 2 < wall_t,
-    "Screw posts must merge into the walls.");
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(thread_depth <= outer_z_max - outer_z_min - 1,
@@ -322,14 +317,6 @@ module battery_front_rib() {
     box(battery_front_rib_x, battery_tongue_y, battery_tongue_z);
 }
 
-// Thickens the front wall round the switch opening to switch_grip_len,
-// standing on the floor.
-module switch_collar() {
-    box([switch_x - switch_hole_w / 2 - switch_collar_t, switch_x + switch_hole_w / 2 + switch_collar_t],
-        [switch_grip_y, inner_y_max + internal_feature_embed],
-        [inner_z_min - internal_feature_embed, switch_hole_z + switch_hole_h / 2 + switch_collar_t]);
-}
-
 module notch_pins() {
     for (x = [notch_x1, notch_x2])
         for (y = [notch_y1, notch_y2])
@@ -430,7 +417,6 @@ module main_part() {
             battery_rear_supports();
             pcb_supports();
             battery_front_rib();
-            switch_collar();
             notch_pins();
             loadcell_notch_guides();
             main_carabiner_slot_walls();
@@ -443,18 +429,17 @@ module main_part() {
 
         carabiner_slot_cuts();
 
-        // Internal cavity for side switch (KCD11, 10x15 face). It ends at the
-        // collar so the full opening length grips the bezel.
-        translate([switch_x, (switch_y - switch_d / 2 - switch_clear + switch_grip_y) / 2, switch_z])
+        // Internal cavity for side switch (KCD11, 10x15 face).
+        translate([switch_x, switch_y, switch_z])
             rotate([0, switch_rot_y, 0])
                 cube(
-                    [switch_w + 2 * switch_clear, switch_grip_y - (switch_y - switch_d / 2 - switch_clear), switch_h + 2 * switch_clear],
+                    [switch_w + 2 * switch_clear, switch_d + 2 * switch_clear, switch_h + 2 * switch_clear],
                     center = true
                 );
 
-        // Side opening for switch face on +Y wall (USB side), through the collar.
-        translate([switch_x, (switch_grip_y + outer_y_max) / 2, switch_hole_z])
-            cube([switch_hole_w, switch_grip_len + 0.3, switch_hole_h], center = true);
+        // Side opening for switch face on +Y wall (USB side).
+        translate([switch_x, inner_y_max + wall_t / 2, switch_hole_z])
+            cube([switch_hole_w, wall_t + 0.3, switch_hole_h], center = true);
 
         // USB-C opening and cable overmold pocket.
         usb_opening_cut();
