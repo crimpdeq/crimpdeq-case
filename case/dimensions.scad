@@ -63,19 +63,21 @@ pcb_top_parts_h = 1.5; // B.Cu SOT-23-5/SOD-123 parts, below the module and RGB 
 pcb_module_h = 2.4; // ESP32-C3-MINI-1
 pcb_module_rect = [-7.25, 5.95, -20.2, -3.6]; // its antenna overhangs the rear edge
 // Bare F.Cu areas in front of the battery that case supports may touch:
-// left of the ADS1220 and the 100R filter resistors, and between the USB-C
-// connector and the right-edge cable pads.
+// left of the ADS1220 and the 100R filter resistors, between the USB-C
+// connector and the right-edge cable pads, and behind those pads.
 pcb_support_windows = [
     [-15, -8.3, 4.0, 12.2],
-    [9.9, 12.3, 7.0, 15]
+    [9.9, 12.3, 7.0, 15],
+    [12.9, 15, 1.7, 4.6]
 ];
 // Floor-anchored column under each support window. The board keepout carves
 // their tops, so they touch only the windows; their rear ends stop at the
-// battery front. The left column also guides the board's left edge, and the
-// right one runs into the front wall. Both keep clear of the cable pads.
+// battery front. The outer columns rise past the board as edge guides, and
+// the middle one runs into the front wall. All keep clear of the cable pads.
 pcb_support_columns = [
     [-16.5, -8.3, -pcb_L / 2, 12.1],
-    [8.3, 12.3, -pcb_L / 2, pcb_L / 2 + 1]
+    [8.3, 12.3, -pcb_L / 2, pcb_L / 2 + 1],
+    [12.9, 16.5, -pcb_L / 2, 4.6]
 ];
 // Bare B.Cu areas that lid clamps may press, above the support windows.
 pcb_clamp_windows = [

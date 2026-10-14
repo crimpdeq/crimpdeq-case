@@ -105,6 +105,26 @@ module pcb_board_drop_in_probe() {
             square([pcb_W, pcb_L], center = true);
 }
 
+// The board under each lid clamp, which the clamps press by their preload.
+module pcb_clamp_contact() {
+    intersection() {
+        pcb_top_clamps();
+        translate([-50, -50, pcb_board_bottom_z])
+            cube([100, 100, pcb_board_t]);
+    }
+}
+
+// The lid may touch the board only through the clamps.
+module lid_pcb_outside_clamps(dy) {
+    intersection() {
+        lid_part();
+        difference() {
+            translate([0, dy, 0]) asm_pcb();
+            pcb_clamp_contact();
+        }
+    }
+}
+
 module led_sightline_probe(led_x, led_y, d, led_h) {
     translate([led_x, pcb_y_offset + led_y, pcb_board_top_z + led_h])
         cylinder(d = d, h = 10, center = false);
@@ -151,6 +171,14 @@ if (mode == "main_lid") {
     intersection() { main_part(); battery_drop_in_probe(); }
 } else if (mode == "main_pcb_drop_in") {
     intersection() { main_part(); pcb_board_drop_in_probe(); }
+} else if (mode == "main_pcb_eps_x_neg") {
+    intersection() { main_part(); translate([-0.2, 0, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_eps_x_pos") {
+    intersection() { main_part(); translate([0.2, 0, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_guide_x_neg") {
+    intersection() { main_part(); translate([-0.3, 0, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_guide_x_pos") {
+    intersection() { main_part(); translate([0.3, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_eps_yz_plus") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_switch") {
@@ -187,12 +215,14 @@ if (mode == "main_lid") {
     intersection() { lid_part(); corner_roof_probe(1, 1); }
 } else if (mode == "lid_battery") {
     intersection() { lid_part(); asm_battery(); }
-} else if (mode == "lid_pcb") {
+} else if (mode == "lid_pcb_clamped") {
     intersection() { lid_part(); asm_pcb(); }
-} else if (mode == "lid_pcb_eps_z_plus") {
-    intersection() { lid_part(); translate([0, 0, 0.15]) asm_pcb(); }
+} else if (mode == "lid_pcb_outside_clamps") {
+    lid_pcb_outside_clamps(0);
+} else if (mode == "lid_pcb_rear_travel") {
+    lid_pcb_outside_clamps(-0.24);
 } else if (mode == "lid_pcb_rear_stop") {
-    intersection() { lid_part(); translate([0, -0.3, 0]) asm_pcb(); }
+    intersection() { pcb_rear_stops(); translate([0, -0.3, 0]) asm_pcb(); }
 } else if (mode == "lid_switch") {
     intersection() { lid_part(); asm_switch(); }
 } else if (mode == "lid_screw_shank_fit") {

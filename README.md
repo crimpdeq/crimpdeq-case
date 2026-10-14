@@ -15,10 +15,13 @@ curve can leave the case.
 
 The PCB is modelled with its real stack from the KiCad board: underside parts
 over the battery, the USB-C connector hanging in front of it, and the ESP32
-module and both LEDs facing the lid. Two floor-anchored columns in front of the
-battery carry the board at bare areas taken from the KiCad courtyards, clear of
-the cable pads. Lid clamps press directly above them, and lid tabs behind the
-board's rear edge take USB-C insertion loads. Nothing hangs over the battery,
+module and both LEDs facing the lid. Three floor-anchored columns in front of
+the battery carry the board at bare areas taken from the KiCad courtyards,
+clear of the cable pads, and the outer two guide its side edges. Lid clamps
+directly above them press the board with a one-layer (0.1 mm) preload, so it
+cannot rattle. Chamfered lid tabs behind the board's rear edge take USB-C
+insertion loads and push a board that slid back forward as the lid closes.
+Nothing hangs over the battery,
 so the battery drops straight in and the board only tilts to seat its USB-C
 connector, which reaches into the front wall. A 13.65 × 7.8 mm pocket around it
 lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
@@ -110,7 +113,7 @@ through the open top. The PCB columns stand on the floor and need none.
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns, lid rear stops and lid clamps, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

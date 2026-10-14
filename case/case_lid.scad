@@ -34,16 +34,22 @@ battery_side_wall_enable = true;
 battery_side_wall_t = 1.2;
 battery_side_wall_l = 24;
 
-// PCB clamps press the bare pcb_clamp_windows, directly above the support columns.
-pcb_top_clamp_clear = 0.10;
-pcb_top_clamp_inset = 0.2; // clearance to the B.Cu parts around each window
+// PCB clamps press the bare pcb_clamp_windows, directly above the support
+// columns, so the board cannot rattle. The preload is one 0.2 mm layer: the
+// clamps end on a layer boundary and the lid flexes to absorb it.
+pcb_top_clamp_preload = 0.1;
+// Clearance to the B.Cu parts around each window; larger than the rear stop
+// clearance, so the stops engage before a part reaches a clamp.
+pcb_top_clamp_inset = 0.3;
 
 // Tabs behind the board's rear edge take USB-C insertion loads, one each side
-// of the ESP32 antenna overhang.
+// of the ESP32 antenna overhang. The chamfer on each tab's board side pushes
+// a board that slid back during assembly forward as the lid closes.
 pcb_rear_stop_x = [8.5, 13.5]; // |x| span
-pcb_rear_stop_t = 2.0;
+pcb_rear_stop_t = 2.4;
 pcb_rear_stop_clear = 0.25;
-pcb_rear_stop_below = 0.5; // reach below the board underside
+pcb_rear_stop_below = 1.0; // reach below the board underside
+pcb_rear_stop_chamfer = 0.8;
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
@@ -79,7 +85,7 @@ status_led_view_x = status_led_x;
 status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
-pcb_top_clamp_h = lid_z_min - (pcb_board_top_z + pcb_top_clamp_clear);
+pcb_top_clamp_h = lid_z_min - (pcb_board_top_z - pcb_top_clamp_preload);
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 
 assert(head_recess_depth < lid_t - 0.5,
@@ -111,6 +117,10 @@ assert(pcb_rear_stop_x[0] >= max(-pcb_module_rect[0], pcb_module_rect[1]) + 1
     "PCB rear stops must sit behind the board, clear of the antenna overhang.");
 assert(pcb_rear_stop_z_min >= battery_top_z + 1,
     "PCB rear stops must stay above the battery.");
+assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
+    "PCB rear stops must bear on the full board edge above their chamfer.");
+assert(pcb_top_clamp_inset > pcb_rear_stop_clear,
+    "PCB rear stops must engage before a B.Cu part reaches a clamp.");
 assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
     str("Battery side wall length exceeds inner cavity span by ",
         battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
@@ -250,7 +260,7 @@ module battery_side_wall_features() {
 }
 
 module pcb_top_clamps() {
-    translate([0, pcb_y_offset, pcb_board_top_z + pcb_top_clamp_clear])
+    translate([0, pcb_y_offset, pcb_board_top_z - pcb_top_clamp_preload])
         linear_extrude(height = pcb_top_clamp_h + internal_feature_embed)
             for (w = pcb_clamp_windows)
                 offset(delta = -pcb_top_clamp_inset)
@@ -258,14 +268,17 @@ module pcb_top_clamps() {
 }
 
 module pcb_rear_stops() {
-    y_max = pcb_rear_y - pcb_rear_stop_clear;
+    w = pcb_rear_stop_x[1] - pcb_rear_stop_x[0];
+    y0 = pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t;
+    z_chamfer = pcb_rear_stop_z_min + pcb_rear_stop_chamfer;
     for (s = [-1, 1])
-        translate([s > 0 ? pcb_rear_stop_x[0] : -pcb_rear_stop_x[1], y_max - pcb_rear_stop_t, pcb_rear_stop_z_min])
-            cube([
-                pcb_rear_stop_x[1] - pcb_rear_stop_x[0],
-                pcb_rear_stop_t,
-                lid_z_min - pcb_rear_stop_z_min + internal_feature_embed
-            ]);
+        translate([s > 0 ? pcb_rear_stop_x[0] : -pcb_rear_stop_x[1], y0, 0])
+            hull() {
+                translate([0, 0, z_chamfer])
+                    cube([w, pcb_rear_stop_t, lid_z_min - z_chamfer + internal_feature_embed]);
+                translate([0, 0, pcb_rear_stop_z_min])
+                    cube([w, pcb_rear_stop_t - pcb_rear_stop_chamfer, 0.01]);
+            }
 }
 
 module brand_engrave_lid() {
