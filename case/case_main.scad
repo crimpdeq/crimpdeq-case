@@ -103,7 +103,6 @@ switch_y_min = switch_y - switch_d / 2;
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h_eff / 2;
 switch_hole_usb_gap = usb_center_z - usb_pocket_h / 2 - (switch_hole_z + switch_hole_h / 2);
-switch_grip_y = outer_y_max - switch_grip_len; // inner end of the opening
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;

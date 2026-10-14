@@ -64,6 +64,7 @@ inner_y_min = case_inner_y_min;
 inner_y_max = case_inner_y_max;
 outer_y_min = inner_y_min - wall_t;
 outer_y_max = inner_y_max + wall_t;
+switch_grip_y = outer_y_max - switch_grip_len; // inner end of the switch opening
 brand_y = (outer_y_min + outer_y_max) / 2;
 
 // Hexagonal plan: flat front and rear walls and a point at each end, where
