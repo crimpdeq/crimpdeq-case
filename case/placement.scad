@@ -64,6 +64,7 @@ inner_y_min = case_inner_y_min;
 inner_y_max = case_inner_y_max;
 outer_y_min = inner_y_min - wall_t;
 outer_y_max = inner_y_max + wall_t;
+switch_grip_y = outer_y_max - switch_grip_len; // inner end of the switch opening
 brand_y = (outer_y_min + outer_y_max) / 2;
 
 // Hexagonal plan: flat front and rear walls and a point at each end, where
@@ -74,10 +75,10 @@ facet_k = facet_n * [lc_L / 2, lc_W / 2] + loadcell_guard_clear + wall_t;
 case_tip_x = facet_k / facet_n[0];
 case_corner_x = (facet_k - facet_n[1] * outer_y_max) / facet_n[0];
 
-// Each screw sits one head radius plus a shell inside its facet, so the post
-// merges into the facet wall.
-screw_y = outer_y_max - screw_corner_inset;
-screw_x = (facet_k - screw_head_d / 2 - screw_head_wall - facet_n[1] * screw_y) / facet_n[0];
+// Each screw sits screw_edge_inset inside both faces of its corner, so the
+// post merges into the front or rear wall and the facet wall.
+screw_y = outer_y_max - screw_edge_inset;
+screw_x = (facet_k - screw_edge_inset - facet_n[1] * screw_y) / facet_n[0];
 screw_centers = [
     [-screw_x, -screw_y], [screw_x, -screw_y],
     [-screw_x, screw_y], [screw_x, screw_y]
