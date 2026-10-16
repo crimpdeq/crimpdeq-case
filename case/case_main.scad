@@ -51,9 +51,6 @@ usb_hole_corner_r = 0.8;
 screw_post_d = 6.5;
 screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
-// 45 degree countersink at each pilot entrance. Plastic the screw displaces
-// collects in it instead of curling up above the post and holding the lid off.
-screw_pilot_chamfer = 0.6;
 
 switch_hole_w = (abs(switch_rot_y) % 180 == 90) ? switch_h : switch_w;
 switch_hole_h = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
