@@ -17,8 +17,8 @@
 - The KCD11 switch must remain accessible through an aligned wall opening, with clearance from the USB-C opening.
 - Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, and with pilot holes deeper than the seated screw.
 - Case supports and lid clamps may touch the PCB only inside the bare-board windows in `case/dimensions.scad`; re-derive the windows, cable-pad clearances, component positions and PCB stack heights from the KiCad board in `crimpdeq-pcb` whenever the PCB changes. The board is flipped about the X axis, so a KiCad offset (dx, dy) from the board center is case-local (dx, dy); never mirror X.
-- Nothing in the main body may hang over the battery: PCB supports stand on the floor in front of it, and the battery and board must drop in from above.
-- Keep wire routes from the switch, the battery's rear leads and the load-cell strain gauge to the cable pads open, checked with realistic bundle sizes, and leave room under every cable pad for its solder joint. Keep the switch wire bend zone between the switch's solder joints and the load cell and battery. The battery must clear the strain-gauge cover; re-measure `gauge_cover_*` and `switch_depth` if those parts change.
+- Nothing in the main body may hang over the load cell or the battery: PCB supports stand on the floor in front of them, and the load cell, battery and board must drop in from above.
+- Keep wire routes from the switch, the battery's rear leads and the load-cell strain gauge to the cable pads open, checked with realistic bundle sizes, and leave room under every cable pad for its solder joint. Keep the switch wire bend zone between the switch's solder joints and the load cell and battery. The battery's rear pads must hold it clear of the strain-gauge cover; its front may settle onto the cover, since any support under it would hang over the load cell. Re-measure `gauge_cover_*` and `switch_depth` if those parts change.
 - Keep internal supports chunky and fused to the floor or walls; no free-standing slender pillars.
 - Preserve `print_layout=true`: main floor at Z=0; lid outer face on the bed.
 
