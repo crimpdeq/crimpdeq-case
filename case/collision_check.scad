@@ -103,6 +103,12 @@ module asm_switch(inset = 0) {
 
 // Vertical drop-in paths from each seat to above the case. The board path
 // leaves out the USB-C connector, which is tilted into the front wall.
+module loadcell_drop_in_probe() {
+    translate([0, 0, loadcell_bottom_z + 0.05])
+        linear_extrude(height = 30)
+            loadcell_2d();
+}
+
 module battery_drop_in_probe() {
     hull() {
         asm_battery();
@@ -202,8 +208,8 @@ module battery_wire_probe() {
 }
 
 // Load-cell wires leave the gauge cover toward the front, run left under the
-// battery behind its front props, rise beyond its side, run forward outside
-// the left PCB column and cross under the board to the front-edge pads.
+// battery, rise beyond its side, run forward outside the left PCB column and
+// cross under the board to the front-edge pads.
 module loadcell_wire_probe() {
     w = loadcell_wire_bundle[0];
     h = loadcell_wire_bundle[1];
@@ -264,6 +270,8 @@ if (mode == "main_lid") {
     intersection() { main_part(); asm_battery(); }
 } else if (mode == "main_pcb_eps_z_minus") {
     intersection() { main_part(); translate([0, 0, -0.05]) asm_pcb(); }
+} else if (mode == "main_loadcell_drop_in") {
+    intersection() { main_part(); loadcell_drop_in_probe(); }
 } else if (mode == "main_battery_drop_in") {
     intersection() { main_part(); battery_drop_in_probe(); }
 } else if (mode == "main_pcb_drop_in") {
@@ -301,6 +309,10 @@ if (mode == "main_lid") {
     intersection() { lid_part(); asm_all(); }
 } else if (mode == "lid_loadcell") {
     intersection() { lid_part(); asm_loadcell(); }
+} else if (mode == "lid_loadcell_lift") {
+    // A load cell resting 0.5 mm high, on a print slightly off size, must not
+    // hold the lid open.
+    intersection() { lid_part(); translate([0, 0, 0.5]) asm_loadcell(); }
 } else if (mode == "lid_eye_access_x_neg") {
     intersection() { lid_part(); carabiner_eye_probe(-1); }
 } else if (mode == "lid_eye_access_x_pos") {

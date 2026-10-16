@@ -81,7 +81,7 @@ pcb_support_windows = [
 ];
 // Floor-anchored column under each support window. The board keepout carves
 // their tops, so they touch only the windows. The left column rises past the
-// board as its left-edge guide, and its rear end stops and props the battery.
+// board as its left-edge guide, and its rear end stops the battery.
 // The right one starts at its window and runs into the front wall; it stops
 // the board moving right through the USB-C shell, whose legs are
 // through-hole. Both keep clear of the cable pads.
@@ -142,7 +142,9 @@ rgb_led_l = 5.0;
 rgb_led_h = 1.6;
 
 // Stack spacing
-loadcell_to_battery_gap = gauge_cover_h + 0.5; // the battery clears the gauge cover
+// The battery's rear pads hold it this far above the load cell. Nothing may
+// hang over the load cell, so its front settles onto the gauge cover.
+loadcell_to_battery_gap = gauge_cover_h + 0.5;
 battery_to_pcb_gap = 0.5; // relief so the PCB does not rest directly on the battery
 battery_rear_gap = 0.2; // minimum battery rear-edge gap to the inner rear wall
 
