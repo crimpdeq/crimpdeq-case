@@ -11,6 +11,8 @@ render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
 /*** Enclosure parameters ***/
+// Every lid feature over the load cell stops this far above it, so a printed
+// part slightly off size cannot hold the lid open.
 loadcell_hold_down_clear = 0.6;
 slot_wall_fit = 0.2; // gap between lid slot walls and the main-body walls
 
@@ -204,12 +206,11 @@ module led_view_holes() {
 }
 
 module lid_carabiner_slot_walls() {
-    wall_z_min = loadcell_top_z + loadcell_slot_clear_z;
     wall_z_max = lid_z_min + internal_feature_embed;
 
     // Close the electronics bay above the load cell around each slot.
-    translate([0, 0, wall_z_min])
-        linear_extrude(height = wall_z_max - wall_z_min)
+    translate([0, 0, hold_down_target_z])
+        linear_extrude(height = wall_z_max - hold_down_target_z)
             intersection() {
                 union() {
                     carabiner_slot_wall_2d(-1);

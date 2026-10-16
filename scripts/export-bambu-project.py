@@ -41,26 +41,16 @@ PROCESS_OVERRIDES = {
     "top_shell_layers": "6",
     "bottom_shell_layers": "6",
     "sparse_infill_density": "20%",
-    # The battery-front props hang about 6 mm above the main-body floor. Tree
-    # supports grow from the floor and come out through the open top; nothing
-    # else needs them.
-    "enable_support": "1",
-    "support_type": "tree(auto)",
-    "support_on_build_plate_only": "0",
-    # Skip bridges and small overhangs: the USB-C and switch openings, the
-    # screw-head recesses and the engraved letters.
-    "support_critical_regions_only": "1",
-    "bridge_no_support": "1",
-    "support_remove_small_overhang": "1",
+    # Neither part needs support: every main-body feature stands on the floor
+    # and every lid feature grows up from its outer face.
+    "enable_support": "0",
     "brim_type": "no_brim",
 }
 
 # Parts in print layout, side by side along Y, with per-object settings.
-# Every lid feature grows up from its outer face; support would only fill the
-# screw-head recesses.
 PARTS = {
     "case_main": {},
-    "case_lid": {"enable_support": "0"},
+    "case_lid": {},
 }
 PART_GAP = 15.0
 
