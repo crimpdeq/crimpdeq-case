@@ -131,7 +131,7 @@ through the open top. The PCB columns stand on the floor and need none.
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, switch, battery and load-cell wire routes to the cable pads, battery clearance over the strain-gauge cover, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, battery clearance over the strain-gauge cover, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh
