@@ -1,149 +1,101 @@
 //
 // Lid enclosure part
 // - corner screw holes aligned with case_main.scad
-// - U cutouts aligned with main part for load-cell hole access
-// - load-cell vertical hold-down features
+// - carabiner slot walls that close the electronics bay above the load cell
 //
 
 include <placement.scad>
+use <pcb.scad>
 
 render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
 /*** Enclosure parameters ***/
-wall_t = 3;
-lid_t = 3;
-corner_r = 6;
-
-eye_access_clear = 1.0;
-u_cutout_clear = 2.0;
-
+// Every lid feature over the load cell stops this far above it, so a printed
+// part slightly off size cannot hold the lid open.
 loadcell_hold_down_clear = 0.6;
-loadcell_hold_down_w = 22.6;
-loadcell_hold_down_d = 8;
-loadcell_hold_down_wall_clear = 0.4;
-// Baseline inner-edge placement controls where hold-downs start toward the center.
-// Nudged outward slightly to add more battery-side assembly clearance.
-loadcell_hold_down_edge_offset = 10.8;
-loadcell_hold_down_y_offset = 8;
+slot_wall_fit = 0.2; // gap between lid slot walls and the main-body walls
 
 screw_clear_d = 3.0; // slightly looser clearance so the lid seats more easily on the posts
 screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly
 screw_hole_lead_in_depth = 1.0;
-screw_head_d = 5.2; // typical M2.5 button/pan head clearance
-screw_head_recess = 1.8; // recess depth so heads do not protrude
 screw_fit_shank_d = 2.6; // fit-check envelope for an M2.5 screw shank through the lid
 screw_fit_head_d = 5.0; // fit-check envelope for a typical M2.5 pan/button head
 screw_fit_head_h = 1.6;
 
 // Alignment tabs (underside) that register in the main cavity.
-// Intentionally only on front/rear walls so the side U-access zone stays clear.
+// Intentionally rear-only so the USB-side connector area stays clear.
 align_lip_enable = true;
 align_lip_h = 1.2;
 align_lip_t = 1.0;
 align_lip_clear = 0.6; // extra fit margin for print tolerances / elephant foot
 align_lip_front_back_len = 24;
 
-// Battery anti-slip tabs on lid underside (engage battery front corners when assembled).
-// Placed outside PCB width so they can extend down without colliding with the PCB.
-battery_front_stop_enable = true;
-battery_front_stop_t = 1.2;
-battery_front_stop_w = 3.0;
-battery_front_stop_x_inset = 0.5;
-battery_front_stop_y_clear = 0.3;
-battery_front_stop_z_overlap = bat_T / 2; // reach about mid battery thickness
-
 // Battery side walls (lid underside), running parallel to battery length.
 battery_side_wall_enable = true;
 battery_side_wall_t = 1.2;
-battery_side_wall_clear = 0.7;
-// Overlap into the remaining lid roof so battery walls merge with U-cutout corners.
-battery_side_wall_u_bridge_overlap = 0.6;
+battery_side_wall_l = 24;
+
+// PCB clamps press the bare pcb_clamp_windows, directly above the support
+// columns, so the board cannot rattle. The preload is one 0.2 mm layer: the
+// clamps end on a layer boundary and the lid flexes to absorb it.
+pcb_top_clamp_preload = 0.1;
+// Clearance to the B.Cu parts around each window; larger than the rear stop
+// clearance, so the stops engage before a part reaches a clamp.
+pcb_top_clamp_inset = 0.3;
+
+// Tabs behind the board's rear edge take USB-C insertion loads, one each side
+// of the ESP32 antenna overhang. The chamfer on each tab's board side pushes
+// a board that slid back during assembly forward as the lid closes.
+pcb_rear_stop_x = [8.5, 13.5]; // |x| span
+pcb_rear_stop_t = 2.4;
+pcb_rear_stop_clear = 0.25;
+pcb_rear_stop_below = 1.0; // reach below the board underside
+pcb_rear_stop_chamfer = 0.8;
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
 status_led_view_d = 2.6;
-rgb_led_view_d = 3.0;
+rgb_led_view_d = 5.8;
 led_view_chamfer_depth = 0.8;
 led_view_chamfer_delta = 0.6;
 
 brand_text = "Crimpdeq";
-brand_font = "Inter:style=Bold";
+brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
 brand_size = 9.5;
 brand_depth = 0.8;
+brand_x = 0;
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
-inner_x_min = -lc_L / 2 - clear_x;
-inner_x_max = lc_L / 2 + clear_x;
-
-inner_y_min = -pcb_L / 2 - rear_clear;
-usb_front_y = pcb_L / 2; // connector flush with PCB edge (no overhang)
-inner_y_max = usb_front_y + front_clear;
-
 inner_z_max = pcb_top_z + top_clear;
-
-outer_x_min = inner_x_min - wall_t;
-outer_x_max = inner_x_max + wall_t;
-outer_y_min = inner_y_min - wall_t;
-outer_y_max = inner_y_max + wall_t;
 outer_z_max = inner_z_max;
 
 lid_z_min = outer_z_max;
 lid_z_max = lid_z_min + lid_t;
-brand_y = 0; // centered between U cutouts
 
 hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
-hold_down_h = lid_z_min - hold_down_target_z;
-hold_down_inner_x = lc_L / 2 - loadcell_hold_down_edge_offset - loadcell_hold_down_w / 2;
-hold_down_outer_x = inner_x_max - loadcell_hold_down_wall_clear;
-hold_down_w = hold_down_outer_x - hold_down_inner_x;
-hold_down_x = (hold_down_inner_x + hold_down_outer_x) / 2;
 
-eye_x1 = -lc_L / 2 + eye_center_offset;
-eye_x2 = lc_L / 2 - eye_center_offset;
-eye_access_d = eye_d + eye_access_clear;
-u_cutout_z_d = eye_access_d + 2 * u_cutout_clear;
-u_cutout_z_r = u_cutout_z_d / 2;
-u_cutout_y_span = lc_W;
-
-screw_x1 = outer_x_min + screw_corner_inset;
-screw_x2 = outer_x_max - screw_corner_inset;
-screw_y1 = outer_y_min + screw_corner_inset;
-screw_y2 = outer_y_max - screw_corner_inset;
-head_recess_depth = max(0, min(screw_head_recess, lid_t - 0.6));
-align_lip_h_eff = align_lip_enable ? max(0, min(align_lip_h, top_clear - 0.4)) : 0;
-battery_front_stop_x = bat_W / 2 - battery_front_stop_x_inset - battery_front_stop_w / 2;
-battery_front_stop_y = battery_front_y + battery_front_stop_y_clear + battery_front_stop_t / 2;
-battery_front_stop_h = battery_front_stop_enable
-    ? max(0, lid_z_min - (battery_top_z - battery_front_stop_z_overlap))
-    : 0;
-battery_side_wall_x = bat_W / 2 + battery_side_wall_clear + battery_side_wall_t / 2;
-// Keep wall span within the hold-down column envelope.
-battery_side_wall_l = 2 * loadcell_hold_down_y_offset + loadcell_hold_down_d;
-// Extend through the lid thickness so the U-cutout top gap is closed.
+head_recess_depth = screw_head_recess;
+// The rear lip sits behind the PCB, above the battery.
+align_lip_h_eff = align_lip_enable ? max(0, min(align_lip_h, lid_z_min - battery_top_z - 0.4)) : 0;
+battery_side_wall_x = bat_W / 2 + battery_side_clear + battery_side_wall_t / 2;
+// Extend through the lid thickness so the walls fuse into the roof; their
+// lower ends also stop the load cell from lifting.
 battery_side_wall_h = lid_z_max - hold_down_target_z;
-battery_side_wall_inner_x = battery_side_wall_x - battery_side_wall_t / 2;
-u_cutout_inner_x = eye_x2 - u_cutout_z_r;
-battery_side_wall_u_bridge_x0 = u_cutout_inner_x - battery_side_wall_u_bridge_overlap;
-battery_side_wall_u_bridge_w = battery_side_wall_inner_x - battery_side_wall_u_bridge_x0;
 status_led_view_x = status_led_x;
 status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
+pcb_top_clamp_h = lid_z_min - (pcb_board_top_z - pcb_top_clamp_preload);
+pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 
-assert(!battery_front_stop_enable || battery_front_stop_w > 0,
-    "battery_front_stop_w must be > 0.");
+assert(head_recess_depth < lid_t - 0.5,
+    str("screw_head_recess must leave lid material under the head. recess=", head_recess_depth, " mm."));
 assert(!battery_side_wall_enable || battery_side_wall_t > 0,
     "battery_side_wall_t must be > 0.");
-assert(!battery_side_wall_enable || battery_side_wall_u_bridge_overlap >= 0,
-    "battery_side_wall_u_bridge_overlap must be >= 0.");
-assert(loadcell_hold_down_d > 0,
-    "loadcell_hold_down_d must be > 0.");
-assert(loadcell_hold_down_y_offset >= 0,
-    "loadcell_hold_down_y_offset must be >= 0.");
-assert(loadcell_hold_down_wall_clear >= 0,
-    str("loadcell_hold_down_wall_clear must be >= 0. Got ", loadcell_hold_down_wall_clear, " mm."));
+assert(slot_wall_fit >= 0,
+    str("slot_wall_fit must be >= 0. Got ", slot_wall_fit, " mm."));
 assert(screw_hole_lead_in_d >= screw_clear_d,
     str("screw_hole_lead_in_d must be >= screw_clear_d. lead_in_d=", screw_hole_lead_in_d,
         " clear_d=", screw_clear_d));
@@ -159,25 +111,26 @@ assert(screw_fit_head_d > 0 && screw_fit_head_d < screw_head_d,
 assert(screw_fit_head_h > 0 && screw_fit_head_h < head_recess_depth,
     str("screw_fit_head_h must be > 0 and < head_recess_depth. fit=", screw_fit_head_h,
         " recess=", head_recess_depth));
-assert(hold_down_w > 0,
-    str("Load-cell hold-down width collapsed. inner_x=", hold_down_inner_x, " outer_x=", hold_down_outer_x, "."));
-assert(hold_down_x + hold_down_w / 2 <= inner_x_max + 0.001,
-    str("Load-cell hold-downs overlap main side wall by ",
-        hold_down_x + hold_down_w / 2 - inner_x_max, " mm (X)."));
-assert(hold_down_x - hold_down_w / 2 >= bat_W / 2 - 0.001,
-    str("Load-cell hold-downs overlap battery by ",
-        bat_W / 2 - (hold_down_x - hold_down_w / 2), " mm (X)."));
-assert(!battery_front_stop_enable || battery_front_stop_h <= 0
-    || battery_front_stop_x - battery_front_stop_w / 2 >= pcb_W / 2 + 0.2,
-    "Battery front stop tabs must stay outside PCB width.");
-assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 2 <= inner_x_max + 0.001,
-    str("Battery side walls overlap main side wall by ",
-        battery_side_wall_x + battery_side_wall_t / 2 - inner_x_max, " mm (X)."));
-assert(!battery_side_wall_enable || battery_side_wall_u_bridge_w > 0,
-    str("Battery wall/U-corner bridge collapsed. bridge_w=", battery_side_wall_u_bridge_w, " mm."));
+assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 2 <= carabiner_slot_inner_x + 0.001,
+    str("Battery side walls reach into the carabiner slots by ",
+        battery_side_wall_x + battery_side_wall_t / 2 - carabiner_slot_inner_x, " mm (X)."));
+assert(pcb_rear_stop_x[0] >= max(-pcb_module_rect[0], pcb_module_rect[1]) + 1
+    && pcb_rear_stop_x[1] <= pcb_W / 2,
+    "PCB rear stops must sit behind the board, clear of the antenna overhang.");
+assert(pcb_rear_stop_z_min >= battery_top_z + 1,
+    "PCB rear stops must stay above the battery.");
+assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
+    "PCB rear stops must bear on the full board edge above their chamfer.");
+assert(pcb_top_clamp_inset > pcb_rear_stop_clear,
+    "PCB rear stops must engage before a B.Cu part reaches a clamp.");
 assert(!battery_side_wall_enable || battery_side_wall_l <= (inner_y_max - inner_y_min) + 0.001,
     str("Battery side wall length exceeds inner cavity span by ",
         battery_side_wall_l - (inner_y_max - inner_y_min), " mm (Y)."));
+assert(pcb_top_clamp_h > 0,
+    "PCB clamps must reach down from the lid.");
+for (w = pcb_clamp_windows)
+    assert(w[0] >= -pcb_W / 2 && w[1] <= pcb_W / 2 && w[2] >= -pcb_L / 2 && w[3] <= pcb_L / 2,
+        str("PCB clamp window must stay on the board: ", w));
 assert(status_led_view_d > 0 && rgb_led_view_d > 0,
     str("LED view diameters must be > 0. status=", status_led_view_d,
         " rgb=", rgb_led_view_d, " mm."));
@@ -196,33 +149,6 @@ assert(rgb_led_view_x - rgb_led_view_d / 2 >= -pcb_W / 2 - 0.001
     && rgb_led_y - rgb_led_view_d / 2 >= -pcb_L / 2 - 0.001
     && rgb_led_y + rgb_led_view_d / 2 <= pcb_L / 2 + 0.001,
     "RGB LED viewing hole must stay within PCB footprint.");
-
-module rounded_rect_2d(x_min, x_max, y_min, y_max, r) {
-    w = x_max - x_min;
-    h = y_max - y_min;
-    rr = max(0, min(r, min(w, h) / 2 - 0.01));
-    if (rr > 0) {
-        translate([x_min + rr, y_min + rr])
-            offset(r = rr)
-                square([w - 2 * rr, h - 2 * rr], center = false);
-    } else {
-        translate([x_min, y_min])
-            square([w, h], center = false);
-    }
-}
-
-module rounded_block_xy(min_v, max_v, r) {
-    translate([0, 0, min_v[2]])
-        linear_extrude(height = max_v[2] - min_v[2], center = false)
-            rounded_rect_2d(min_v[0], max_v[0], min_v[1], max_v[1], r);
-}
-
-module each_corner(z_pos) {
-    for (x = [screw_x1, screw_x2])
-        for (y = [screw_y1, screw_y2])
-            translate([x, y, z_pos])
-                children();
-}
 
 module corner_holes(d, z0, z1) {
     hole_h = z1 - z0 + 0.2;
@@ -279,31 +205,26 @@ module led_view_holes() {
     led_view_hole(rgb_led_view_x, rgb_led_view_y, rgb_led_view_d);
 }
 
-module eye_u_cutout(eye_x, open_left = true) {
-    linear_extrude(height = u_cutout_y_span, center = true)
-        union() {
-            translate([eye_x, 0])
-                circle(d = u_cutout_z_d);
+module lid_carabiner_slot_walls() {
+    wall_z_max = lid_z_min + internal_feature_embed;
 
-            if (open_left) {
-                translate([outer_x_min - 0.2, -u_cutout_z_r])
-                    square([eye_x - (outer_x_min - 0.2), u_cutout_z_d]);
-            } else {
-                translate([eye_x, -u_cutout_z_r])
-                    square([(outer_x_max + 0.2) - eye_x, u_cutout_z_d]);
+    // Close the electronics bay above the load cell around each slot.
+    translate([0, 0, hold_down_target_z])
+        linear_extrude(height = wall_z_max - hold_down_target_z)
+            intersection() {
+                union() {
+                    carabiner_slot_wall_2d(-1);
+                    carabiner_slot_wall_2d(1);
+                }
+                case_outline_2d(wall_t + slot_wall_fit);
             }
-        }
 }
 
-module loadcell_hold_downs() {
-    hold_down_h_eff = hold_down_h + internal_feature_embed;
-    hold_down_z = hold_down_target_z + hold_down_h_eff / 2;
-
-    for (x_sign = [-1, 1])
-        // Keep the center open so the load-cell eye holes remain fully accessible.
-        for (y_off = [-loadcell_hold_down_y_offset, loadcell_hold_down_y_offset])
-            translate([x_sign * hold_down_x, y_off, hold_down_z])
-                cube([hold_down_w, loadcell_hold_down_d, hold_down_h_eff], center = true);
+module lid_carabiner_slot_cuts() {
+    translate([0, 0, lid_z_min - 0.1])
+        linear_extrude(height = lid_t + 0.2)
+            for (x_sign = [-1, 1])
+                carabiner_slot_2d(x_sign);
 }
 
 module lid_alignment_lips() {
@@ -324,17 +245,6 @@ module lid_alignment_lips() {
     }
 }
 
-module battery_front_stops() {
-    if (battery_front_stop_h > 0 && battery_front_stop_t > 0 && battery_front_stop_w > 0) {
-        stop_h_eff = battery_front_stop_h + internal_feature_embed;
-        stop_z = lid_z_min - battery_front_stop_h / 2 + internal_feature_embed / 2;
-
-        for (x_sign = [-1, 1])
-            translate([x_sign * battery_front_stop_x, battery_front_stop_y, stop_z])
-                cube([battery_front_stop_w, battery_front_stop_t, stop_h_eff], center = true);
-    }
-}
-
 module battery_side_walls() {
     if (battery_side_wall_enable && battery_side_wall_h > 0 && battery_side_wall_t > 0 && battery_side_wall_l > 0) {
         wall_z = hold_down_target_z + battery_side_wall_h / 2;
@@ -345,26 +255,36 @@ module battery_side_walls() {
     }
 }
 
-module battery_wall_u_corner_bridges() {
-    if (battery_side_wall_enable && battery_side_wall_u_bridge_w > 0 && battery_side_wall_l > 0 && lid_t > 0) {
-        bridge_z = lid_z_min + lid_t / 2;
-
-        for (x_sign = [-1, 1])
-            translate([x_sign * (battery_side_wall_u_bridge_x0 + battery_side_wall_u_bridge_w / 2), 0, bridge_z])
-                cube([battery_side_wall_u_bridge_w, battery_side_wall_l, lid_t], center = true);
-    }
+module battery_side_wall_features() {
+    if (battery_side_wall_enable)
+        battery_side_walls();
 }
 
-module battery_side_wall_features() {
-    if (battery_side_wall_enable) {
-        battery_side_walls();
-        battery_wall_u_corner_bridges();
-    }
+module pcb_top_clamps() {
+    translate([0, pcb_y_offset, pcb_board_top_z - pcb_top_clamp_preload])
+        linear_extrude(height = pcb_top_clamp_h + internal_feature_embed)
+            for (w = pcb_clamp_windows)
+                offset(delta = -pcb_top_clamp_inset)
+                    pcb_rect_2d(w);
+}
+
+module pcb_rear_stops() {
+    w = pcb_rear_stop_x[1] - pcb_rear_stop_x[0];
+    y0 = pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t;
+    z_chamfer = pcb_rear_stop_z_min + pcb_rear_stop_chamfer;
+    for (s = [-1, 1])
+        translate([s > 0 ? pcb_rear_stop_x[0] : -pcb_rear_stop_x[1], y0, 0])
+            hull() {
+                translate([0, 0, z_chamfer])
+                    cube([w, pcb_rear_stop_t, lid_z_min - z_chamfer + internal_feature_embed]);
+                translate([0, 0, pcb_rear_stop_z_min])
+                    cube([w, pcb_rear_stop_t - pcb_rear_stop_chamfer, 0.01]);
+            }
 }
 
 module brand_engrave_lid() {
     // Carved on outer top face (same plane as load cell), horizontal and centered.
-    translate([0, brand_y, lid_z_max - brand_depth - 0.1])
+    translate([brand_x, brand_y, lid_z_max - brand_depth - 0.1])
         linear_extrude(height = brand_depth + 0.2, center = false)
             rotate([0, 0, 90])
                 text(brand_text, size = brand_size, font = brand_font, halign = "center", valign = "center");
@@ -373,27 +293,23 @@ module brand_engrave_lid() {
 module lid_part() {
     difference() {
         union() {
-            rounded_block_xy(
-                [outer_x_min, outer_y_min, lid_z_min],
-                [outer_x_max, outer_y_max, lid_z_max],
-                corner_r
-            );
+            translate([0, 0, lid_z_min])
+                linear_extrude(height = lid_t)
+                    case_outline_2d();
             lid_alignment_lips();
-            battery_front_stops();
-            if (hold_down_h > 0) {
-                loadcell_hold_downs();
-            }
+            battery_side_wall_features();
+            pcb_top_clamps();
+            pcb_rear_stops();
+            lid_carabiner_slot_walls();
         }
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);
         corner_hole_lead_ins(screw_hole_lead_in_d, screw_clear_d, screw_hole_lead_in_depth);
         corner_head_recesses(screw_head_d, head_recess_depth);
         led_view_holes();
-        translate([0, 0, lid_z_min]) eye_u_cutout(eye_x1, open_left = true);
-        translate([0, 0, lid_z_min]) eye_u_cutout(eye_x2, open_left = false);
+        lid_carabiner_slot_cuts();
         // Brand engraving on outer top face.
         brand_engrave_lid();
     }
-    battery_side_wall_features();
 }
 
 module lid_part_print_layout() {

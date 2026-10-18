@@ -57,21 +57,57 @@ if [[ ! "$check_jobs" =~ ^[0-9]+$ ]] || (( check_jobs < 1 )); then
     exit 1
 fi
 
+# A warning such as an undefined value can silently drop a probe and turn a
+# real collision into an empty result, so treat warnings as errors.
 openscad_defs=(
+    --hardwarnings
     -D "render_fn=${render_fn}"
 )
 
 checks=(
     "main_lid nonempty"
     "main_loadcell nonempty"
+    "main_loadcell_arm_x_neg empty"
+    "main_loadcell_arm_x_pos empty"
+    "main_eye_access_x_neg empty"
+    "main_eye_access_x_pos empty"
+    "main_notch_retention_y_neg nonempty"
+    "main_notch_retention_y_pos nonempty"
     "main_battery empty"
-    "main_pcb nonempty"
+    "main_loadcell_drop_in empty"
+    "main_battery_drop_in empty"
+    "main_pcb_drop_in empty"
+    "main_pcb_eps_z_minus nonempty"
     "main_switch empty"
+    "main_switch_grip nonempty"
+    "main_cable_pad_wires empty"
+    "main_switch_wires empty"
+    "main_battery_wires empty"
+    "main_loadcell_wires empty"
+    "main_corner_end_xn_yn nonempty"
+    "main_corner_end_xn_yp nonempty"
+    "main_corner_end_xp_yn nonempty"
+    "main_corner_end_xp_yp nonempty"
+    "main_screw_pilot_fit empty"
     "main_usb_cable empty"
+    "main_usb_overmold_stop nonempty"
     "lid_loadcell empty"
+    "lid_loadcell_lift empty"
+    "lid_eye_access_x_neg empty"
+    "lid_eye_access_x_pos empty"
+    "lid_corner_roof_xn_yn nonempty"
+    "lid_corner_roof_xn_yp nonempty"
+    "lid_corner_roof_xp_yn nonempty"
+    "lid_corner_roof_xp_yp nonempty"
     "lid_battery empty"
-    "lid_pcb empty"
+    "lid_pcb_clamped nonempty"
+    "lid_pcb_outside_clamps empty"
+    "lid_pcb_rear_travel empty"
+    "lid_pcb_rear_stop nonempty"
     "lid_switch empty"
+    "lid_switch_wires empty"
+    "lid_battery_wires empty"
+    "lid_loadcell_wires empty"
     "lid_screw_shank_fit empty"
     "lid_screw_head_fit empty"
     "lid_status_led_sightline empty"
@@ -80,19 +116,19 @@ checks=(
     "loadcell_pcb empty"
     "loadcell_switch empty"
     "battery_pcb empty"
+    "battery_wires empty"
     "battery_switch empty"
     "pcb_switch empty"
     "main_lid_eps_up empty"
     "main_lid_eps_down nonempty"
     "main_loadcell_eps_z_plus empty"
-    "main_pcb_eps_y_plus nonempty"
     "main_pcb_eps_yz_plus empty"
+    "main_pcb_eps_x_neg empty"
+    "main_pcb_eps_x_pos empty"
+    "main_pcb_guide_x_neg nonempty"
+    "main_pcb_usb_side_stop nonempty"
     "battery_pcb_eps_z_plus empty"
 )
-
-current_job_count() {
-    jobs -pr | wc -l | tr -d ' '
-}
 
 check_mode() {
     local mode="$1"
@@ -132,20 +168,24 @@ echo "Running collision matrix with: ${openscad_cmd[*]} ${openscad_defs[*]}"
 echo "Running ${#checks[@]} checks with CHECK_JOBS=$check_jobs"
 
 pids=()
+failed=0
 for check in "${checks[@]}"; do
     IFS=' ' read -r mode expected <<< "$check"
     check_mode "$mode" "$expected" &
     pids+=("$!")
 
-    while (( $(current_job_count) >= check_jobs )); do
-        if ! wait -n; then
-            :
+    # macOS ships Bash 3.2, which has no `wait -n`. Waiting for the oldest
+    # active job keeps the concurrency bounded and remains portable.
+    if (( ${#pids[@]} >= check_jobs )); then
+        if ! wait "${pids[0]}"; then
+            failed=1
         fi
-    done
+        pids=("${pids[@]:1}")
+    fi
 done
 
-failed=0
-for pid in "${pids[@]}"; do
+# Bash 3.2 treats an empty "${pids[@]}" as unbound under `set -u`.
+for pid in ${pids[@]+"${pids[@]}"}; do
     if ! wait "$pid"; then
         failed=1
     fi
