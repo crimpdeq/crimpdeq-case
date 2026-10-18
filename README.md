@@ -38,7 +38,9 @@ bundle sizes:
   its wires toward the front. The wires run left under the battery, forward
   outside the left column and under the board to the front-edge pads. Pads
   behind the load cell hold the battery's rear 0.5 mm above the 2.5 mm
-  cover; its front settles onto the cover.
+  cover; its front settles onto the cover. Lid hold-downs directly above the
+  pads clamp the battery onto them with a one-layer (0.2 mm) preload, so it
+  cannot rattle, and the clamp load goes into the floor, not the load cell.
 
 Nothing hangs over the load cell or the battery, so both drop straight in
 and lie flat, and the board only tilts to seat its USB-C connector, which
@@ -136,7 +138,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, battery hold-down preload, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

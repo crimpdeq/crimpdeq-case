@@ -364,8 +364,13 @@ if (mode == "main_lid") {
     intersection() { lid_part(); corner_roof_probe(1, -1); }
 } else if (mode == "lid_corner_roof_xp_yp") {
     intersection() { lid_part(); corner_roof_probe(1, 1); }
-} else if (mode == "lid_battery") {
+} else if (mode == "lid_battery_clamped") {
     intersection() { lid_part(); asm_battery(); }
+} else if (mode == "lid_battery_outside_hold_downs") {
+    // The lid may touch the battery only through the hold-downs.
+    intersection() { lid_part(); difference() { asm_battery(); battery_hold_downs(); } }
+} else if (mode == "lid_battery_hold_down_preload") {
+    intersection() { battery_hold_downs(); translate([0, 0, -battery_hold_down_preload - 0.05]) asm_battery(); }
 } else if (mode == "lid_pcb_clamped") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_pcb_outside_clamps") {

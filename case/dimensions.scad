@@ -64,6 +64,13 @@ bat_L = 50;
 bat_W = 34;
 bat_T = 10;
 battery_side_clear = 0.5; // to the bay walls beside the eye slots
+// Pads under the battery's rear corners, behind the load cell.
+battery_pad_size = 8;
+battery_pad_inset = 1; // from the battery's rear and side edges
+// Lid hold-downs above the pads press the battery onto them by one 0.2 mm
+// layer, so it cannot rattle. Re-measure bat_T if the battery changes: a
+// thicker one adds its excess to this preload.
+battery_hold_down_preload = 0.2;
 
 // PCB revision 3 (crimpdeq-pcb pcb/crimpdeq, board center (142.45, 67.40)).
 // The board is installed bottom-side up with its USB-C edge toward the front

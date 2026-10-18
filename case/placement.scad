@@ -34,6 +34,10 @@ case_inner_y_min = -case_inner_y_max;
 battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
 battery_top_z = battery_bottom_z + bat_T;
 battery_front_y = battery_y_offset + bat_L / 2;
+// +X rear pad; the -X one mirrors it.
+battery_pad_x = [bat_W / 2 - battery_pad_inset - battery_pad_size, bat_W / 2 - battery_pad_inset];
+battery_pad_y0 = battery_y_offset - bat_L / 2 + battery_pad_inset;
+battery_pad_y = [battery_pad_y0, battery_pad_y0 + battery_pad_size];
 
 // Only the low F.Cu parts sit over the battery; the taller USB-C connector
 // hangs in front of it.
@@ -100,6 +104,8 @@ assert(case_inner_y_min <= min(
     "The mirrored rear wall must enclose the load cell, PCB and battery.");
 assert(switch_y - switch_d / 2 - switch_wire_bend >= max(lc_W / 2, battery_front_y),
     "The switch wire bend must stay clear of the load cell and battery.");
+assert(battery_pad_y[1] < -lc_W / 2,
+    "Battery pads and their lid hold-downs must stay behind the load cell.");
 assert(usb_rear_y >= battery_front_y + 0.5,
     "The USB-C connector must hang in front of the battery.");
 assert(case_corner_x > case_inner_x_half && case_corner_x < case_tip_x,
@@ -112,6 +118,12 @@ assert(carabiner_slot_inner_x < eye_x - carabiner_shank_d / 2,
         carabiner_slot_inner_x, " mm."));
 assert(carabiner_slot_d / 2 + loadcell_slot_wall_t < lc_W / 2 + loadcell_guard_clear,
     "Carabiner slot walls must leave the load-cell corners covered.");
+
+// Axis-aligned box spanning the [min, max] pairs x, y and z.
+module box(x, y, z) {
+    translate([min(x), min(y), min(z)])
+        cube([abs(x[1] - x[0]), abs(y[1] - y[0]), abs(z[1] - z[0])]);
+}
 
 module each_corner(z_pos) {
     for (c = screw_centers)

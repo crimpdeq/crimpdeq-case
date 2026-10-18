@@ -87,6 +87,10 @@ status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
 pcb_top_clamp_h = lid_z_min - (pcb_board_top_z - pcb_top_clamp_preload);
+// Over the main-body pads, inside the board's width: the battery leads run
+// forward over the battery's edge just beyond it.
+battery_hold_down_x = [battery_pad_x[0], min(battery_pad_x[1], pcb_W / 2)];
+battery_hold_down_z_min = battery_top_z - battery_hold_down_preload;
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 
 assert(head_recess_depth < lid_t - 0.5,
@@ -267,6 +271,14 @@ module pcb_top_clamps() {
                     pcb_rect_2d(w);
 }
 
+// Clamp the battery onto its rear pads, so the clamp load goes into the floor
+// and not the load cell.
+module battery_hold_downs() {
+    for (s = [-1, 1])
+        box(s * battery_hold_down_x, battery_pad_y,
+            [battery_hold_down_z_min, lid_z_min + internal_feature_embed]);
+}
+
 module pcb_rear_stops() {
     w = pcb_rear_stop_x[1] - pcb_rear_stop_x[0];
     y0 = pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t;
@@ -299,6 +311,7 @@ module lid_part() {
             battery_side_wall_features();
             pcb_top_clamps();
             pcb_rear_stops();
+            battery_hold_downs();
             lid_carabiner_slot_walls();
         }
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);
