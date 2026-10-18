@@ -150,3 +150,19 @@ module carabiner_slot_wall_2d(x_sign) {
         carabiner_slot_2d(x_sign);
     }
 }
+
+// Main-body fins on the bay side of the four lid slot-wall ends, fused to the
+// facets and reaching slot_seal_overlap past each end.
+slot_seal_fin_y = carabiner_slot_d / 2 + loadcell_slot_wall_t + slot_wall_fit;
+
+module slot_seal_fins_2d() {
+    intersection() {
+        difference() {
+            case_outline_2d();
+            case_outline_2d(wall_t + slot_wall_fit + slot_seal_overlap);
+        }
+        for (y_sign = [-1, 1])
+            translate([-case_tip_x, y_sign > 0 ? slot_seal_fin_y : -slot_seal_fin_y - loadcell_slot_wall_t])
+                square([2 * case_tip_x, loadcell_slot_wall_t]);
+    }
+}

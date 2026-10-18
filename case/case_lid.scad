@@ -14,7 +14,6 @@ $fn = render_fn;
 // Every lid feature over the load cell stops this far above it, so a printed
 // part slightly off size cannot hold the lid open.
 loadcell_hold_down_clear = 0.6;
-slot_wall_fit = 0.2; // gap between lid slot walls and the main-body walls
 
 screw_clear_d = 3.0; // slightly looser clearance so the lid seats more easily on the posts
 screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly

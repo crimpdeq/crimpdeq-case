@@ -64,6 +64,23 @@ module corner_end_probe(x_sign, y_sign) {
         cube([10, 1, 1], center = true);
 }
 
+// A sheet along the gap round one lid slot-wall end, from the slot into the
+// bay. Only the main-body fin can block it.
+module slot_seal_probe(x_sign, y_sign) {
+    y0 = carabiner_slot_d / 2 - 1;
+    y1 = slot_seal_fin_y + loadcell_slot_wall_t + 1;
+    translate([0, 0, loadcell_top_z + 1])
+        linear_extrude(height = 14)
+            intersection() {
+                difference() {
+                    case_outline_2d(wall_t + slot_wall_fit / 2 - 0.05);
+                    case_outline_2d(wall_t + slot_wall_fit / 2 + 0.05);
+                }
+                translate([x_sign > 0 ? 0 : -case_tip_x, y_sign > 0 ? y0 : -y1])
+                    square([case_tip_x, y1 - y0]);
+            }
+}
+
 module corner_roof_probe(x_sign, y_sign) {
     translate([x_sign * (lc_L / 2 - 1), y_sign * (lc_W / 2 - 1), loadcell_top_z + 15])
         cube([1, 1, 30], center = true);
@@ -246,6 +263,12 @@ if (mode == "main_lid") {
     intersection() { main_part(); lid_part(); }
 } else if (mode == "main_lid_eps_up") {
     intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
+} else if (mode == "main_lid_shifted") {
+    // The lid must seat anywhere within the 0.25 mm play of the screws in their
+    // lid holes, plus 0.2 mm for printed walls off size.
+    lid_shift = 0.45;
+    for (d = [[1, 0], [-1, 0], [0, 1], [0, -1]])
+        intersection() { main_part(); translate([d[0] * lid_shift, d[1] * lid_shift, 0.01]) lid_part(); }
 } else if (mode == "main_lid_eps_down") {
     intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
 } else if (mode == "main_components") {
@@ -325,6 +348,14 @@ if (mode == "main_lid") {
     intersection() { main_part(); corner_end_probe(1, -1); }
 } else if (mode == "main_corner_end_xp_yp") {
     intersection() { main_part(); corner_end_probe(1, 1); }
+} else if (mode == "main_slot_seal_xn_yn") {
+    intersection() { main_part(); slot_seal_probe(-1, -1); }
+} else if (mode == "main_slot_seal_xn_yp") {
+    intersection() { main_part(); slot_seal_probe(-1, 1); }
+} else if (mode == "main_slot_seal_xp_yn") {
+    intersection() { main_part(); slot_seal_probe(1, -1); }
+} else if (mode == "main_slot_seal_xp_yp") {
+    intersection() { main_part(); slot_seal_probe(1, 1); }
 } else if (mode == "lid_corner_roof_xn_yn") {
     intersection() { lid_part(); corner_roof_probe(-1, -1); }
 } else if (mode == "lid_corner_roof_xn_yp") {

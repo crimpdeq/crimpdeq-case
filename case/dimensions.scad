@@ -51,6 +51,13 @@ pod_half_x = 22;
 loadcell_guard_clear = 0.5;
 loadcell_slot_wall_t = 1.2;
 loadcell_slot_clear_z = 0.3;
+// Gap from the lid slot-wall ends to the main-body facets and to the fins
+// beside them. The screws locate the lid; at 0.2 mm the tall wall ends wedged
+// into the slightly undersized printed cavity and held the lid open.
+slot_wall_fit = 0.6;
+// How far each main-body fin reaches past its lid slot-wall end, so the gap
+// round the end is a labyrinth instead of a slit from the slot into the bay.
+slot_seal_overlap = 1.5;
 
 // Battery
 bat_L = 50;
