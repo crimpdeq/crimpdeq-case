@@ -26,8 +26,6 @@ loadcell_notch_guide_h = 4;
 loadcell_notch_guide_clear = 0.2;
 loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
-battery_support_corner_size = 8;
-battery_support_corner_inset = 1;
 battery_support_front_column_clear = 0.3; // battery front stop gap to the PCB columns
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
@@ -217,23 +215,16 @@ module loadcell_support() {
     }
 }
 
-module box(x, y, z) {
-    translate([min(x), min(y), min(z)])
-        cube([abs(x[1] - x[0]), abs(y[1] - y[0]), abs(z[1] - z[0])]);
-}
-
 // Floor-anchored pads under the rear battery corners, behind the load cell,
-// with guides beside and behind each corner. The PCB columns and the
-// battery-front rib stop the battery front, which settles onto the
-// strain-gauge cover. Nothing may hang over the load cell, or it would not
-// drop in.
+// with guides beside and behind each corner. Lid hold-downs clamp the battery
+// onto them. The PCB columns and the battery-front rib stop the battery
+// front, which settles onto the strain-gauge cover. Nothing may hang over the
+// load cell, or it would not drop in.
 module battery_rear_supports() {
     floor_z = inner_z_min - internal_feature_embed;
     guide_top_z = battery_bottom_z + min(battery_guide_h, bat_T);
-    pad_x1 = bat_W / 2 - battery_support_corner_inset;
-    pad_x = [pad_x1 - battery_support_corner_size, pad_x1];
-    pad_y0 = battery_y_offset - bat_L / 2 + battery_support_corner_inset;
-    pad_y = [pad_y0, pad_y0 + battery_support_corner_size];
+    pad_x = battery_pad_x;
+    pad_y = battery_pad_y;
     side_x0 = bat_W / 2 + battery_guide_clear;
     side_x = [side_x0, side_x0 + battery_guide_t];
     rear_y1 = battery_y_offset - bat_L / 2 - battery_guide_clear;

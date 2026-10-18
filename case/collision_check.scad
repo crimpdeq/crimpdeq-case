@@ -14,6 +14,8 @@ $fn = render_fn;
 // Override from CLI with -D 'mode="..."'
 mode = "main_lid";
 
+lid_seat_shifts = [[1, 0], [-1, 0], [0, 1], [0, -1]] * lid_seat_play;
+
 module asm_loadcell() {
     translate([0, 0, loadcell_center_z])
         linear_extrude(height = lc_T, center = true)
@@ -264,11 +266,8 @@ if (mode == "main_lid") {
 } else if (mode == "main_lid_eps_up") {
     intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
 } else if (mode == "main_lid_shifted") {
-    // The lid must seat anywhere within the 0.25 mm play of the screws in their
-    // lid holes, plus 0.2 mm for printed walls off size.
-    lid_shift = 0.45;
-    for (d = [[1, 0], [-1, 0], [0, 1], [0, -1]])
-        intersection() { main_part(); translate([d[0] * lid_shift, d[1] * lid_shift, 0.01]) lid_part(); }
+    for (d = lid_seat_shifts)
+        intersection() { main_part(); translate([d[0], d[1], 0.01]) lid_part(); }
 } else if (mode == "main_lid_eps_down") {
     intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
 } else if (mode == "main_components") {
@@ -364,8 +363,23 @@ if (mode == "main_lid") {
     intersection() { lid_part(); corner_roof_probe(1, -1); }
 } else if (mode == "lid_corner_roof_xp_yp") {
     intersection() { lid_part(); corner_roof_probe(1, 1); }
-} else if (mode == "lid_battery") {
+} else if (mode == "lid_battery_clamped") {
     intersection() { lid_part(); asm_battery(); }
+} else if (mode == "lid_battery_outside_hold_downs") {
+    // The lid may touch the battery only through the hold-downs.
+    intersection() { lid_part(); difference() { asm_battery(); battery_hold_downs(); } }
+} else if (mode == "lid_battery_hold_downs_off_pads") {
+    // Wherever the lid seats, the hold-downs stay over the pads. A shifted
+    // edge may land exactly on a pad edge, so widen the pads by 0.01 mm.
+    for (d = lid_seat_shifts)
+        difference() {
+            translate([d[0], d[1], 0]) battery_hold_downs();
+            for (s = [-1, 1])
+                box(s * (battery_pad_x + [-0.01, 0.01]), battery_pad_y + [-0.01, 0.01],
+                    [battery_bottom_z, pcb_top_z + top_clear + lid_t]);
+        }
+} else if (mode == "lid_battery_hold_down_preload") {
+    intersection() { battery_hold_downs(); translate([0, 0, -battery_hold_down_preload - 0.05]) asm_battery(); }
 } else if (mode == "lid_pcb_clamped") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_pcb_outside_clamps") {
