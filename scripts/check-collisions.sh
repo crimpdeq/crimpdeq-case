@@ -184,7 +184,8 @@ for check in "${checks[@]}"; do
     fi
 done
 
-for pid in "${pids[@]}"; do
+# Bash 3.2 treats an empty "${pids[@]}" as unbound under `set -u`.
+for pid in ${pids[@]+"${pids[@]}"}; do
     if ! wait "$pid"; then
         failed=1
     fi
