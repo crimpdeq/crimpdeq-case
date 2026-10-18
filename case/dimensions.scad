@@ -40,6 +40,9 @@ notch_xB = 60;
 // Shell shared by the main body and lid.
 wall_t = 2.4;
 lid_t = 2.4;
+// The lid may seat anywhere within the 0.25 mm play of the screws in their
+// lid holes, plus 0.2 mm for printed walls off size.
+lid_seat_play = 0.45;
 // Symmetric hexagonal plan: flat front and rear walls and a point at each
 // end. 60 degrees from the X axis makes every interior angle 120 degrees.
 case_facet_angle = 60;

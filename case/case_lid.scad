@@ -88,8 +88,10 @@ rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
 pcb_top_clamp_h = lid_z_min - (pcb_board_top_z - pcb_top_clamp_preload);
 // Over the main-body pads, inside the board's width: the battery leads run
-// forward over the battery's edge just beyond it.
-battery_hold_down_x = [battery_pad_x[0], min(battery_pad_x[1], pcb_W / 2)];
+// forward over the battery's edge just beyond it. The inset keeps them there
+// wherever the lid seats.
+battery_hold_down_x = [battery_pad_x[0], min(battery_pad_x[1], pcb_W / 2)] + [1, -1] * lid_seat_play;
+battery_hold_down_y = battery_pad_y + [1, -1] * lid_seat_play;
 battery_hold_down_z_min = battery_top_z - battery_hold_down_preload;
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 
@@ -275,7 +277,7 @@ module pcb_top_clamps() {
 // and not the load cell.
 module battery_hold_downs() {
     for (s = [-1, 1])
-        box(s * battery_hold_down_x, battery_pad_y,
+        box(s * battery_hold_down_x, battery_hold_down_y,
             [battery_hold_down_z_min, lid_z_min + internal_feature_embed]);
 }
 
