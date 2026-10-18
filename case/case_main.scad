@@ -38,13 +38,10 @@ pcb_guide_lead_in = 0.6;
 pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
 // Parts can also slide by the guide clearance before the lid rear stops engage.
 pcb_part_clear_xy = pcb_guide_clear + pcb_part_clear;
-pcb_battery_tongue_front_clear = 3.0; // overlap under battery front edge, in front of the load-cell wires
-pcb_battery_tongue_top_clear = 0.0; // 0 = touches battery underside
-pcb_battery_tongue_bottom_clear = 0.2; // keep clear of load-cell top
-// Low rib from the battery front to the front wall under the battery's
+// Low rib from the battery front to the front wall in front of the battery's
 // front-right corner, fused to the right PCB column and the notch guide. It
-// stops and props the battery like the left column but stays below it, so
-// the switch and battery wires pass over it.
+// stops the battery like the left column but stays below it, so the switch
+// and battery wires pass over it.
 battery_front_rib_x = [12.0, 16.5];
 
 internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
@@ -109,8 +106,6 @@ pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
 pcb_guide_top_z = pcb_board_top_z + pcb_guide_above;
 battery_stop_y = battery_front_y + battery_support_front_column_clear;
-battery_tongue_y = [battery_front_y - pcb_battery_tongue_front_clear, battery_stop_y + 0.01];
-battery_tongue_z = [loadcell_top_z + pcb_battery_tongue_bottom_clear, battery_bottom_z - pcb_battery_tongue_top_clear];
 
 assert(switch_y_min >= loadcell_y_max,
     str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));
@@ -141,18 +136,14 @@ for (c = pcb_support_columns)
         str("PCB column must clear the switch cavity: ", c));
 assert(pcb_guide_top_z < outer_z_max - 0.5,
     "PCB edge guides must stay below the lid.");
-assert(pcb_battery_tongue_front_clear >= 0,
-    str("pcb_battery_tongue_front_clear must be >= 0. Got ", pcb_battery_tongue_front_clear, " mm."));
-assert(pcb_battery_tongue_top_clear >= 0,
-    str("pcb_battery_tongue_top_clear must be >= 0. Got ", pcb_battery_tongue_top_clear, " mm."));
-assert(pcb_battery_tongue_bottom_clear >= 0,
-    str("pcb_battery_tongue_bottom_clear must be >= 0. Got ", pcb_battery_tongue_bottom_clear, " mm."));
 assert(pcb_guide_lead_in > 0 && pcb_guide_lead_in < pcb_guide_above + pcb_board_t,
     str("pcb_guide_lead_in must stay within the edge guides. Got ", pcb_guide_lead_in, " mm."));
 assert(switch_grip_len >= wall_t,
     str("switch_grip_len must be at least wall_t. Got ", switch_grip_len, " mm."));
 assert(screw_edge_inset - screw_post_d / 2 < wall_t,
     "Screw posts must merge into the walls.");
+assert(screw_thread_d + 2 * screw_pilot_chamfer <= screw_post_d - 2,
+    "Screw pilot chamfers must leave at least 1 mm of post rim.");
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(thread_depth <= outer_z_max - outer_z_min - 1,
@@ -232,8 +223,10 @@ module box(x, y, z) {
 }
 
 // Floor-anchored pads under the rear battery corners, behind the load cell,
-// with guides beside and behind each corner. The PCB columns stop and prop
-// the battery front.
+// with guides beside and behind each corner. The PCB columns and the
+// battery-front rib stop the battery front, which settles onto the
+// strain-gauge cover. Nothing may hang over the load cell, or it would not
+// drop in.
 module battery_rear_supports() {
     floor_z = inner_z_min - internal_feature_embed;
     guide_top_z = battery_bottom_z + min(battery_guide_h, bat_T);
@@ -298,19 +291,14 @@ module pcb_keepout() {
 }
 
 // Floor-anchored columns in front of the battery carry the board under its
-// support windows. A column that reaches the battery front stops it, with a
-// tongue propping its underside. Nothing hangs over the battery, so they
-// print without support and the battery drops straight in. Lid tabs behind
-// the board take USB-C insertion loads.
+// support windows. A column that reaches the battery front stops it. Nothing
+// hangs over the load cell or battery, so they print without support and
+// both drop straight in. Lid tabs behind the board take USB-C insertion loads.
 module pcb_supports() {
     difference() {
-        for (c = pcb_support_columns) {
-            col_y0 = max(pcb_y_offset + c[2], battery_stop_y);
-            box([c[0], c[1]], [col_y0, pcb_y_offset + c[3]],
+        for (c = pcb_support_columns)
+            box([c[0], c[1]], [max(pcb_y_offset + c[2], battery_stop_y), pcb_y_offset + c[3]],
                 [inner_z_min - internal_feature_embed, pcb_guide_top_z]);
-            if (col_y0 == battery_stop_y)
-                box([c[0], c[1]], battery_tongue_y, battery_tongue_z);
-        }
         pcb_keepout();
     }
 }
@@ -318,7 +306,6 @@ module pcb_supports() {
 module battery_front_rib() {
     box(battery_front_rib_x, [battery_stop_y, inner_y_max + internal_feature_embed],
         [inner_z_min - internal_feature_embed, battery_bottom_z]);
-    box(battery_front_rib_x, battery_tongue_y, battery_tongue_z);
 }
 
 // Thickens the front wall round the switch opening to switch_grip_len,
@@ -357,6 +344,11 @@ module corner_thread_holes(d, z_top, depth) {
         each_corner(hole_z)
             cylinder(d = d, h = hole_h, center = true);
     }
+}
+
+module corner_pilot_chamfers(d, depth) {
+    each_corner(outer_z_max - depth)
+        cylinder(d1 = d, d2 = d + 2 * (depth + 0.1), h = depth + 0.1);
 }
 
 module corner_screw_posts(d, z0, z1) {
@@ -439,6 +431,7 @@ module main_part() {
         }
 
         corner_thread_holes(screw_thread_d, outer_z_max, thread_depth);
+        corner_pilot_chamfers(screw_thread_d, screw_pilot_chamfer);
 
         carabiner_slot_cuts();
 

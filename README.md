@@ -22,8 +22,8 @@ one, fused to the front wall, stops it moving right through the USB-C shell's
 through-hole legs. Lid clamps directly above the columns press the board with
 a one-layer (0.1 mm) preload, so it cannot rattle. Chamfered lid tabs behind
 the board's rear edge take USB-C insertion loads and push a board that slid
-back forward as the lid closes. The left column and a low rib under the
-battery's front-right corner stop and prop the battery.
+back forward as the lid closes. The left column and a low rib in front of
+the battery's front-right corner stop the battery.
 
 The front of the case leaves room for every wire, checked with realistic
 bundle sizes:
@@ -36,15 +36,21 @@ bundle sizes:
   its right edge, beside the board, to the B- and B+ pads.
 - The load cell goes in with its strain-gauge cover facing the battery and
   its wires toward the front. The wires run left under the battery, forward
-  outside the left column and under the board to the front-edge pads. The
-  battery clears the 2.5 mm cover by 0.5 mm.
+  outside the left column and under the board to the front-edge pads. Pads
+  behind the load cell hold the battery's rear 0.5 mm above the 2.5 mm
+  cover; its front settles onto the cover.
 
-Nothing hangs over the battery, so the battery drops straight in and the
-board only tilts to seat its USB-C connector, which reaches into the front
-wall. A 13.65 × 7.8 mm pocket around it
+Nothing hangs over the load cell or the battery, so both drop straight in
+and lie flat, and the board only tilts to seat its USB-C connector, which
+reaches into the front wall. A 13.65 × 7.8 mm pocket around it
 lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
 Type-C plug dimensions update) reach within 0.3 mm of the receptacle face, so
 standard cables seat fully.
+
+Every lid feature over the load cell stops 0.6 mm above it, so a slightly
+off-size print cannot hold the lid open. Each screw pilot has a 0.6 mm
+countersink that takes the plastic the screw displaces, instead of letting it
+curl up between the post and the lid.
 
 The repository contains:
 
@@ -101,7 +107,7 @@ openscad -D 'print_layout=true' -o /tmp/case_lid_print_layout.stl case/case_lid.
 Print layout places:
 - `case_main.scad`: upright with the floor on the build plate (`Z=0`)
 - `case_lid.scad`: flipped so the outer top face is on the build plate (support-free)
-- The main body needs support only under its battery-front props; see the Bambu Studio project below
+- Neither part needs support
 
 ### Build the Bambu Studio project
 
@@ -122,16 +128,12 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 | Walls | 6 (solid 2.4 mm shell) |
 | Top/bottom layers | 6 (solid floor and lid) |
 | Infill | 20% |
-| Supports | Tree (auto), critical regions only, no bridge support; off for the lid |
+| Supports | None |
 | Brim | None |
-
-Only the main body needs support, under the battery-front props. They hang
-over the load-cell space, which is empty while printing. Remove the supports
-through the open top. The PCB columns stand on the floor and need none.
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the battery and PCB, PCB support columns and edge guides, lid clamp preload, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, battery clearance over the strain-gauge cover, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, PCB support columns and edge guides, lid clamp preload, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh
