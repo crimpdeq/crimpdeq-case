@@ -120,6 +120,7 @@ checks=(
     "battery_switch empty"
     "pcb_switch empty"
     "main_lid_eps_up empty"
+    "main_lid_shifted empty"
     "main_lid_eps_down nonempty"
     "main_loadcell_eps_z_plus empty"
     "main_pcb_eps_yz_plus empty"

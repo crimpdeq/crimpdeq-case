@@ -246,6 +246,12 @@ if (mode == "main_lid") {
     intersection() { main_part(); lid_part(); }
 } else if (mode == "main_lid_eps_up") {
     intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
+} else if (mode == "main_lid_shifted") {
+    // The lid must seat anywhere within the 0.25 mm play of the screws in their
+    // lid holes, plus 0.2 mm for printed walls off size.
+    lid_shift = 0.45;
+    for (d = [[1, 0], [-1, 0], [0, 1], [0, -1]])
+        intersection() { main_part(); translate([d[0] * lid_shift, d[1] * lid_shift, 0.01]) lid_part(); }
 } else if (mode == "main_lid_eps_down") {
     intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
 } else if (mode == "main_components") {
