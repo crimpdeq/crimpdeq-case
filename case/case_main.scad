@@ -376,6 +376,12 @@ module main_carabiner_slot_walls() {
             }
 }
 
+module slot_seal_fins() {
+    translate([0, 0, outer_z_min])
+        linear_extrude(height = outer_z_max - outer_z_min)
+            slot_seal_fins_2d();
+}
+
 module carabiner_slot_cuts() {
     translate([0, 0, outer_z_min - 0.2])
         linear_extrude(height = outer_z_max - outer_z_min + 0.4)
@@ -425,6 +431,7 @@ module main_part() {
             notch_pins();
             loadcell_notch_guides();
             main_carabiner_slot_walls();
+            slot_seal_fins();
 
             // Internal cylindrical bosses for screw engagement.
             corner_screw_posts(screw_post_d, outer_z_min, outer_z_max);

@@ -7,7 +7,7 @@
 
 ## Enclosure invariants
 
-- Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay.
+- Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay; any fit gap between them must be a labyrinth, never a straight slit.
 - Keep the plan a hexagon symmetric about both axes: flat front and rear walls and a point at each end.
 - Keep both load-cell eyes accessible through isolated vertical U-slots that open through each case end, with `eye_slot_clear` around each eye; the inboard edge stops at the battery bay wall. A 12 mm carabiner shank must fit centered in the 15 mm eye-ring bore and bearing on its outer side.
 - The facets must enclose all four load-cell corners and clear the load cell, while all four edge notches remain retained.

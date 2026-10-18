@@ -48,9 +48,12 @@ Type-C plug dimensions update) reach within 0.3 mm of the receptacle face, so
 standard cables seat fully.
 
 Every lid feature over the load cell stops 0.6 mm above it, so a slightly
-off-size print cannot hold the lid open. Each screw pilot has a 0.6 mm
-countersink that takes the plastic the screw displaces, instead of letting it
-curl up between the post and the lid.
+off-size print cannot hold the lid open. The lid's carabiner slot walls stop
+0.6 mm short of the facets, so the screws, not the walls, locate the lid; a
+fin on the main body overlaps each wall end, so that gap is a labyrinth
+rather than a slit from the slot into the electronics bay. Each screw pilot
+has a 0.6 mm countersink that takes the plastic the screw displaces, instead
+of letting it curl up between the post and the lid.
 
 The repository contains:
 
@@ -133,7 +136,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, PCB support columns and edge guides, lid clamp preload, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh
