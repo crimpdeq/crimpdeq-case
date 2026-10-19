@@ -19,22 +19,15 @@ jobs:
             - name: Prepare output folder
               run: mkdir -p artifacts
 
-            - name: Build case_main.stl
-              uses: flat35hd99/openscad-actions@v1.4
-              with:
-                  scad_file: case/case_main.scad
-                  output_file: artifacts/case_main.stl
-
-            - name: Build case_lid.stl
-              uses: flat35hd99/openscad-actions@v1.4
-              with:
-                  scad_file: case/case_lid.scad
-                  output_file: artifacts/case_lid.stl
-
             - name: Install OpenSCAD and Bambu Studio dependencies
               run: |
                   sudo apt-get update
                   sudo apt-get install -y openscad libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libwebkit2gtk-4.1-0
+
+            - name: Build STL files in print layout
+              run: |
+                  openscad -D 'print_layout=true' -o artifacts/case_main.stl case/case_main.scad
+                  openscad -D 'print_layout=true' -o artifacts/case_lid.stl case/case_lid.scad
 
             - name: Install Bambu Studio
               env:
