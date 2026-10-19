@@ -17,7 +17,8 @@ covers the full assembly.
 
 ## Compatibility
 
-The case fits only the PCB with the same major version:
+Use the case release in the row for your PCB revision. From V2 on, the case and PCB share the
+major version; PCB V1 uses case `v0.4.0`.
 
 | Case                                                                      | PCB                                                                    |
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
