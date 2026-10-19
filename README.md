@@ -6,11 +6,12 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ## Print the case
 
-Download `case_main.stl`, `case_lid.stl`, and the Bambu Studio project `crimpdeq-case.3mf`
-from the [latest release](https://github.com/crimpdeq/crimpdeq-case/releases/latest). The STLs
-are in print layout: the main body stands on its floor and the lid lies on its outer face.
-Neither part needs support. See [Build the Bambu Studio project](#build-the-bambu-studio-project)
-for the print settings.
+Download `case_main.stl` and `case_lid.stl` from the release that matches your PCB revision
+(see [Compatibility](#compatibility)). Releases up to `v3.1.0` ship the STLs in assembly
+orientation, so lay the lid on its outer face before slicing; later releases ship them in print
+layout. From `v3.1.0`, releases also include `crimpdeq-case.3mf`, a Bambu Studio project with
+both parts laid out and the [print settings](#build-the-bambu-studio-project) applied. The V3
+parts need no support.
 
 To assemble the case, follow the [Crimpdeq book](https://book.crimpdeq.com/assembly/crimpdeq/index.html).
 
