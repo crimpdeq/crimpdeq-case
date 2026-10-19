@@ -31,6 +31,26 @@ jobs:
                   scad_file: case/case_lid.scad
                   output_file: artifacts/case_lid.stl
 
+            - name: Install OpenSCAD and Bambu Studio dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y openscad libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libwebkit2gtk-4.1-0
+
+            - name: Install Bambu Studio
+              env:
+                  APPIMAGE_URL: https://github.com/bambulab/BambuStudio/releases/download/v02.08.02.61/BambuStudio_ubuntu24.04-v02.08.02.61-20260820225108.AppImage
+                  APPIMAGE_SHA256: d501b103fac5424513ec0e8d6bc145fb30719de2c7d94d7320d723740c81a7fd
+              run: |
+                  cd "$RUNNER_TEMP"
+                  curl -fsSL -o BambuStudio.AppImage "$APPIMAGE_URL"
+                  echo "$APPIMAGE_SHA256  BambuStudio.AppImage" | sha256sum -c
+                  chmod +x BambuStudio.AppImage
+                  ./BambuStudio.AppImage --appimage-extract > /dev/null
+                  echo "BAMBU_STUDIO=$RUNNER_TEMP/squashfs-root/AppRun" >> "$GITHUB_ENV"
+
+            - name: Build crimpdeq-case.3mf
+              run: python3 scripts/export-bambu-project.py --output artifacts/crimpdeq-case.3mf
+
             - name: Upload case release files
               uses: actions/upload-artifact@v6
               with:
@@ -38,6 +58,7 @@ jobs:
                   path: |
                       artifacts/case_main.stl
                       artifacts/case_lid.stl
+                      artifacts/crimpdeq-case.3mf
                   if-no-files-found: error
                   compression-level: 0
 
@@ -58,6 +79,7 @@ jobs:
               run: |
                   test -f release-assets/case/case_main.stl
                   test -f release-assets/case/case_lid.stl
+                  test -f release-assets/case/crimpdeq-case.3mf
 
             - name: Upload release assets
               uses: svenstaro/upload-release-action@v2

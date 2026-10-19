@@ -64,7 +64,7 @@ The repository contains:
 - Collision/fit validation script (`scripts/check-collisions.sh`)
 - GitHub Actions workflows that build STL artifacts and release assets
 
-Prebuilt STL files are published in [GitHub Releases](https://github.com/crimpdeq/crimpdeq-case/releases) for tagged versions.
+Prebuilt STL files and the Bambu Studio project are published in [GitHub Releases](https://github.com/crimpdeq/crimpdeq-case/releases) for tagged versions.
 
 ## Components
 
@@ -170,8 +170,8 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
   - Builds `case_main.stl` and `case_lid.stl`
   - Uploads STL artifacts for CI runs
 - `.github/workflows/release.yml`
-  - Builds release STL files when a GitHub Release is created
-  - Uploads the generated STL files to the release assets
+  - Builds release STL files and `crimpdeq-case.3mf` when a GitHub Release is created
+  - Uploads them to the release assets
 
 ## License
 
