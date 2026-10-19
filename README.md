@@ -4,74 +4,33 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
-The enclosure is approximately 97.1 × 77.4 × 30.6 mm with a symmetric
-hexagonal plan: flat front and rear walls, a point at each end, and 120°
-interior angles. The facets are the tightest lines that still enclose all four
-corners of the 80 mm load cell. Each eye stays reachable through an isolated
-vertical U-slot that runs out through the case point, with 2.5 mm of clearance
-around the eye; on its inboard side the slot stops at the battery bay wall. A
-loaded carabiner bears on the metal eye ring rather than the plastic, and its
-curve can leave the case.
+## Print the case
 
-The PCB is modelled with its real stack from the KiCad board: underside parts
-over the battery, the USB-C connector hanging in front of it, and the ESP32
-module and both LEDs facing the lid. Two floor-anchored columns in front of
-the battery carry the board at bare areas taken from the KiCad courtyards,
-clear of the cable pads. The left one guides the board's left edge; the right
-one, fused to the front wall, stops it moving right through the USB-C shell's
-through-hole legs. Lid clamps directly above the columns press the board with
-a one-layer (0.1 mm) preload, so it cannot rattle. Chamfered lid tabs behind
-the board's rear edge take USB-C insertion loads and push a board that slid
-back forward as the lid closes. The left column and a low rib in front of
-the battery's front-right corner stop the battery.
+Download `case_main.stl`, `case_lid.stl`, and the Bambu Studio project `crimpdeq-case.3mf`
+from the [latest release](https://github.com/crimpdeq/crimpdeq-case/releases/latest). The STLs
+are in print layout: the main body stands on its floor and the lid lies on its outer face.
+Neither part needs support. See [Build the Bambu Studio project](#build-the-bambu-studio-project)
+for the print settings.
 
-The front of the case leaves room for every wire, checked with realistic
-bundle sizes:
+Fasten the lid with 4 × M2.5×10 screws. The [Crimpdeq book](https://book.crimpdeq.com/assembly/crimpdeq/index.html)
+covers the full assembly.
 
-- The KCD11 switch is 15.2 mm deep up to the end of its heat-shrunk solder
-  joints. A 3.5 mm zone behind it lets its wires turn up before the battery
-  and load cell; they run right over the battery-front rib and forward to the
-  SW+ and SW- pads.
-- The battery leads leave its rear end, rise behind it and run forward over
-  its right edge, beside the board, to the B- and B+ pads.
-- The load cell goes in with its strain-gauge cover facing the battery and
-  its wires toward the front. The wires run left under the battery, forward
-  outside the left column and under the board to the front-edge pads. Pads
-  behind the load cell hold the battery's rear 0.5 mm above the 2.5 mm
-  cover; its front settles onto the cover. Lid hold-downs directly above the
-  pads clamp the battery onto them with a one-layer (0.2 mm) preload, so it
-  cannot rattle, and the clamp load goes into the floor, not the load cell.
+## Compatibility
 
-Nothing hangs over the load cell or the battery, so both drop straight in
-and lie flat, and the board only tilts to seat its USB-C connector, which
-reaches into the front wall. A 13.65 × 7.8 mm pocket around it
-lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
-Type-C plug dimensions update) reach within 0.3 mm of the receptacle face, so
-standard cables seat fully.
+The case fits only the PCB with the same major version:
 
-Every lid feature over the load cell stops 0.6 mm above it, so a slightly
-off-size print cannot hold the lid open. The lid's carabiner slot walls stop
-0.6 mm short of the facets, so the screws, not the walls, locate the lid; a
-fin on the main body overlaps each wall end, so that gap is a labyrinth
-rather than a slit from the slot into the electronics bay. Each screw pilot
-has a 0.6 mm countersink that takes the plastic the screw displaces, instead
-of letting it curl up between the post and the lid.
-
-The repository contains:
-
-- Parametric OpenSCAD models for the enclosure under `case/`
-- Component envelope models (PCB, battery, load cell)
-- Collision/fit validation script (`scripts/check-collisions.sh`)
-- GitHub Actions workflows that build STL artifacts and release assets
-
-Prebuilt STL files and the Bambu Studio project are published in [GitHub Releases](https://github.com/crimpdeq/crimpdeq-case/releases) for tagged versions.
+| Case                                                                      | PCB                                                                    |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`v3.1.0`](https://github.com/crimpdeq/crimpdeq-case/releases/tag/v3.1.0) | V3 ([`v3.0.0`](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v3.0.0)) |
+| [`v2.0.0`](https://github.com/crimpdeq/crimpdeq-case/releases/tag/v2.0.0) | V2 ([`v2.0.0`](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v2.0.0)) |
+| [`v0.4.0`](https://github.com/crimpdeq/crimpdeq-case/releases/tag/v0.4.0) | V1 ([`v1.0.1`](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v1.0.1)) |
 
 ## Components
 
-- [Crimpdeq PCB revision 3](https://github.com/crimpdeq/crimpdeq-pcb/pull/23), installed bottom-side up with its USB-C edge toward the front wall, so both LEDs face the lid
-- [2000mAh battery](https://www.aliexpress.us/item/3256809404408618.html?spm=a2g0o.order_list.order_list_main.5.1406194d6kJ2h0&gatewayAdapt=glo2usa4itemAdapt)
-- [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html?spm=a2g0o.order_list.order_list_main.11.1406194d6kJ2h0&gatewayAdapt=glo2usa4itemAdapt)
-- Load cell from this [hanging scale](https://www.aliexpress.us/item/3256802533330674.html?spm=a2g0o.order_list.order_list_main.35.1406194d6kJ2h0&gatewayAdapt=glo2usa4itemAdapt)
+- [Crimpdeq PCB V3](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v3.0.0), installed bottom-side up with its USB-C edge toward the front wall, so both LEDs face the lid
+- [2000mAh battery](https://www.aliexpress.us/item/3256809404408618.html)
+- [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html)
+- Load cell from this [crane scale](https://www.aliexpress.com/item/1005002719645426.html)
 
 ## Requirements
 
@@ -170,8 +129,63 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
   - Builds `case_main.stl` and `case_lid.stl`
   - Uploads STL artifacts for CI runs
 - `.github/workflows/release.yml`
-  - Builds release STL files and `crimpdeq-case.3mf` when a GitHub Release is created
+  - Builds the release STL files in print layout and `crimpdeq-case.3mf` when a GitHub Release is created
   - Uploads them to the release assets
+
+## Design
+
+The enclosure is approximately 97.1 × 77.4 × 30.6 mm with a symmetric
+hexagonal plan: flat front and rear walls, a point at each end, and 120°
+interior angles. The facets are the tightest lines that still enclose all four
+corners of the 80 mm load cell. Each eye stays reachable through an isolated
+vertical U-slot that runs out through the case point, with 2.5 mm of clearance
+around the eye; on its inboard side the slot stops at the battery bay wall. A
+loaded carabiner bears on the metal eye ring rather than the plastic, and its
+curve can leave the case.
+
+The PCB is modelled with its real stack from the KiCad board: underside parts
+over the battery, the USB-C connector hanging in front of it, and the ESP32
+module and both LEDs facing the lid. Two floor-anchored columns in front of
+the battery carry the board at bare areas taken from the KiCad courtyards,
+clear of the cable pads. The left one guides the board's left edge; the right
+one, fused to the front wall, stops it moving right through the USB-C shell's
+through-hole legs. Lid clamps directly above the columns press the board with
+a one-layer (0.1 mm) preload, so it cannot rattle. Chamfered lid tabs behind
+the board's rear edge take USB-C insertion loads and push a board that slid
+back forward as the lid closes. The left column and a low rib in front of
+the battery's front-right corner stop the battery.
+
+The front of the case leaves room for every wire, checked with realistic
+bundle sizes:
+
+- The KCD11 switch is 15.2 mm deep up to the end of its heat-shrunk solder
+  joints. A 3.5 mm zone behind it lets its wires turn up before the battery
+  and load cell; they run right over the battery-front rib and forward to the
+  SW+ and SW- pads.
+- The battery leads leave its rear end, rise behind it and run forward over
+  its right edge, beside the board, to the B- and B+ pads.
+- The load cell goes in with its strain-gauge cover facing the battery and
+  its wires toward the front. The wires run left under the battery, forward
+  outside the left column and under the board to the front-edge pads. Pads
+  behind the load cell hold the battery's rear 0.5 mm above the 2.5 mm
+  cover; its front settles onto the cover. Lid hold-downs directly above the
+  pads clamp the battery onto them with a one-layer (0.2 mm) preload, so it
+  cannot rattle, and the clamp load goes into the floor, not the load cell.
+
+Nothing hangs over the load cell or the battery, so both drop straight in
+and lie flat, and the board only tilts to seat its USB-C connector, which
+reaches into the front wall. A 13.65 × 7.8 mm pocket around it
+lets a cable's molded overmold (up to the 12.85 × 7.0 mm maximum in the USB
+Type-C plug dimensions update) reach within 0.3 mm of the receptacle face, so
+standard cables seat fully.
+
+Every lid feature over the load cell stops 0.6 mm above it, so a slightly
+off-size print cannot hold the lid open. The lid's carabiner slot walls stop
+0.6 mm short of the facets, so the screws, not the walls, locate the lid; a
+fin on the main body overlaps each wall end, so that gap is a labyrinth
+rather than a slit from the slot into the electronics bay. Each screw pilot
+has a 0.6 mm countersink that takes the plastic the screw displaces, instead
+of letting it curl up between the post and the lid.
 
 ## License
 
