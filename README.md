@@ -2,7 +2,7 @@
 
 OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid), including assembly models and collision checks used in CI.
 
-![Crimpdeq V3 cases](https://raw.githubusercontent.com/crimpdeq/crimpdeq-book/main/src/assets/Crimpdeqs_v3.jpg)
+![Crimpdeq V3 cases](assets/case_v3.jpg)
 
 *V3 case*
 
