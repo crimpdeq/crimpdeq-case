@@ -4,6 +4,11 @@ OpenSCAD source files for the Crimpdeq 3D-printable enclosure (main body + lid),
 
 ![Crimpdeq 3D Case](assets/case.jpg)
 
+![Crimpdeq V3 cases](https://raw.githubusercontent.com/crimpdeq/crimpdeq-book/main/src/assets/Crimpdeqs_v3.jpg)
+
+> [!NOTE]
+> This photo shows the V3 case.
+
 ## Print the case
 
 Download `case_main.stl` and `case_lid.stl` from the release that matches your PCB revision
