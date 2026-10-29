@@ -7,20 +7,21 @@
 
 ## Enclosure invariants
 
-- Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay; any fit gap between them must be a labyrinth, never a straight slit.
-- Keep the plan a hexagon symmetric about both axes: flat front and rear walls and a point at each end.
+- Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay; any fit gap between them must be a labyrinth, never a straight slit. The lid slot-wall ends reach into end-wall grooves for that.
+- Keep the plan symmetric about both axes, so the top view looks the same from the front and the rear: flat front, rear and end walls with 45 degree chamfers, and the screws mirrored. Derive every wall from the component envelopes in `case/placement.scad`.
 - Keep both load-cell eyes accessible through isolated vertical U-slots that open through each case end, with `eye_slot_clear` around each eye; the inboard edge stops at the battery bay wall. A 12 mm carabiner shank must fit centered in the 15 mm eye-ring bore and bearing on its outer side.
-- The facets must enclose all four load-cell corners and clear the load cell, while all four edge notches remain retained.
-- The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable.
-- Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.
-- Keep each `Crimpdeq` title centered on its intended enclosure face.
-- The KCD11 switch must remain accessible through an aligned wall opening, with clearance from the USB-C opening.
-- Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, and with pilot holes deeper than the seated screw.
-- Case supports and lid clamps may touch the PCB only inside the bare-board windows in `case/dimensions.scad`; re-derive the windows, cable-pad clearances, component positions and PCB stack heights from the KiCad board in `crimpdeq-pcb` whenever the PCB changes. The board is flipped about the X axis, so a KiCad offset (dx, dy) from the board center is case-local (dx, dy); never mirror X.
+- The walls must enclose all four load-cell corners and clear the load cell. Pins in its four edge notches retain it; only its floor pads may touch it.
+- The load cell goes in with its strain-gauge cover facing the floor, and the battery lies flat on its bare top face. Nothing may press the battery onto the load cell: the lid hold-downs keep `battery_hold_down_clear` above it.
+- The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable; a fully mated cable's overmold must reach within `usb_overmold_stop_gap` of the receptacle face.
+- Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes, closed at the outer face by `led_window_t` windows that keep chalk and dust off the board.
+- Keep each `Crimpdeq` title reading along Y between the carabiner slots, so it is horizontal when the device hangs from its eyes: centered on the bottom face, and on the lid centered in the strip between the LED holes and the rear edge.
+- The KCD11 switch must remain accessible through an aligned front-wall opening, with clearance from the USB-C pocket, and leave room beside the battery's front-right corner for its leads to bend.
+- Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, at least `screw_edge_inset` inside every outer face, and with pilot holes deeper than the seated screw.
+- Case supports may touch the PCB only inside the bare bottom-side windows in `case/dimensions.scad`, and the lid only the flat USB-C shell top; re-derive the windows, cable pads, component positions and stack heights from `crimpdeq-tscircuit`'s `circuit.json` whenever the board changes. The board sits top side up and unrotated, so a tscircuit offset (x, y) from the board center is case-local (x, y); never mirror or rotate it.
 - Nothing in the main body may hang over the load cell or the battery: PCB supports stand on the floor in front of them, and the load cell, battery and board must drop in from above.
-- Keep wire routes from the switch, the battery's rear leads and the load-cell strain gauge to the cable pads open, checked with realistic bundle sizes, and leave room under every cable pad for its solder joint. Keep the switch wire bend zone between the switch's solder joints and the load cell and battery. The battery's rear pads must hold it clear of the strain-gauge cover; its front may settle onto the cover, since any support under it would hang over the load cell. Lid hold-downs clamp the battery onto those pads only, never over the load cell. Re-measure `gauge_cover_*` and `switch_depth` if those parts change.
+- Keep wire routes from the switch, the battery's corner leads and the load-cell strain gauge to the cable pads open, checked with realistic bundle sizes, and leave room under every cable pad for its solder joint. Keep the switch wire bend zone behind its solder joints, clear of the load cell and battery. Re-measure `gauge_cover_*`, `switch_depth` and the battery if those parts change.
 - Keep internal supports chunky and fused to the floor or walls; no free-standing slender pillars.
-- Preserve `print_layout=true`: main floor at Z=0; lid outer face on the bed.
+- The main body prints as assembled, floor at Z=0; `print_layout=true` puts the lid's outer face on the bed.
 
 ## Validation
 
