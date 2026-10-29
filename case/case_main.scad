@@ -16,15 +16,6 @@ $fn = render_fn;
 /*** Enclosure parameters ***/
 internal_feature_embed = 0.15; // overlap internal features into the shell for a fused STL
 
-// Pads under the battery's side edges, 2 mm inside the plate's long edges,
-// clear of the gauge cover, its wire route and the slot walls.
-loadcell_pad_x = bat_W / 2 - loadcell_pad_size / 2;
-loadcell_pad_y = lc_W / 2 - 2 - loadcell_pad_size / 2;
-// Rib behind the battery, in the rear band.
-battery_rear_stop_t = 1.5;
-
-pcb_part_clear = 0.2; // column top below the bottom parts
-
 rear_brand_text = "crimpdeq.com";
 rear_brand_w = 60;
 rear_brand_depth = 0.8;
@@ -38,27 +29,13 @@ lid_preview_alpha = 0.8; // higher alpha = more opaque
 // The screw passes the lid material under its head recess, then threads in.
 thread_depth = screw_len - (lid_t - screw_head_recess) + screw_thread_tip_clear;
 notch_pin_d = notch_d - 2 * notch_pin_clear;
-stop_y = battery_front_y - battery_stop_clear;
-pcb_column_x = [pcb_support_windows[0][0], pcb_support_windows[1][1]];
-pcb_column_top_z = pcb_board_bottom_z - pcb_bottom_parts_h - pcb_part_clear;
 
-assert(loadcell_pad_x - loadcell_pad_size / 2 > gauge_cover_w / 2 + loadcell_wire_bundle[0],
-    "Load-cell pads must clear the gauge cover and its wires.");
-assert(loadcell_pad_y - loadcell_pad_size / 2 > slot_wall_outer_y,
-    "Load-cell pads must clear the carabiner slot walls.");
 assert(loadcell_top_z < switch_z - switch_h / 2 - switch_clear,
     "The notch pins must stay below the switch.");
-assert(battery_rear_y + battery_stop_clear + battery_rear_stop_t < screw_y - screw_post_d / 2,
-    "The battery rear stop must stay in front of the rear screw posts.");
 assert(thread_depth <= seam_z - floor_t,
     str("Screw pilot depth ", thread_depth, " mm does not fit the posts."));
 assert(screw_thread_d + 2 * screw_pilot_chamfer <= screw_post_d - 2,
     "Screw pilot chamfers must leave at least 1 mm of post rim.");
-assert(pcb_column_top_z > battery_top_z,
-    "The PCB column must cover the battery's front face.");
-for (p = pcb_cable_pads)
-    assert(abs(p[0]) - wire_d / 2 > pcb_column_x[1] + 0.1,
-        str("The PCB column must clear the wire at pad ", p));
 assert(screw_x - screw_post_d / 2 > max([for (p = pcb_cable_pads) abs(p[0])]) + wire_d / 2 + 0.5,
     "The front screw posts must leave a lane beside the wire pads.");
 assert(usb_x + usb_pocket_w / 2 < switch_x - switch_w / 2 - switch_flange - 1,
@@ -80,8 +57,7 @@ module notch_pins() {
 }
 
 module battery_rear_stop() {
-    y0 = battery_rear_y + battery_stop_clear;
-    box(span(0, bat_W / 2 - 3), [y0, y0 + battery_rear_stop_t],
+    box(span(0, bat_W / 2 - battery_rear_stop_inset), [battery_stop_rear_y, battery_stop_rear_y + battery_rear_stop_t],
         [floor_top_z - internal_feature_embed, battery_top_z - 1]);
 }
 
@@ -91,7 +67,7 @@ module battery_rear_stop() {
 // pcb_front_gap toward the rear. The lid clamps the board onto them through
 // the USB-C shell, right above.
 module pcb_column() {
-    box(pcb_column_x, [inner_front_y - internal_feature_embed, stop_y],
+    box(pcb_column_x, [inner_front_y - internal_feature_embed, battery_stop_front_y],
         [floor_top_z - internal_feature_embed, pcb_column_top_z]);
     translate([0, pcb_y, 0])
         for (w = pcb_support_windows)
