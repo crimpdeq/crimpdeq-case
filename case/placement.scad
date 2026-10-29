@@ -202,9 +202,10 @@ module usb_hole_cut() {
         [pcb_board_top_z - usb_hole_clear, seam_z + 0.1]);
 }
 
-// Overmold pocket in front of the web. It sits higher than the seam allows, so
-// it runs out through the lid as a notch.
-module usb_pocket_cut() {
-    usb_prism(outer_front_y - 0.1, usb_pocket_floor_y, usb_pocket_w,
-        usb_pocket_z_min, lid_top_z + 2, usb_overmold_corner_r + usb_pocket_clear);
+// Overmold pocket in front of the web. It reaches above the seam, so it runs
+// out through the lid as a notch, widened and deepened by lid_seat_play so
+// the cable clears it wherever the lid seats.
+module usb_pocket_cut(play = 0) {
+    usb_prism(outer_front_y - 0.1, usb_pocket_floor_y + play, usb_pocket_w + 2 * play,
+        usb_pocket_z_min, lid_top_z + 2, usb_overmold_corner_r + usb_pocket_clear + play);
 }

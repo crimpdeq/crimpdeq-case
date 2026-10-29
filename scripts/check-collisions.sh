@@ -123,6 +123,7 @@ checks=(
     "lid_pcb_rear_stop nonempty"
     "lid_usb_clamp_off_shell empty"
     "lid_usb_cable empty"
+    "lid_usb_cable_shifted empty"
     "lid_switch empty"
     "lid_switch_wires empty"
     "lid_battery_wires empty"

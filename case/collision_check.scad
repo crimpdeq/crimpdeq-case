@@ -117,26 +117,31 @@ module usb_clamp_contact() {
     }
 }
 
-// The lid may touch the board only through the USB-C clamp.
+// The lid may touch the board only through the USB-C clamp. The clamp is
+// grown by 0.01 mm, so faces it shares with the board leave no sliver.
 module lid_pcb_outside_clamp(dy) {
     intersection() {
-        lid_part();
         difference() {
-            translate([0, dy, 0]) asm_pcb();
-            usb_clamp_contact();
+            lid_part();
+            minkowski() {
+                usb_clamp();
+                cube(0.02, center = true);
+            }
         }
+        translate([0, dy, 0]) asm_pcb();
     }
 }
 
 // Wherever the lid seats and the board sits within its guides, the clamp
-// stays on the flat shell top.
+// stays on the flat shell top. A shifted clamp edge may land exactly on the
+// shell's edge, so widen the shell by 0.01 mm.
 module usb_clamp_off_shell() {
     for (d = lid_seat_shifts)
         difference() {
             translate([d[0], d[1], 0]) usb_clamp_contact();
             translate([0, pcb_y, 0])
                 linear_extrude(height = lid_top_z)
-                    offset(delta = -pcb_guide_clear)
+                    offset(delta = -pcb_guide_clear + 0.01)
                         pcb_rect_2d(usb_shell_top_rect);
         }
 }
@@ -390,6 +395,9 @@ if (mode == "main_lid_eps_up") {
     usb_clamp_off_shell();
 } else if (mode == "lid_usb_cable") {
     intersection() { lid_part(); usb_cable_fit_probe(); }
+} else if (mode == "lid_usb_cable_shifted") {
+    for (d = lid_seat_shifts)
+        intersection() { translate([d[0], d[1], 0]) lid_part(); usb_cable_fit_probe(); }
 } else if (mode == "lid_switch_wires") {
     intersection() { lid_part(); switch_wire_probe(); }
 } else if (mode == "lid_battery_wires") {
