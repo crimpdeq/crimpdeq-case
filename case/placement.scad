@@ -104,6 +104,7 @@ brand_y_min = max(status_led_view_y + status_led_view_d / 2, rgb_led_view_y + rg
     + brand_margin;
 brand_y_max = outer_rear_y - case_corner_r - brand_margin;
 brand_y = (brand_y_min + brand_y_max) / 2;
+rear_brand_w = 2 * (chamfer_k - outer_rear_y - case_corner_r - rear_brand_margin);
 
 // Lid bars beside the board over the battery, from behind the switch wire
 // bend to the battery's rear. They stop the battery lifting into the board's
