@@ -8,9 +8,9 @@
 ## Enclosure invariants
 
 - Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay; any fit gap between them must be a labyrinth, never a straight slit. The lid slot-wall ends reach into end-wall grooves for that.
-- Keep the plan symmetric about the Y axis: flat front, rear and end walls with 45 degree chamfers. Derive every wall from the component envelopes in `case/placement.scad`.
+- Keep the plan symmetric about both axes, so the top view looks the same from the front and the rear: flat front, rear and end walls with 45 degree chamfers, and the screws mirrored. Derive every wall from the component envelopes in `case/placement.scad`.
 - Keep both load-cell eyes accessible through isolated vertical U-slots that open through each case end, with `eye_slot_clear` around each eye; the inboard edge stops at the battery bay wall. A 12 mm carabiner shank must fit centered in the 15 mm eye-ring bore and bearing on its outer side.
-- The walls must enclose all four load-cell corners and clear the load cell. The rear notch posts and the front stops retain it; only its floor pads may touch it.
+- The walls must enclose all four load-cell corners and clear the load cell. Pins in its four edge notches retain it; only its floor pads may touch it.
 - The load cell goes in with its strain-gauge cover facing the floor, and the battery lies flat on its bare top face. Nothing may press the battery onto the load cell: the lid hold-downs keep `battery_hold_down_clear` above it.
 - The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable; a fully mated cable's overmold must reach within `usb_overmold_stop_gap` of the receptacle face.
 - Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.

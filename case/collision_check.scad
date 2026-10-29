@@ -282,7 +282,7 @@ if (mode == "main_lid_eps_up") {
     intersection() { main_part(); asm_loadcell_arm(1); }
 } else if (mode == "main_loadcell_play") {
     // Within its play the plate touches nothing but its pads.
-    for (d = [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.25]])
+    for (d = [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05]])
         intersection() { main_part(); translate([d[0], d[1], 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_stop_x_neg") {
     intersection() { main_part(); translate([-0.15, 0, 0.05]) asm_loadcell(); }
@@ -291,7 +291,7 @@ if (mode == "main_lid_eps_up") {
 } else if (mode == "main_loadcell_stop_y_pos") {
     intersection() { main_part(); translate([0, 0.15, 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_stop_y_neg") {
-    intersection() { main_part(); translate([0, -0.35, 0.05]) asm_loadcell(); }
+    intersection() { main_part(); translate([0, -0.15, 0.05]) asm_loadcell(); }
 } else if (mode == "main_eye_access_x_neg") {
     intersection() { main_part(); carabiner_eye_probe(-1); }
 } else if (mode == "main_eye_access_x_pos") {

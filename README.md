@@ -46,13 +46,12 @@ major version; PCB V1 uses case `v0.4.0`.
 
 ## Design
 
-The case is 90 × 58 × 25 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
-45° chamfers, symmetric about its short axis. Everything stacks over the load cell:
+The case is 90 × 65.4 × 25 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
+45° chamfers, symmetric about both axes. Everything stacks over the load cell:
 
 - The load cell goes in with its strain-gauge cover facing the floor and its wires toward the
   front. Four floor pads hold the plate 0.5 mm above the cover, and its wires run under the
-  plate. The two rear notches drop over the rear screw posts, which hold the plate sideways and
-  backwards; low ribs in front of it stop it moving forward.
+  plate. Floor pins in its four edge notches hold it in X and Y.
 - The battery lies flat on the plate's bare top face, protection-board end forward. Turn it
   over so its leads leave the right corner; they bend forward in a 2.5 mm gap beside it. Lid
   bars beside the board stop 0.3 mm above the battery: they keep it off the board's bottom parts
@@ -81,9 +80,10 @@ wires turn up behind the solder joints, run over the battery beside the board, f
 to the SW pads. The column sits between the J3 and J4 wire-pad columns, and lanes beside it, inside
 the front posts, carry the load-cell, battery and switch wires to their pads.
 
-The rear screws stand in the load cell's rear notches and the front screws flank the board;
-each pilot is 5.25 mm inside the outer faces, as in V2, and countersunk 0.6 mm. Every lid
-feature over the load cell stops 0.6 mm above it.
+The band behind the battery mirrors the board's front band; a floor rib in it stops the
+battery. The four screws flank the board, merged into the front and rear walls; each pilot is
+5.25 mm inside the outer faces, as in V2, and countersunk 0.6 mm. Every lid feature over the
+load cell stops 0.6 mm above it.
 
 The ESP32 antenna sits over the battery, as in V3. The checks do not cover RF, fit or strength
 on printed parts.
@@ -153,7 +153,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads, notch posts and front stops, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh
