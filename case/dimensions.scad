@@ -157,6 +157,10 @@ rgb_led_y = -3.279;
 rgb_led_w = 2.2;
 rgb_led_l = 2.2;
 rgb_led_h = 1.0;
+// The lid's LED holes stop this short of its outer face, two 0.2 mm layers
+// printed first on the bed. The windows keep chalk and dust off the board;
+// light PLA lets the LEDs show through them, black PLA does not.
+led_window_t = 0.4;
 
 // Stack spacing
 battery_to_pcb_gap = 0.5; // battery top to the board's bottom parts

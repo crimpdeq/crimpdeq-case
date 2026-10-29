@@ -13,7 +13,7 @@
 - The walls must enclose all four load-cell corners and clear the load cell. Pins in its four edge notches retain it; only its floor pads may touch it.
 - The load cell goes in with its strain-gauge cover facing the floor, and the battery lies flat on its bare top face. Nothing may press the battery onto the load cell: the lid hold-downs keep `battery_hold_down_clear` above it.
 - The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable; a fully mated cable's overmold must reach within `usb_overmold_stop_gap` of the receptacle face.
-- Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.
+- Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes, closed at the outer face by `led_window_t` windows that keep chalk and dust off the board.
 - Keep each `Crimpdeq` title reading along Y between the carabiner slots, so it is horizontal when the device hangs from its eyes: centered on the bottom face, and on the lid centered in the strip between the LED holes and the rear edge.
 - The KCD11 switch must remain accessible through an aligned front-wall opening, with clearance from the USB-C pocket, and leave room beside the battery's front-right corner for its leads to bend.
 - Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, at least `screw_edge_inset` inside every outer face, and with pilot holes deeper than the seated screw.

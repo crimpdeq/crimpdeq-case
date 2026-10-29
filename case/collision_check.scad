@@ -155,9 +155,18 @@ module usb_cable_fit_probe() {
         usb_center_z - usb_overmold_h / 2, usb_center_z + usb_overmold_h / 2, usb_overmold_corner_r);
 }
 
+// From the LED top to the inner face of its lid window.
 module led_sightline_probe(led_x, led_y, d, led_h) {
     translate([led_x, pcb_y + led_y, pcb_board_top_z + led_h])
-        cylinder(d = d, h = 10);
+        cylinder(d = d, h = lid_top_z - led_window_t - pcb_board_top_z - led_h);
+}
+
+// The window layer over each LED, which the lid must fill.
+module led_window_probe() {
+    for (led = [[status_led_x, status_led_y, max(status_led_w, status_led_l)],
+                [rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l)]])
+        translate([led[0], pcb_y + led[1], lid_top_z - led_window_t + 0.05])
+            cylinder(d = led[2], h = led_window_t - 0.1);
 }
 
 // Wire routes. Each cable pad needs room below for its solder joint and the
@@ -420,6 +429,8 @@ if (mode == "main_lid_eps_up") {
         lid_part();
         led_sightline_probe(rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l), rgb_led_h);
     }
+} else if (mode == "lid_led_windows_closed") {
+    difference() { led_window_probe(); lid_part(); }
 } else if (mode == "battery_on_loadcell") {
     intersection() { asm_loadcell(); translate([0, 0, -0.05]) asm_battery(); }
 } else if (mode == "loadcell_pcb") {
