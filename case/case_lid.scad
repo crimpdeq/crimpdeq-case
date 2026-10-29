@@ -35,11 +35,6 @@ pcb_rear_stop_clear = 0.25;
 pcb_rear_stop_below = 1.0; // reach below the board underside
 pcb_rear_stop_chamfer = 0.8;
 
-// Bars beside the board over the battery. They stop the battery lifting into
-// the board's bottom parts and loosely guide the board's rear end.
-battery_hold_down_x = [pcb_W / 2 + pcb_guide_clear + lid_seat_play, bat_W / 2 - 0.5];
-battery_hold_down_y = [-12, battery_rear_y - 1];
-
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
 status_led_view_d = 2.6;
@@ -77,13 +72,9 @@ assert(pcb_rear_stop_z_min >= battery_top_z + 0.5,
     "PCB rear stops must stay above the battery.");
 assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
     "PCB rear stops must bear on the full board edge above their chamfer.");
-assert(battery_hold_down_x[1] < carabiner_slot_inner_x - loadcell_slot_wall_t - lid_seat_play,
-    "Battery hold-downs must clear the lid slot walls.");
 assert(brand_y_max - brand_y_min >= brand_l,
     str("The lid title needs ", brand_l, " mm between the LED holes and the rear edge; there are ",
         brand_y_max - brand_y_min, " mm."));
-assert(battery_hold_down_y[0] > switch_rear_y + switch_wire_bend,
-    "Battery hold-downs must stay behind the switch wire route.");
 
 module screw_holes() {
     each_screw(seam_z - 0.1)

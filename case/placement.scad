@@ -69,6 +69,14 @@ screw_x = pcb_W / 2 + pcb_guide_clear + screw_post_d / 2;
 screw_y = outer_rear_y - screw_edge_inset;
 screw_centers = [[-screw_x, -screw_y], [screw_x, -screw_y], [-screw_x, screw_y], [screw_x, screw_y]];
 
+// Lid bars beside the board over the battery, from behind the switch wire
+// bend to the battery's rear. They stop the battery lifting into the board's
+// bottom parts and loosely guide the board's rear end; the lid seat play
+// keeps them off the board.
+battery_hold_down_x = [pcb_W / 2 + pcb_guide_clear + lid_seat_play, bat_W / 2 - battery_hold_down_inset];
+battery_hold_down_y = [switch_rear_y + switch_wire_bend + battery_hold_down_inset,
+    battery_rear_y - battery_hold_down_inset];
+
 // USB-C receptacle, its front-wall opening and the cable overmold pocket.
 usb_x = (usb_rect[0] + usb_rect[1]) / 2;
 usb_w = usb_rect[1] - usb_rect[0];
@@ -101,6 +109,8 @@ assert(chamfer_k - outer_rear_y > 0,
     "The chamfers must leave flat front and rear walls.");
 assert(chamfer_k - outer_end_x > slot_wall_outer_y + slot_wall_fit,
     "The chamfers must leave end walls round the carabiner slot exits and grooves.");
+assert(battery_hold_down_x[1] < carabiner_slot_inner_x - loadcell_slot_wall_t - lid_seat_play,
+    "Battery hold-downs must clear the lid slot walls.");
 assert(carabiner_shank_d < eye_ring_bore_d && eye_ring_bore_d < eye_d,
     str("Carabiner diameters must satisfy shank < ring bore < eye. Got ",
         carabiner_shank_d, ", ", eye_ring_bore_d, ", ", eye_d, " mm."));

@@ -88,6 +88,9 @@ battery_lead_bend = 2.5; // room beside the right corner for both leads to turn
 // how far it can lift without pressing it onto the load cell, whose reading
 // would shift under the load.
 battery_hold_down_clear = 0.3;
+// The hold-downs stop this far inside the battery's side and rear edges and
+// behind the switch wire bend.
+battery_hold_down_inset = 0.5;
 
 // PCB: crimpdeq-tscircuit (ADS1220 variant), 17 x 31.5 mm, from its
 // circuit.json. The board sits top side up and unrotated: the ESP32 module,
