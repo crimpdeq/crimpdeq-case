@@ -132,6 +132,7 @@ checks=(
     "lid_screw_head_fit empty"
     "lid_status_led_sightline empty"
     "lid_rgb_led_sightline empty"
+    "lid_led_windows_closed empty"
     "battery_on_loadcell nonempty"
     "loadcell_pcb empty"
     "loadcell_switch empty"

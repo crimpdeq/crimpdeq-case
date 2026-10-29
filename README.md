@@ -86,6 +86,10 @@ battery. The four screws flank the board, merged into the front and rear walls; 
 5.25 mm inside the outer faces, as in V2, and countersunk 0.6 mm. Every lid feature over the
 load cell stops 0.6 mm above it.
 
+Both LEDs shine through 0.4 mm windows: their lid holes stop two layers short of the outer
+face, which keeps chalk and dust off the board. Print the lid in a light PLA; black PLA blocks
+the LEDs.
+
 The ESP32 antenna sits over the battery, as in V3. The checks do not cover RF, fit or strength
 on printed parts.
 
@@ -154,7 +158,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
 
 ```bash
 bash scripts/check-collisions.sh

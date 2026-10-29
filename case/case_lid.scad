@@ -44,8 +44,6 @@ internal_feature_embed = 0.15; // overlap underside features into the roof for a
 
 status_led_view_d = 2.6;
 rgb_led_view_d = 3.2;
-led_view_chamfer_depth = 0.8;
-led_view_chamfer_delta = 0.6;
 
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
@@ -61,10 +59,12 @@ rgb_led_view_y = pcb_y + rgb_led_y;
 // The LED holes leave no room for a large title centered on the lid, so it is
 // centered in the strip between them and the rear edge.
 brand_y_min = max(status_led_view_y + status_led_view_d / 2, rgb_led_view_y + rgb_led_view_d / 2)
-    + led_view_chamfer_delta + brand_margin;
+    + brand_margin;
 brand_y_max = outer_rear_y - case_corner_r - brand_margin;
 brand_y = (brand_y_min + brand_y_max) / 2;
 
+assert(led_window_t > 0 && led_window_t < lid_t - 1,
+    "The LED windows must close the holes and leave them deep.");
 assert(screw_head_recess < lid_t - 0.5,
     str("screw_head_recess must leave lid material under the head. recess=", screw_head_recess, " mm."));
 assert(screw_fit_shank_d < screw_clear_d && screw_fit_head_d < screw_head_d && screw_fit_head_h < screw_head_recess,
@@ -104,11 +104,10 @@ module lid_screw_head_fit_probe() {
         cylinder(d = screw_fit_head_d, h = screw_fit_head_h);
 }
 
+// Blind from the underside, leaving the window at the outer face.
 module led_view_hole(x, y, d) {
     translate([x, y, seam_z - 0.1])
-        cylinder(d = d, h = lid_t + 0.3);
-    translate([x, y, lid_top_z - led_view_chamfer_depth])
-        cylinder(d1 = d, d2 = d + 2 * led_view_chamfer_delta, h = led_view_chamfer_depth + 0.1);
+        cylinder(d = d, h = lid_t - led_window_t + 0.1);
 }
 
 module led_view_holes() {
