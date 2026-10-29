@@ -193,3 +193,11 @@ screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
 // 45 degree countersink at each pilot entrance. Plastic the screw displaces
 // collects in it instead of curling up above the post and holding the lid off.
 screw_pilot_chamfer = 0.6;
+
+// "Crimpdeq" titles on the lid and the bottom. They read along Y, between the
+// carabiner slots, so they are horizontal when the device hangs from its eyes.
+brand_text = "Crimpdeq";
+brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
+brand_l = 44; // along Y
+brand_depth = 0.8;
+brand_margin = 1.5; // to the lid's LED holes and the rear edge

@@ -14,7 +14,7 @@
 - The load cell goes in with its strain-gauge cover facing the floor, and the battery lies flat on its bare top face. Nothing may press the battery onto the load cell: the lid hold-downs keep `battery_hold_down_clear` above it.
 - The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable; a fully mated cable's overmold must reach within `usb_overmold_stop_gap` of the receptacle face.
 - Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.
-- Keep each `Crimpdeq` title centered on its intended enclosure face.
+- Keep each `Crimpdeq` title reading along Y between the carabiner slots, so it is horizontal when the device hangs from its eyes: centered on the bottom face, and on the lid centered in the strip between the LED holes and the rear edge.
 - The KCD11 switch must remain accessible through an aligned front-wall opening, with clearance from the USB-C pocket, and leave room beside the battery's front-right corner for its leads to bend.
 - Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, at least `screw_edge_inset` inside every outer face, and with pilot holes deeper than the seated screw.
 - Case supports may touch the PCB only inside the bare bottom-side windows in `case/dimensions.scad`, and the lid only the flat USB-C shell top; re-derive the windows, cable pads, component positions and stack heights from `crimpdeq-tscircuit`'s `circuit.json` whenever the board changes. The board sits top side up and unrotated, so a tscircuit offset (x, y) from the board center is case-local (x, y); never mirror or rotate it.
