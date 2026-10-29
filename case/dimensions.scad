@@ -40,6 +40,7 @@ loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, heig
 // for its wires beside it.
 loadcell_cover_clear = 0.5;
 loadcell_pad_size = 5;
+loadcell_pad_edge_inset = 2; // from the plate's long edges
 
 notch_d = 6;
 notch_xA = 20;
@@ -91,6 +92,9 @@ battery_hold_down_clear = 0.3;
 // The hold-downs stop this far inside the battery's side and rear edges and
 // behind the switch wire bend.
 battery_hold_down_inset = 0.5;
+// Floor rib behind the battery, in the rear band.
+battery_rear_stop_t = 1.5;
+battery_rear_stop_inset = 3; // from the battery's sides
 
 // PCB: crimpdeq-tscircuit (ADS1220 variant), 17 x 31.5 mm, from its
 // circuit.json. The board sits top side up and unrotated: the ESP32 module,
@@ -121,6 +125,7 @@ pcb_cable_pads = [
 wire_d = 1.6; // 24 AWG silicone hookup wire
 // Room between the battery front and the wires dropping from the nearest pads.
 cable_pad_battery_clear = 0.8;
+pcb_part_clear = 0.2; // support column top below the bottom parts
 
 // USB-C receptacle (TYPE-C-31-M-12, top side) from its 3D model. Its front
 // face overhangs the board edge by 1.0 mm; its flat shell top takes the lid
@@ -147,6 +152,10 @@ usb_hole_clear = 0.55; // around the connector body
 usb_pocket_clear = 0.4; // around the cable overmold
 usb_pocket_min_web = 0.8; // front wall left behind the pocket
 usb_lid_clear = 0.4; // receptacle top to the lid underside
+// The lid clamp presses the board onto the column fingers through the flat
+// shell top, right above them, by one 0.2 mm layer: it ends on a layer
+// boundary and the lid flexes to absorb it.
+usb_clamp_preload = 0.1;
 
 // Top-side LEDs. D1 is the battery-status LED, a 0603 turned 90 degrees; D4
 // is the XL-2121RGBC RGB LED.
@@ -164,12 +173,22 @@ rgb_led_h = 1.0;
 // printed first on the bed. The windows keep chalk and dust off the board;
 // light PLA lets the LEDs show through them, black PLA does not.
 led_window_t = 0.4;
+status_led_view_d = 2.6;
+rgb_led_view_d = 3.2;
 
 // Stack spacing
 battery_to_pcb_gap = 0.5; // battery top to the board's bottom parts
 pcb_front_gap = 0.2; // board front edge to the inner front wall
 pcb_guide_clear = 0.25; // board long edges to the front screw posts
 top_clear = 0.5; // minimum ESP32 module-to-lid gap
+// Lid tabs behind the board's rear edge take USB-C insertion loads. The
+// chamfer on each tab's board side pushes a board that slid back during
+// assembly forward as the lid closes.
+pcb_rear_stop_x_min = 3.5; // |x| from the board center; they run to its edges
+pcb_rear_stop_t = 2.4;
+pcb_rear_stop_clear = 0.25;
+pcb_rear_stop_below = 1.0; // reach below the board underside
+pcb_rear_stop_chamfer = 0.8;
 
 // Front-wall switch (KCD11 10x15 mm). Measured 15.2 mm from its front to the
 // end of its heat-shrunk solder joints; all of it is taken as behind the

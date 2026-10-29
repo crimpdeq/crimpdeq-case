@@ -296,16 +296,16 @@ if (mode == "main_lid_eps_up") {
     intersection() { main_part(); asm_loadcell_arm(1); }
 } else if (mode == "main_loadcell_play") {
     // Within its play the plate touches nothing but its pads.
-    for (d = [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05]])
+    for (d = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] * (notch_pin_clear - 0.05))
         intersection() { main_part(); translate([d[0], d[1], 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_stop_x_neg") {
-    intersection() { main_part(); translate([-0.15, 0, 0.05]) asm_loadcell(); }
+    intersection() { main_part(); translate([-notch_pin_clear - 0.05, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_stop_x_pos") {
-    intersection() { main_part(); translate([0.15, 0, 0.05]) asm_loadcell(); }
+    intersection() { main_part(); translate([notch_pin_clear + 0.05, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_stop_y_pos") {
-    intersection() { main_part(); translate([0, 0.15, 0.05]) asm_loadcell(); }
+    intersection() { main_part(); translate([0, notch_pin_clear + 0.05, 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_stop_y_neg") {
-    intersection() { main_part(); translate([0, -0.15, 0.05]) asm_loadcell(); }
+    intersection() { main_part(); translate([0, -notch_pin_clear - 0.05, 0.05]) asm_loadcell(); }
 } else if (mode == "main_eye_access_x_neg") {
     intersection() { main_part(); carabiner_eye_probe(-1); }
 } else if (mode == "main_eye_access_x_pos") {
@@ -313,9 +313,9 @@ if (mode == "main_lid_eps_up") {
 } else if (mode == "main_battery") {
     intersection() { main_part(); asm_battery(); }
 } else if (mode == "main_battery_stop_y_neg") {
-    intersection() { main_part(); translate([0, -0.35, 0]) asm_battery(); }
+    intersection() { main_part(); translate([0, -battery_stop_clear - 0.05, 0]) asm_battery(); }
 } else if (mode == "main_battery_stop_y_pos") {
-    intersection() { main_part(); translate([0, 0.35, 0]) asm_battery(); }
+    intersection() { main_part(); translate([0, battery_stop_clear + 0.05, 0]) asm_battery(); }
 } else if (mode == "main_loadcell_drop_in") {
     intersection() { main_part(); loadcell_drop_in_probe(); }
 } else if (mode == "main_battery_drop_in") {
@@ -326,14 +326,15 @@ if (mode == "main_lid_eps_up") {
     intersection() { main_part(); translate([0, 0, -0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_play") {
     // Within its play the board touches nothing but its fingers.
-    for (d = [[0, 0], [0.2, 0], [-0.2, 0], [0, -0.15], [0, 0.7]])
+    for (d = [[0, 0], [pcb_guide_clear - 0.05, 0], [0.05 - pcb_guide_clear, 0],
+              [0, 0.05 - pcb_front_gap], [0, pcb_rear_travel]])
         intersection() { main_part(); translate([d[0], d[1], 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_guide_x_neg") {
-    intersection() { main_part(); translate([-0.3, 0, 0.05]) asm_pcb(); }
+    intersection() { main_part(); translate([-pcb_guide_clear - 0.05, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_guide_x_pos") {
-    intersection() { main_part(); translate([0.3, 0, 0.05]) asm_pcb(); }
+    intersection() { main_part(); translate([pcb_guide_clear + 0.05, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_front_stop") {
-    intersection() { main_part(); translate([0, -0.25, 0.05]) asm_pcb(); }
+    intersection() { main_part(); translate([0, -pcb_front_gap - 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_cable_pad_wires") {
     intersection() { main_part(); cable_pad_wire_probe(); }
 } else if (mode == "main_switch_wires") {
@@ -396,10 +397,10 @@ if (mode == "main_lid_eps_up") {
 } else if (mode == "lid_pcb_outside_clamp") {
     lid_pcb_outside_clamp(0);
 } else if (mode == "lid_pcb_rear_travel") {
-    // Just inside the 0.25 mm rear stop clearance.
-    lid_pcb_outside_clamp(0.24);
+    // Just inside the rear stop clearance.
+    lid_pcb_outside_clamp(pcb_rear_stop_clear - 0.01);
 } else if (mode == "lid_pcb_rear_stop") {
-    intersection() { pcb_rear_stops(); translate([0, 0.3, 0]) asm_pcb(); }
+    intersection() { pcb_rear_stops(); translate([0, pcb_rear_stop_clear + 0.05, 0]) asm_pcb(); }
 } else if (mode == "lid_usb_clamp_off_shell") {
     usb_clamp_off_shell();
 } else if (mode == "lid_usb_cable") {

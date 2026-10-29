@@ -69,6 +69,42 @@ screw_x = pcb_W / 2 + pcb_guide_clear + screw_post_d / 2;
 screw_y = outer_rear_y - screw_edge_inset;
 screw_centers = [[-screw_x, -screw_y], [screw_x, -screw_y], [-screw_x, screw_y], [screw_x, screw_y]];
 
+// Load-cell pads under the battery's side edges.
+loadcell_pad_x = bat_W / 2 - loadcell_pad_size / 2;
+loadcell_pad_y = lc_W / 2 - loadcell_pad_edge_inset - loadcell_pad_size / 2;
+// Every lid feature over the load cell stops at this height.
+lid_hold_down_z = loadcell_top_z + loadcell_hold_down_clear;
+
+// The PCB column runs from the front wall to battery_stop_front_y, which
+// stops the battery; it spans both support windows and stays below the
+// bottom parts.
+battery_stop_front_y = battery_front_y - battery_stop_clear;
+battery_stop_rear_y = battery_rear_y + battery_stop_clear;
+pcb_column_x = [pcb_support_windows[0][0], pcb_support_windows[1][1]];
+pcb_column_top_z = pcb_board_bottom_z - pcb_bottom_parts_h - pcb_part_clear;
+
+// The lid clamp stays on the shell top wherever the lid seats and the board
+// sits within its play, and behind the front wall.
+usb_clamp_inset = lid_seat_play + pcb_guide_clear;
+usb_clamp_rect = [
+    usb_shell_top_rect[0] + usb_clamp_inset, usb_shell_top_rect[1] - usb_clamp_inset,
+    max(usb_shell_top_rect[2], inner_front_y + lid_seat_play - pcb_y), usb_shell_top_rect[3] - usb_clamp_inset
+];
+pcb_rear_stop_x = [pcb_rear_stop_x_min, pcb_W / 2];
+pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
+// How far the board can slide back before the rear stops hold it, wherever
+// the lid seats.
+pcb_rear_travel = pcb_rear_stop_clear + lid_seat_play;
+
+status_led_view_y = pcb_y + status_led_y;
+rgb_led_view_y = pcb_y + rgb_led_y;
+// The LED holes leave no room for a large title centered on the lid, so it is
+// centered in the strip between them and the rear edge.
+brand_y_min = max(status_led_view_y + status_led_view_d / 2, rgb_led_view_y + rgb_led_view_d / 2)
+    + brand_margin;
+brand_y_max = outer_rear_y - case_corner_r - brand_margin;
+brand_y = (brand_y_min + brand_y_max) / 2;
+
 // Lid bars beside the board over the battery, from behind the switch wire
 // bend to the battery's rear. They stop the battery lifting into the board's
 // bottom parts and loosely guide the board's rear end; the lid seat play
@@ -109,6 +145,26 @@ assert(chamfer_k - outer_rear_y > 0,
     "The chamfers must leave flat front and rear walls.");
 assert(chamfer_k - outer_end_x > slot_wall_outer_y + slot_wall_fit,
     "The chamfers must leave end walls round the carabiner slot exits and grooves.");
+assert(loadcell_pad_x - loadcell_pad_size / 2 > gauge_cover_w / 2 + loadcell_wire_bundle[0],
+    "Load-cell pads must clear the gauge cover and its wires.");
+assert(loadcell_pad_y - loadcell_pad_size / 2 > slot_wall_outer_y,
+    "Load-cell pads must clear the carabiner slot walls.");
+assert(battery_stop_rear_y + battery_rear_stop_t < screw_y - screw_post_d / 2,
+    "The battery rear stop must stay in front of the rear screw posts.");
+assert(pcb_column_top_z > battery_top_z,
+    "The PCB column must cover the battery's front face.");
+for (p = pcb_cable_pads)
+    assert(abs(p[0]) - wire_d / 2 > pcb_column_x[1] + 0.1,
+        str("The PCB column must clear the wire at pad ", p));
+assert(usb_clamp_rect[1] - usb_clamp_rect[0] >= 4 && usb_clamp_rect[3] - usb_clamp_rect[2] >= 3,
+    "The USB-C clamp must keep a useful area on the shell top.");
+assert(pcb_rear_stop_x_min > 0 && pcb_rear_stop_z_min >= battery_top_z + 0.5,
+    "PCB rear stops must sit behind the board, above the battery.");
+assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
+    "PCB rear stops must bear on the full board edge above their chamfer.");
+assert(brand_y_max - brand_y_min >= brand_l,
+    str("The lid title needs ", brand_l, " mm between the LED holes and the rear edge; there are ",
+        brand_y_max - brand_y_min, " mm."));
 assert(battery_hold_down_x[1] < carabiner_slot_inner_x - loadcell_slot_wall_t - lid_seat_play,
     "Battery hold-downs must clear the lid slot walls.");
 assert(carabiner_shank_d < eye_ring_bore_d && eye_ring_bore_d < eye_d,

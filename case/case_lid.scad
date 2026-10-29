@@ -19,62 +19,17 @@ screw_fit_shank_d = 2.6; // fit-check envelope for an M2.5 screw shank through t
 screw_fit_head_d = 5.0; // fit-check envelope for a typical M2.5 pan/button head
 screw_fit_head_h = 1.6;
 
-// The clamp presses the board onto the column fingers through the flat top of
-// the USB-C shell, right above them, by one 0.2 mm layer: it ends on a layer
-// boundary and the lid flexes to absorb it. It stays on the shell top
-// wherever the lid seats and the board sits within its play.
-usb_clamp_preload = 0.1;
-usb_clamp_inset = lid_seat_play + pcb_guide_clear;
-
-// Tabs behind the board's rear edge take USB-C insertion loads. The chamfer
-// on each tab's board side pushes a board that slid back during assembly
-// forward as the lid closes.
-pcb_rear_stop_x = [3.5, pcb_W / 2]; // |x| span
-pcb_rear_stop_t = 2.4;
-pcb_rear_stop_clear = 0.25;
-pcb_rear_stop_below = 1.0; // reach below the board underside
-pcb_rear_stop_chamfer = 0.8;
-
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
-
-status_led_view_d = 2.6;
-rgb_led_view_d = 3.2;
 
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
-hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
-usb_clamp_rect = [
-    usb_shell_top_rect[0] + usb_clamp_inset, usb_shell_top_rect[1] - usb_clamp_inset,
-    max(usb_shell_top_rect[2], inner_front_y + lid_seat_play - pcb_y), usb_shell_top_rect[3] - usb_clamp_inset
-];
-pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
-status_led_view_y = pcb_y + status_led_y;
-rgb_led_view_y = pcb_y + rgb_led_y;
-// The LED holes leave no room for a large title centered on the lid, so it is
-// centered in the strip between them and the rear edge.
-brand_y_min = max(status_led_view_y + status_led_view_d / 2, rgb_led_view_y + rgb_led_view_d / 2)
-    + brand_margin;
-brand_y_max = outer_rear_y - case_corner_r - brand_margin;
-brand_y = (brand_y_min + brand_y_max) / 2;
-
 assert(led_window_t > 0 && led_window_t < lid_t - 1,
     "The LED windows must close the holes and leave them deep.");
 assert(screw_head_recess < lid_t - 0.5,
     str("screw_head_recess must leave lid material under the head. recess=", screw_head_recess, " mm."));
 assert(screw_fit_shank_d < screw_clear_d && screw_fit_head_d < screw_head_d && screw_fit_head_h < screw_head_recess,
     "Screw fit envelopes must fit their holes.");
-assert(usb_clamp_rect[1] - usb_clamp_rect[0] >= 4 && usb_clamp_rect[3] - usb_clamp_rect[2] >= 3,
-    "The USB-C clamp must keep a useful area on the shell top.");
-assert(pcb_rear_stop_x[0] > 0 && pcb_rear_stop_x[1] <= pcb_W / 2,
-    "PCB rear stops must sit behind the board.");
-assert(pcb_rear_stop_z_min >= battery_top_z + 0.5,
-    "PCB rear stops must stay above the battery.");
-assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
-    "PCB rear stops must bear on the full board edge above their chamfer.");
-assert(brand_y_max - brand_y_min >= brand_l,
-    str("The lid title needs ", brand_l, " mm between the LED holes and the rear edge; there are ",
-        brand_y_max - brand_y_min, " mm."));
 
 module screw_holes() {
     each_screw(seam_z - 0.1)
@@ -109,8 +64,8 @@ module led_view_holes() {
 // Close the electronics bay above the load cell around each slot; the
 // straight wall ends reach into the end-wall grooves.
 module lid_carabiner_slot_walls() {
-    translate([0, 0, hold_down_target_z])
-        linear_extrude(height = seam_z + internal_feature_embed - hold_down_target_z)
+    translate([0, 0, lid_hold_down_z])
+        linear_extrude(height = seam_z + internal_feature_embed - lid_hold_down_z)
             intersection() {
                 union() {
                     carabiner_slot_wall_2d(-1);
