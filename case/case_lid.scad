@@ -47,10 +47,6 @@ rgb_led_view_d = 3.2;
 led_view_chamfer_depth = 0.8;
 led_view_chamfer_delta = 0.6;
 
-brand_text = "Crimpdeq";
-brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
-brand_w = 28;
-brand_depth = 0.8;
 print_layout = false; // true: flip lid for support-free printing (outer top face on bed)
 
 /*** Derived placement ***/
@@ -62,6 +58,12 @@ usb_clamp_rect = [
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 status_led_view_y = pcb_y + status_led_y;
 rgb_led_view_y = pcb_y + rgb_led_y;
+// The LED holes leave no room for a large title centered on the lid, so it is
+// centered in the strip between them and the rear edge.
+brand_y_min = max(status_led_view_y + status_led_view_d / 2, rgb_led_view_y + rgb_led_view_d / 2)
+    + led_view_chamfer_delta + brand_margin;
+brand_y_max = outer_rear_y - case_corner_r - brand_margin;
+brand_y = (brand_y_min + brand_y_max) / 2;
 
 assert(screw_head_recess < lid_t - 0.5,
     str("screw_head_recess must leave lid material under the head. recess=", screw_head_recess, " mm."));
@@ -77,6 +79,9 @@ assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
     "PCB rear stops must bear on the full board edge above their chamfer.");
 assert(battery_hold_down_x[1] < carabiner_slot_inner_x - loadcell_slot_wall_t - lid_seat_play,
     "Battery hold-downs must clear the lid slot walls.");
+assert(brand_y_max - brand_y_min >= brand_l,
+    str("The lid title needs ", brand_l, " mm between the LED holes and the rear edge; there are ",
+        brand_y_max - brand_y_min, " mm."));
 assert(battery_hold_down_y[0] > switch_rear_y + switch_wire_bend,
     "Battery hold-downs must stay behind the switch wire route.");
 
@@ -159,10 +164,11 @@ module battery_hold_downs() {
 }
 
 module brand_engrave_lid() {
-    translate([0, 0, lid_top_z - brand_depth])
+    translate([0, brand_y, lid_top_z - brand_depth])
         linear_extrude(height = brand_depth + 0.1)
-            resize([brand_w, 0], auto = true)
-                text(brand_text, font = brand_font, halign = "center", valign = "center");
+            rotate([0, 0, 90])
+                resize([brand_l, 0], auto = true)
+                    text(brand_text, font = brand_font, halign = "center", valign = "center");
 }
 
 module lid_part() {

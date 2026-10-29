@@ -25,10 +25,6 @@ battery_rear_stop_t = 1.5;
 
 pcb_part_clear = 0.2; // column top below the bottom parts
 
-brand_text = "Crimpdeq";
-brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
-brand_w = 28;
-brand_depth = 0.8;
 rear_brand_text = "crimpdeq.com";
 rear_brand_w = 60;
 rear_brand_depth = 0.8;
@@ -160,13 +156,14 @@ module switch_cuts() {
         span(switch_z, switch_h / 2 + switch_clear));
 }
 
+// Centered on the bottom face, mirrored so it reads from below.
 module brand_engrave_bottom() {
     translate([0, 0, -0.1])
         linear_extrude(height = brand_depth + 0.1)
-            // Mirrored so it reads from below, front edge toward the reader.
             mirror([1, 0, 0])
-                resize([brand_w, 0], auto = true)
-                    text(brand_text, font = brand_font, halign = "center", valign = "center");
+                rotate([0, 0, -90])
+                    resize([brand_l, 0], auto = true)
+                        text(brand_text, font = brand_font, halign = "center", valign = "center");
 }
 
 // Reads from behind the rear wall.
