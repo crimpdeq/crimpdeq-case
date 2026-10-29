@@ -41,9 +41,10 @@ module loadcell_2d() {
     }
 }
 
-// Gauge cover; origin at the center of the load-cell face it sits on.
+// Gauge cover under the plate; origin at the center of the plate's bottom
+// face. Its wires leave the front (-Y) side.
 module loadcell_gauge_cover() {
-    translate([-gauge_cover_w / 2, gauge_cover_y - gauge_cover_l / 2, 0])
+    translate([-gauge_cover_w / 2, -gauge_cover_y - gauge_cover_l / 2, -gauge_cover_h])
         cube([gauge_cover_w, gauge_cover_l, gauge_cover_h]);
 }
 

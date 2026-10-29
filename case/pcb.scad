@@ -1,5 +1,5 @@
 //
-// Revision 3 PCB with its component envelopes
+// crimpdeq-tscircuit PCB with its component envelopes
 // Units: mm
 //
 
@@ -13,40 +13,40 @@ module pcb_rect_2d(r) {
         square([r[1] - r[0], r[3] - r[2]]);
 }
 
-// Board footprint minus the bare areas the case is allowed to touch.
-module pcb_parts_2d(windows) {
-    difference() {
-        square([pcb_W, pcb_L], center = true);
-        for (w = windows)
-            pcb_rect_2d(w);
-    }
+module pcb_outline_2d() {
+    offset(r = pcb_corner_r)
+        square([pcb_W - 2 * pcb_corner_r, pcb_L - 2 * pcb_corner_r], center = true);
 }
 
-// Origin: board center on its underside (KiCad F.Cu, toward the battery).
+// Origin: board center on its underside.
 module pcb_model() {
     color("green")
-        translate([0, 0, pcb_board_t / 2])
-            cube([pcb_W, pcb_L, pcb_board_t], center = true);
+        linear_extrude(height = pcb_board_t)
+            pcb_outline_2d();
 
-    // F.Cu parts below the board; only the support windows are bare.
+    // Bottom parts; only the support windows are bare.
     color("darkgreen")
         translate([0, 0, -pcb_bottom_parts_h])
             linear_extrude(height = pcb_bottom_parts_h)
-                pcb_parts_2d(pcb_support_windows);
+                difference() {
+                    pcb_outline_2d();
+                    for (w = pcb_support_windows)
+                        pcb_rect_2d(w);
+                }
 
-    color("silver")
-        translate([usb_x, usb_y, -usb_h / 2])
-            cube([usb_w, usb_d, usb_h], center = true);
-
-    // B.Cu parts face the lid; only the clamp windows are bare.
     translate([0, 0, pcb_board_t]) {
         color("darkgreen")
             linear_extrude(height = pcb_top_parts_h)
-                pcb_parts_2d(pcb_clamp_windows);
+                pcb_outline_2d();
 
         color("lightgray")
             linear_extrude(height = pcb_module_h)
                 pcb_rect_2d(pcb_module_rect);
+
+        // Overhangs the front edge.
+        color("silver")
+            linear_extrude(height = usb_h)
+                pcb_rect_2d(usb_rect);
 
         translate([status_led_x, status_led_y, status_led_h / 2])
             color("yellow")

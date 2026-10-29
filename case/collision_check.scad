@@ -1,44 +1,33 @@
 // Collision/overlap checks for enclosure and assembly parts.
-// Use with: openscad -D 'mode="main_lid"' -o /tmp/out.stl case/collision_check.scad
+// Use with: openscad -D 'mode="main_battery"' -o /tmp/out.stl case/collision_check.scad
 
 use <case_main.scad>
 use <case_lid.scad>
 use <load_cell.scad>
-use <battery.scad>
 use <pcb.scad>
+use <assembly.scad>
 include <placement.scad>
 
 render_fn = is_undef(render_fn) ? 24 : render_fn;
 $fn = render_fn;
 
 // Override from CLI with -D 'mode="..."'
-mode = "main_lid";
+mode = "main_battery";
 
 lid_seat_shifts = [[1, 0], [-1, 0], [0, 1], [0, -1]] * lid_seat_play;
 
-module asm_loadcell() {
-    translate([0, 0, loadcell_center_z])
-        linear_extrude(height = lc_T, center = true)
-            loadcell_2d();
-    translate([0, 0, loadcell_top_z])
-        loadcell_gauge_cover();
-}
-
+// The load cell beyond the battery bay, where the main body may not touch it.
 module asm_loadcell_arm(x_sign) {
-    arm_w = lc_L / 2 - case_inner_x_half + 0.2;
-    arm_x = x_sign * (case_inner_x_half + arm_w / 2 - 0.1);
-
     intersection() {
         asm_loadcell();
-        translate([arm_x, 0, loadcell_center_z])
-            cube([arm_w, lc_W + 1, lc_T + 1], center = true);
+        box(x_sign * [carabiner_slot_inner_x - loadcell_slot_wall_t, lc_L], [-lc_W, lc_W], [0, lid_top_z]);
     }
 }
 
 // Shank poses through the case height: centered in the eye, bearing on the
 // outer side of the eye ring, and tilted outward around that contact.
-carabiner_probe_z_min = loadcell_center_z - 6.5; // just below the floor
-carabiner_probe_z_max = loadcell_center_z + 24; // just above the lid
+carabiner_probe_z_min = -1; // just below the floor
+carabiner_probe_z_max = lid_top_z + 1; // just above the lid
 carabiner_probe_tilt = 15;
 
 module carabiner_eye_probe(x_sign) {
@@ -66,32 +55,23 @@ module corner_end_probe(x_sign, y_sign) {
         cube([10, 1, 1], center = true);
 }
 
-// A sheet along the gap round one lid slot-wall end, from the slot into the
-// bay. Only the main-body fin can block it.
-module slot_seal_probe(x_sign, y_sign) {
-    y0 = carabiner_slot_d / 2 - 1;
-    y1 = slot_seal_fin_y + loadcell_slot_wall_t + 1;
-    translate([0, 0, loadcell_top_z + 1])
-        linear_extrude(height = 14)
-            intersection() {
-                difference() {
-                    case_outline_2d(wall_t + slot_wall_fit / 2 - 0.05);
-                    case_outline_2d(wall_t + slot_wall_fit / 2 + 0.05);
-                }
-                translate([x_sign > 0 ? 0 : -case_tip_x, y_sign > 0 ? y0 : -y1])
-                    square([case_tip_x, y1 - y0]);
-            }
-}
-
 module corner_roof_probe(x_sign, y_sign) {
     translate([x_sign * (lc_L / 2 - 1), y_sign * (lc_W / 2 - 1), loadcell_top_z + 15])
         cube([1, 1, 30], center = true);
 }
 
+// A sheet across the gap between one lid slot-wall end and the bottom of its
+// end-wall groove, from the slot into the bay. Only the groove's bay-side
+// wall can block it.
+module slot_seal_probe(x_sign, y_sign) {
+    box(x_sign * span(end_groove_x - slot_wall_fit / 2, 0.05),
+        y_sign * [carabiner_slot_d / 2 - 1, slot_wall_outer_y + slot_wall_fit + 1],
+        [loadcell_top_z + 1, seam_z - 1]);
+}
+
 // Core of each M2.5x10 screw, from its seated head to its tip.
 module screw_core_probe() {
-    head_seat_z = pcb_top_z + top_clear + lid_t - screw_head_recess;
-    each_corner(head_seat_z - screw_len)
+    each_screw(lid_top_z - screw_head_recess - screw_len)
         cylinder(d = 1.0, h = screw_len);
 }
 
@@ -100,28 +80,11 @@ module screw_core_probe() {
 // over the whole switch_grip_len.
 module switch_grip_probe() {
     for (x_sign = [-1, 1])
-        translate([x_sign * (switch_w / 2 + 0.06), switch_grip_y + 0.06, switch_z])
+        translate([switch_x + x_sign * (switch_w / 2 + 0.06), switch_grip_y - 0.06, switch_z])
             cube([0.1, 0.1, switch_h - 1], center = true);
 }
 
-module asm_battery() {
-    translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T / 2])
-        battery_model(rounded = true);
-}
-
-module asm_pcb() {
-    translate([0, pcb_y_offset, pcb_board_bottom_z])
-        pcb_model();
-}
-
-module asm_switch(inset = 0) {
-    translate([switch_x, switch_y, switch_z])
-        rotate([0, switch_rot_y, 0])
-            cube([switch_w - 2 * inset, switch_d, switch_h - 2 * inset], center = true);
-}
-
-// Vertical drop-in paths from each seat to above the case. The board path
-// leaves out the USB-C connector, which is tilted into the front wall.
+// Vertical drop-in paths from each seat to above the case.
 module loadcell_drop_in_probe() {
     translate([0, 0, loadcell_bottom_z + 0.05])
         linear_extrude(height = 30)
@@ -135,38 +98,72 @@ module battery_drop_in_probe() {
     }
 }
 
-module pcb_board_drop_in_probe() {
-    translate([0, pcb_y_offset, pcb_board_bottom_z + 0.05])
+// The board and its USB-C receptacle, which drops into the open-topped
+// front-wall opening.
+module pcb_drop_in_probe() {
+    translate([0, pcb_y, pcb_board_bottom_z + 0.05])
         linear_extrude(height = 30)
-            square([pcb_W, pcb_L], center = true);
+            pcb_outline_2d();
+    translate([0, pcb_y, pcb_board_top_z + 0.05])
+        linear_extrude(height = 30)
+            pcb_rect_2d(usb_rect);
 }
 
-// The board under each lid clamp, which the clamps press by their preload.
-module pcb_clamp_contact() {
+// The receptacle under the clamp, which the clamp presses by its preload.
+module usb_clamp_contact() {
     intersection() {
-        pcb_top_clamps();
-        translate([-50, -50, pcb_board_bottom_z])
-            cube([100, 100, pcb_board_t]);
+        usb_clamp();
+        box([-50, 50], [-50, 50], [0, usb_top_z]);
     }
 }
 
-// The lid may touch the board only through the clamps.
-module lid_pcb_outside_clamps(dy) {
+// The lid may touch the board only through the USB-C clamp.
+module lid_pcb_outside_clamp(dy) {
     intersection() {
         lid_part();
         difference() {
             translate([0, dy, 0]) asm_pcb();
-            pcb_clamp_contact();
+            usb_clamp_contact();
         }
     }
 }
 
-// Wire routes, wire_d thick. Each cable pad needs room below for its solder
-// joint and the wire bend.
+// Wherever the lid seats and the board sits within its guides, the clamp
+// stays on the flat shell top.
+module usb_clamp_off_shell() {
+    for (d = lid_seat_shifts)
+        difference() {
+            translate([d[0], d[1], 0]) usb_clamp_contact();
+            translate([0, pcb_y, 0])
+                linear_extrude(height = lid_top_z)
+                    offset(delta = -pcb_guide_clear)
+                        pcb_rect_2d(usb_shell_top_rect);
+        }
+}
+
+// A fully mated cable: the plug shell inside the receptacle and the largest
+// recommended overmold stopped usb_overmold_stop_gap in front of it.
+module usb_cable_fit_probe() {
+    usb_prism(usb_pocket_floor_y, usb_face_y + 6.5, usb_plug_shell_w,
+        usb_center_z - usb_plug_shell_h / 2, usb_center_z + usb_plug_shell_h / 2, usb_plug_shell_corner_r);
+    usb_prism(outer_front_y - 15, usb_pocket_floor_y - 0.01, usb_overmold_w,
+        usb_center_z - usb_overmold_h / 2, usb_center_z + usb_overmold_h / 2, usb_overmold_corner_r);
+}
+
+module led_sightline_probe(led_x, led_y, d, led_h) {
+    translate([led_x, pcb_y + led_y, pcb_board_top_z + led_h])
+        cylinder(d = d, h = 10);
+}
+
+// Wire routes. Each cable pad needs room below for its solder joint and the
+// wire bend.
+pad_probe_h = 4;
+pad_probe_z = pcb_board_bottom_z - pad_probe_h;
+
 module cable_pad_wire_probe() {
     for (p = pcb_cable_pads)
-        translate([p[0], pcb_y_offset + p[1], pcb_board_bottom_z - 4])
-            cylinder(d = wire_d, h = 4);
+        translate([p[0], pcb_y + p[1], pad_probe_z])
+            cylinder(d = wire_d, h = pad_probe_h);
 }
 
 // A wire bundle swept through points; each cube is its envelope.
@@ -179,135 +176,150 @@ module wire_path(points, size) {
 }
 
 wire_env = wire_d + 0.1;
-wire_pair = [2, 2, 2] * wire_env; // two wires in any orientation
+wire_single = [1, 1, 1] * wire_env;
 wire_pair_stacked = [1, 1, 2] * wire_env; // two wires stacked in Z
+wire_pair_flat = [2, 2, 1] * wire_env; // two wires side by side
 
-function pad_point(i, z) = [pcb_cable_pads[i][0], pcb_y_offset + pcb_cable_pads[i][1], z];
+function pad_point(i, z) = [pcb_cable_pads[i][0], pcb_y + pcb_cable_pads[i][1], z];
 
-// Switch wires turn up behind the joints, in the bend zone in front of the
-// battery and load cell, run right over the battery-front rib and forward
-// beside the right PCB column, then split to the SW+ and SW- pads.
-module switch_wire_probe() {
-    bend_y = switch_y - switch_d / 2 - switch_wire_bend / 2;
-    run_z = switch_z + switch_h / 2 + switch_clear + wire_pair[2] / 2 + 0.05;
-    lane_x = pcb_cable_pads[2][0] + 1;
-    split = [lane_x, pcb_y_offset + pcb_cable_pads[2][1], run_z];
-    pad_z = pcb_board_bottom_z - wire_env / 2 - 0.05;
-    wire_path([
-        [0, bend_y, switch_z],
-        [0, bend_y, run_z],
-        [lane_x, bend_y, run_z],
-        split
-    ], wire_pair);
-    for (i = [2, 3])
-        wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
-}
+// Lane between the PCB column and the right front post, below the J4 pads.
+j4_lane_x = (pcb_support_windows[1][1] + pcb_W / 2 + pcb_guide_clear) / 2;
+pad_run_z = pad_probe_z - wire_pair_stacked[2] / 2;
 
-// Battery leads leave its rear end, rise behind it and run forward over its
-// right edge, beside the board, then drop in front of it and split to the
-// B- and B+ pads.
-module battery_wire_probe() {
-    rear_y = battery_y_offset - bat_L / 2 - 0.25 - wire_pair[1] / 2;
-    over_z = battery_top_z + 0.05 + wire_pair_stacked[2] / 2;
-    lane_x = pcb_W / 2 + 0.3 + wire_env / 2;
-    split = [lane_x, pcb_y_offset + pcb_cable_pads[0][1], battery_top_z];
-    pad_z = pcb_board_bottom_z - wire_env / 2 - 0.05;
-    wire_path([
-        [0, rear_y, battery_bottom_z + wire_pair[2] / 2],
-        [0, rear_y, over_z]
-    ], wire_pair);
-    wire_path([
-        [0, rear_y, over_z],
-        [lane_x, rear_y, over_z],
-        [lane_x, battery_front_y + wire_env, over_z],
-        split
-    ], wire_pair_stacked);
-    for (i = [0, 1])
-        wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
-}
-
-// Load-cell wires leave the gauge cover toward the front, run left under the
-// battery, rise beyond its side, run forward outside the left PCB column and
-// cross under the board to the front-edge pads.
+// The load-cell wires leave the gauge cover toward the front under the plate,
+// come out at its front edge below the J3 pads, rise in front of the battery
+// and run forward under the pads.
 module loadcell_wire_probe() {
     w = loadcell_wire_bundle[0];
     h = loadcell_wire_bundle[1];
-    exit_y = gauge_cover_y + gauge_cover_l / 2;
-    lane_y = [exit_y, exit_y + w];
-    side_x = -(bat_W / 2 + 2.5);
-    run_x = [side_x - w / 2, side_x + w / 2];
-    pad_y = pcb_y_offset + pcb_cable_pads[4][1];
-    cross_y = [pad_y - w / 2, pad_y + w / 2];
-    cross_z = pcb_board_bottom_z - 4;
-    under_z = [loadcell_top_z + 0.05, loadcell_top_z + 0.05 + h];
-    box([run_x[0], w / 2], lane_y, under_z);
-    box(run_x, lane_y, [under_z[0], battery_bottom_z + h]);
-    box(run_x, [exit_y, pad_y + w / 2], [battery_bottom_z, battery_bottom_z + h]);
-    box(run_x, cross_y, [battery_bottom_z, cross_z + h]);
-    box([run_x[0], pcb_cable_pads[7][0] + w / 2], cross_y, [cross_z, cross_z + h]);
+    size = [w, w, h];
+    lane_x = -j4_lane_x;
+    under_z = loadcell_bottom_z - 0.05 - h / 2;
+    rise_y = battery_front_y - 0.4 - w / 2;
+    run_z = pad_probe_z - h / 2;
+    wire_path([
+        [0, -gauge_cover_y - gauge_cover_l / 2 - w / 2, under_z],
+        [lane_x, battery_front_y + 1.5, under_z],
+        [lane_x, rise_y, under_z],
+        [lane_x, rise_y, run_z],
+        [lane_x, pcb_y + pcb_cable_pads[3][1], run_z]
+    ], size);
 }
 
-module led_sightline_probe(led_x, led_y, d, led_h) {
-    translate([led_x, pcb_y_offset + led_y, pcb_board_top_z + led_h])
-        cylinder(d = d, h = 10, center = false);
+// Battery leads leave the right corner of the front end sideways, turn
+// forward beside it, run left along its front to the lane and forward below
+// the B+ and B- pads.
+module battery_wire_probe() {
+    z = battery_bottom_z + bat_T / 2;
+    bend_x = bat_W / 2 + battery_lead_bend / 2;
+    run_y = battery_front_y - 0.05 - wire_pair_stacked[1] / 2;
+    split = [j4_lane_x, pcb_y + pcb_cable_pads[6][1], pad_run_z];
+    wire_path([
+        [bend_x, battery_front_y + battery_lead_y, z],
+        [bend_x, run_y, z],
+        [j4_lane_x, run_y, z],
+        [j4_lane_x, run_y, pad_run_z],
+        split
+    ], wire_pair_stacked);
+    for (i = [6, 7])
+        wire_path([split, pad_point(i, pad_probe_z)], wire_single);
+}
+
+// Switch wires turn up behind the joints, run left over the battery beside
+// the board, forward in front of the battery, drop beside the right front
+// post and split to the SW- and SW+ pads.
+module switch_wire_probe() {
+    bend_y = switch_rear_y + switch_wire_bend / 2;
+    over_z = battery_top_z + 0.05 + wire_pair_flat[2] / 2;
+    over_x = pcb_W / 2 + 0.3 + wire_pair_flat[0] / 2;
+    drop_y = battery_front_y - 0.3 - wire_pair_flat[1] / 2;
+    split = [j4_lane_x, drop_y, pad_run_z];
+    wire_path([
+        [switch_x, switch_rear_y + 0.05 + wire_pair_flat[1] / 2, switch_z],
+        [switch_x, bend_y, over_z],
+        [over_x, bend_y, over_z],
+        [over_x, drop_y, over_z],
+        [over_x, drop_y, pad_run_z]
+    ], wire_pair_flat);
+    wire_path([[over_x, drop_y, pad_run_z], split], wire_pair_stacked);
+    for (i = [4, 5])
+        wire_path([split, pad_point(i, pad_probe_z)], wire_single);
+}
+
+module all_wire_probes() {
+    cable_pad_wire_probe();
+    loadcell_wire_probe();
+    battery_wire_probe();
+    switch_wire_probe();
 }
 
 module asm_all() {
-    union() {
-        asm_loadcell();
-        asm_battery();
-        asm_pcb();
-        asm_switch();
-    }
+    asm_loadcell();
+    asm_battery();
+    asm_pcb();
+    asm_switch();
 }
 
-if (mode == "main_lid") {
-    intersection() { main_part(); lid_part(); }
-} else if (mode == "main_lid_eps_up") {
-    intersection() { main_part(); translate([0, 0, 0.01]) lid_part(); }
+// Seated lid, nudged up by eps, at nominal and every seat shift.
+module lid_seated(eps, d = [0, 0]) {
+    translate([d[0], d[1], eps]) lid_part();
+}
+
+if (mode == "main_lid_eps_up") {
+    intersection() { main_part(); lid_seated(0.01); }
 } else if (mode == "main_lid_shifted") {
     for (d = lid_seat_shifts)
-        intersection() { main_part(); translate([d[0], d[1], 0.01]) lid_part(); }
+        intersection() { main_part(); lid_seated(0.01, d); }
 } else if (mode == "main_lid_eps_down") {
-    intersection() { main_part(); translate([0, 0, -0.05]) lid_part(); }
-} else if (mode == "main_components") {
-    intersection() { main_part(); asm_all(); }
-} else if (mode == "main_loadcell") {
-    intersection() { main_part(); asm_loadcell(); }
+    intersection() { main_part(); lid_seated(-0.05); }
+} else if (mode == "main_loadcell_eps_z_minus") {
+    intersection() { main_part(); translate([0, 0, -0.05]) asm_loadcell(); }
+} else if (mode == "main_loadcell_eps_z_plus") {
+    intersection() { main_part(); translate([0, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_loadcell_arm_x_neg") {
     intersection() { main_part(); asm_loadcell_arm(-1); }
 } else if (mode == "main_loadcell_arm_x_pos") {
     intersection() { main_part(); asm_loadcell_arm(1); }
+} else if (mode == "main_loadcell_play") {
+    // Within its play the plate touches nothing but its pads.
+    for (d = [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.25]])
+        intersection() { main_part(); translate([d[0], d[1], 0.05]) asm_loadcell(); }
+} else if (mode == "main_loadcell_stop_x_neg") {
+    intersection() { main_part(); translate([-0.15, 0, 0.05]) asm_loadcell(); }
+} else if (mode == "main_loadcell_stop_x_pos") {
+    intersection() { main_part(); translate([0.15, 0, 0.05]) asm_loadcell(); }
+} else if (mode == "main_loadcell_stop_y_pos") {
+    intersection() { main_part(); translate([0, 0.15, 0.05]) asm_loadcell(); }
+} else if (mode == "main_loadcell_stop_y_neg") {
+    intersection() { main_part(); translate([0, -0.35, 0.05]) asm_loadcell(); }
 } else if (mode == "main_eye_access_x_neg") {
     intersection() { main_part(); carabiner_eye_probe(-1); }
 } else if (mode == "main_eye_access_x_pos") {
     intersection() { main_part(); carabiner_eye_probe(1); }
-} else if (mode == "main_notch_retention_y_neg") {
-    intersection() { notch_pins(); translate([0, -0.15, 0]) asm_loadcell(); }
-} else if (mode == "main_notch_retention_y_pos") {
-    intersection() { notch_pins(); translate([0, 0.15, 0]) asm_loadcell(); }
-} else if (mode == "main_loadcell_eps_z_plus") {
-    intersection() { main_part(); translate([0, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_battery") {
     intersection() { main_part(); asm_battery(); }
-} else if (mode == "main_pcb_eps_z_minus") {
-    intersection() { main_part(); translate([0, 0, -0.05]) asm_pcb(); }
+} else if (mode == "main_battery_stop_y_neg") {
+    intersection() { main_part(); translate([0, -0.35, 0]) asm_battery(); }
+} else if (mode == "main_battery_stop_y_pos") {
+    intersection() { main_part(); translate([0, 0.35, 0]) asm_battery(); }
 } else if (mode == "main_loadcell_drop_in") {
     intersection() { main_part(); loadcell_drop_in_probe(); }
 } else if (mode == "main_battery_drop_in") {
     intersection() { main_part(); battery_drop_in_probe(); }
 } else if (mode == "main_pcb_drop_in") {
-    intersection() { main_part(); pcb_board_drop_in_probe(); }
-} else if (mode == "main_pcb_eps_x_neg") {
-    intersection() { main_part(); translate([-0.2, 0, 0.05]) asm_pcb(); }
-} else if (mode == "main_pcb_eps_x_pos") {
-    intersection() { main_part(); translate([0.2, 0, 0.05]) asm_pcb(); }
+    intersection() { main_part(); pcb_drop_in_probe(); }
+} else if (mode == "main_pcb_eps_z_minus") {
+    intersection() { main_part(); translate([0, 0, -0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_play") {
+    // Within its play the board touches nothing but its fingers.
+    for (d = [[0, 0], [0.2, 0], [-0.2, 0], [0, -0.15], [0, 0.7]])
+        intersection() { main_part(); translate([d[0], d[1], 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_guide_x_neg") {
     intersection() { main_part(); translate([-0.3, 0, 0.05]) asm_pcb(); }
-} else if (mode == "main_pcb_usb_side_stop") {
-    intersection() { main_part(); translate([0.5, 0, 0.05]) asm_pcb(); }
-} else if (mode == "main_pcb_eps_yz_plus") {
-    intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_guide_x_pos") {
+    intersection() { main_part(); translate([0.3, 0, 0.05]) asm_pcb(); }
+} else if (mode == "main_pcb_front_stop") {
+    intersection() { main_part(); translate([0, -0.25, 0.05]) asm_pcb(); }
 } else if (mode == "main_cable_pad_wires") {
     intersection() { main_part(); cable_pad_wire_probe(); }
 } else if (mode == "main_switch_wires") {
@@ -326,19 +338,7 @@ if (mode == "main_lid") {
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
 } else if (mode == "main_usb_overmold_stop") {
-    intersection() { main_part(); translate([0, -0.05, 0]) usb_cable_fit_probe(); }
-} else if (mode == "lid_components") {
-    intersection() { lid_part(); asm_all(); }
-} else if (mode == "lid_loadcell") {
-    intersection() { lid_part(); asm_loadcell(); }
-} else if (mode == "lid_loadcell_lift") {
-    // A load cell resting 0.5 mm high, on a print slightly off size, must not
-    // hold the lid open.
-    intersection() { lid_part(); translate([0, 0, 0.5]) asm_loadcell(); }
-} else if (mode == "lid_eye_access_x_neg") {
-    intersection() { lid_part(); carabiner_eye_probe(-1); }
-} else if (mode == "lid_eye_access_x_pos") {
-    intersection() { lid_part(); carabiner_eye_probe(1); }
+    intersection() { main_part(); translate([0, 0.05, 0]) usb_cable_fit_probe(); }
 } else if (mode == "main_corner_end_xn_yn") {
     intersection() { main_part(); corner_end_probe(-1, -1); }
 } else if (mode == "main_corner_end_xn_yp") {
@@ -355,6 +355,16 @@ if (mode == "main_lid") {
     intersection() { main_part(); slot_seal_probe(1, -1); }
 } else if (mode == "main_slot_seal_xp_yp") {
     intersection() { main_part(); slot_seal_probe(1, 1); }
+} else if (mode == "lid_loadcell") {
+    intersection() { lid_part(); asm_loadcell(); }
+} else if (mode == "lid_loadcell_lift") {
+    // A load cell resting 0.5 mm high, on a print slightly off size, must not
+    // hold the lid open.
+    intersection() { lid_part(); translate([0, 0, 0.5]) asm_loadcell(); }
+} else if (mode == "lid_eye_access_x_neg") {
+    intersection() { lid_part(); carabiner_eye_probe(-1); }
+} else if (mode == "lid_eye_access_x_pos") {
+    intersection() { lid_part(); carabiner_eye_probe(1); }
 } else if (mode == "lid_corner_roof_xn_yn") {
     intersection() { lid_part(); corner_roof_probe(-1, -1); }
 } else if (mode == "lid_corner_roof_xn_yp") {
@@ -363,31 +373,23 @@ if (mode == "main_lid") {
     intersection() { lid_part(); corner_roof_probe(1, -1); }
 } else if (mode == "lid_corner_roof_xp_yp") {
     intersection() { lid_part(); corner_roof_probe(1, 1); }
-} else if (mode == "lid_battery_clamped") {
+} else if (mode == "lid_battery") {
     intersection() { lid_part(); asm_battery(); }
-} else if (mode == "lid_battery_outside_hold_downs") {
-    // The lid may touch the battery only through the hold-downs.
-    intersection() { lid_part(); difference() { asm_battery(); battery_hold_downs(); } }
-} else if (mode == "lid_battery_hold_downs_off_pads") {
-    // Wherever the lid seats, the hold-downs stay over the pads. A shifted
-    // edge may land exactly on a pad edge, so widen the pads by 0.01 mm.
-    for (d = lid_seat_shifts)
-        difference() {
-            translate([d[0], d[1], 0]) battery_hold_downs();
-            for (s = [-1, 1])
-                box(s * (battery_pad_x + [-0.01, 0.01]), battery_pad_y + [-0.01, 0.01],
-                    [battery_bottom_z, pcb_top_z + top_clear + lid_t]);
-        }
-} else if (mode == "lid_battery_hold_down_preload") {
-    intersection() { battery_hold_downs(); translate([0, 0, -battery_hold_down_preload - 0.05]) asm_battery(); }
+} else if (mode == "lid_battery_lift") {
+    intersection() { lid_part(); translate([0, 0, battery_hold_down_clear + 0.05]) asm_battery(); }
 } else if (mode == "lid_pcb_clamped") {
     intersection() { lid_part(); asm_pcb(); }
-} else if (mode == "lid_pcb_outside_clamps") {
-    lid_pcb_outside_clamps(0);
+} else if (mode == "lid_pcb_outside_clamp") {
+    lid_pcb_outside_clamp(0);
 } else if (mode == "lid_pcb_rear_travel") {
-    lid_pcb_outside_clamps(-0.24);
+    // Just inside the 0.25 mm rear stop clearance.
+    lid_pcb_outside_clamp(0.24);
 } else if (mode == "lid_pcb_rear_stop") {
-    intersection() { pcb_rear_stops(); translate([0, -0.3, 0]) asm_pcb(); }
+    intersection() { pcb_rear_stops(); translate([0, 0.3, 0]) asm_pcb(); }
+} else if (mode == "lid_usb_clamp_off_shell") {
+    usb_clamp_off_shell();
+} else if (mode == "lid_usb_cable") {
+    intersection() { lid_part(); usb_cable_fit_probe(); }
 } else if (mode == "lid_switch_wires") {
     intersection() { lid_part(); switch_wire_probe(); }
 } else if (mode == "lid_battery_wires") {
@@ -410,22 +412,29 @@ if (mode == "main_lid") {
         lid_part();
         led_sightline_probe(rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l), rgb_led_h);
     }
-} else if (mode == "loadcell_battery") {
-    intersection() { asm_loadcell(); asm_battery(); }
+} else if (mode == "battery_on_loadcell") {
+    intersection() { asm_loadcell(); translate([0, 0, -0.05]) asm_battery(); }
 } else if (mode == "loadcell_pcb") {
     intersection() { asm_loadcell(); asm_pcb(); }
 } else if (mode == "loadcell_switch") {
     intersection() { asm_loadcell(); asm_switch(); }
 } else if (mode == "battery_pcb") {
     intersection() { asm_battery(); asm_pcb(); }
-} else if (mode == "battery_pcb_eps_z_plus") {
-    intersection() { asm_battery(); translate([0, 0, 0.05]) asm_pcb(); }
+} else if (mode == "battery_lift_pcb") {
+    // Lifted against the hold-downs, the battery stays off the bottom parts.
+    intersection() { translate([0, 0, battery_hold_down_clear + 0.05]) asm_battery(); asm_pcb(); }
 } else if (mode == "battery_wires") {
-    intersection() { asm_battery(); union() { loadcell_wire_probe(); switch_wire_probe(); battery_wire_probe(); } }
+    intersection() { asm_battery(); all_wire_probes(); }
+} else if (mode == "switch_wires") {
+    // The switch's own wires start at its rear face.
+    intersection() { asm_switch(); union() { loadcell_wire_probe(); battery_wire_probe(); } }
+} else if (mode == "pcb_wires") {
+    // The routes end below the pads' own probes.
+    intersection() { asm_pcb(); union() { loadcell_wire_probe(); battery_wire_probe(); switch_wire_probe(); } }
 } else if (mode == "battery_switch") {
     intersection() { asm_battery(); asm_switch(); }
 } else if (mode == "pcb_switch") {
     intersection() { asm_pcb(); asm_switch(); }
 } else {
-    echo(str("Unknown mode: ", mode));
+    assert(false, str("Unknown mode: ", mode));
 }

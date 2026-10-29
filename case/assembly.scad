@@ -1,5 +1,5 @@
 //
-// Crimpdeq assembly: load cell + battery + PCB
+// Crimpdeq assembly: load cell, battery, PCB and switch in case coordinates
 // Units: mm
 //
 
@@ -11,46 +11,37 @@ include <placement.scad>
 render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
-loadcell_y_max = lc_W / 2;
-switch_y_min = switch_y - switch_d / 2;
-switch_top_z = switch_z + switch_h_eff / 2;
-
-assert(switch_y_min >= loadcell_y_max,
-    str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));
-assert(switch_top_z <= pcb_bottom_z,
-    str("Switch overlaps PCB by ", switch_top_z - pcb_bottom_z, " mm (Z)."));
-
-module loadcell_model() {
-    color("silver")
-        linear_extrude(height = lc_T, center = true)
+module asm_loadcell() {
+    translate([0, 0, loadcell_bottom_z]) {
+        linear_extrude(height = lc_T)
             loadcell_2d();
-    color("white")
-        translate([0, 0, lc_T / 2])
-            loadcell_gauge_cover();
+        loadcell_gauge_cover();
+    }
 }
 
-module switch_model() {
-    color("red")
-        rotate([0, switch_rot_y, 0])
-            cube([switch_w, switch_d, switch_h], center = true);
+module asm_battery() {
+    translate([0, battery_y, battery_bottom_z + bat_T / 2])
+        battery_model();
+}
+
+module asm_pcb() {
+    translate([0, pcb_y, pcb_board_bottom_z])
+        pcb_model();
+}
+
+// From the outer front face to the end of the solder joints.
+module asm_switch(inset = 0) {
+    box([switch_x - switch_w / 2 + inset, switch_x + switch_w / 2 - inset],
+        [outer_front_y, switch_rear_y],
+        [switch_z - switch_h / 2 + inset, switch_z + switch_h / 2 - inset]);
 }
 
 module full_assembly(show_pcb = true) {
-    translate([0, 0, loadcell_center_z])
-        loadcell_model();
-
-    // Battery laying flat on top of the load cell.
-    translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T/2])
-        battery_model(rounded = true);
-
+    color("silver") asm_loadcell();
+    asm_battery();
     if (show_pcb)
-        // PCB laying flat on top of the battery.
-        translate([0, pcb_y_offset, pcb_board_bottom_z])
-            pcb_model();
-
-    // Side switch inside enclosure.
-    translate([switch_x, switch_y, switch_z])
-        switch_model();
+        asm_pcb();
+    color("red") asm_switch();
 }
 
 full_assembly();
