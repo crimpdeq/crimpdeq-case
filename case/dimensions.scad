@@ -227,3 +227,7 @@ brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
 brand_l = 44; // along Y
 brand_depth = 0.8;
 brand_margin = 1.5; // to the lid's LED holes and the rear edge
+// Rear-wall title, spanning the flat rear wall.
+rear_brand_text = "crimpdeq.com";
+rear_brand_depth = 0.8;
+rear_brand_margin = 2; // from each end of the flat rear wall

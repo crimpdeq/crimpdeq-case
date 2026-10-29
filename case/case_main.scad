@@ -16,10 +16,6 @@ $fn = render_fn;
 /*** Enclosure parameters ***/
 internal_feature_embed = 0.15; // overlap internal features into the shell for a fused STL
 
-rear_brand_text = "crimpdeq.com";
-rear_brand_w = 60;
-rear_brand_depth = 0.8;
-
 // Parameters
 show_assembly = true;
 show_lid_preview = true;
