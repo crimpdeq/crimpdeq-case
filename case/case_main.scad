@@ -1,6 +1,6 @@
 //
 // Main enclosure part (base body)
-// - load-cell pads, rear notch screw posts and front stops
+// - load-cell pads and notch pins
 // - floor column carrying the PCB under the USB-C connector
 // - front-wall USB-C opening and switch opening
 // - open carabiner U-slots
@@ -20,10 +20,8 @@ internal_feature_embed = 0.15; // overlap internal features into the shell for a
 // clear of the gauge cover, its wire route and the slot walls.
 loadcell_pad_x = bat_W / 2 - loadcell_pad_size / 2;
 loadcell_pad_y = lc_W / 2 - 2 - loadcell_pad_size / 2;
-// Low ribs in front of the load cell's front corners stop it moving forward;
-// the rear notch posts stop the rest. They stay below the switch.
-loadcell_front_stop_x = [24, 32];
-loadcell_front_stop_t = 1.5;
+// Rib behind the battery, in the rear band.
+battery_rear_stop_t = 1.5;
 
 pcb_part_clear = 0.2; // column top below the bottom parts
 
@@ -43,7 +41,7 @@ lid_preview_alpha = 0.8; // higher alpha = more opaque
 /*** Derived placement ***/
 // The screw passes the lid material under its head recess, then threads in.
 thread_depth = screw_len - (lid_t - screw_head_recess) + screw_thread_tip_clear;
-notch_post_d = notch_d - 2 * notch_post_clear;
+notch_pin_d = notch_d - 2 * notch_pin_clear;
 stop_y = battery_front_y - battery_stop_clear;
 pcb_column_x = [pcb_support_windows[0][0], pcb_support_windows[1][1]];
 pcb_column_top_z = pcb_board_bottom_z - pcb_bottom_parts_h - pcb_part_clear;
@@ -52,19 +50,20 @@ assert(loadcell_pad_x - loadcell_pad_size / 2 > gauge_cover_w / 2 + loadcell_wir
     "Load-cell pads must clear the gauge cover and its wires.");
 assert(loadcell_pad_y - loadcell_pad_size / 2 > slot_wall_outer_y,
     "Load-cell pads must clear the carabiner slot walls.");
-assert(loadcell_front_stop_x[0] > switch_x - switch_w / 2 - switch_clear
-    && loadcell_top_z - 1 < switch_z - switch_h / 2 - switch_clear,
-    "The right load-cell front stop must stay below the switch.");
+assert(loadcell_top_z < switch_z - switch_h / 2 - switch_clear,
+    "The notch pins must stay below the switch.");
+assert(battery_rear_y + battery_stop_clear + battery_rear_stop_t < screw_y - screw_post_d / 2,
+    "The battery rear stop must stay in front of the rear screw posts.");
 assert(thread_depth <= seam_z - floor_t,
     str("Screw pilot depth ", thread_depth, " mm does not fit the posts."));
-assert(screw_thread_d + 2 * screw_pilot_chamfer <= notch_post_d - 2,
+assert(screw_thread_d + 2 * screw_pilot_chamfer <= screw_post_d - 2,
     "Screw pilot chamfers must leave at least 1 mm of post rim.");
 assert(pcb_column_top_z > battery_top_z,
     "The PCB column must cover the battery's front face.");
 for (p = pcb_cable_pads)
     assert(abs(p[0]) - wire_d / 2 > pcb_column_x[1] + 0.1,
         str("The PCB column must clear the wire at pad ", p));
-assert(front_screw_x - screw_post_d / 2 > max([for (p = pcb_cable_pads) abs(p[0])]) + wire_d / 2 + 0.5,
+assert(screw_x - screw_post_d / 2 > max([for (p = pcb_cable_pads) abs(p[0])]) + wire_d / 2 + 0.5,
     "The front screw posts must leave a lane beside the wire pads.");
 assert(usb_x + usb_pocket_w / 2 < switch_x - switch_w / 2 - switch_flange - 1,
     "The switch flange must clear the USB-C pocket.");
@@ -76,10 +75,18 @@ module loadcell_pads() {
             [floor_top_z - internal_feature_embed, loadcell_bottom_z]);
 }
 
-module loadcell_front_stops() {
-    for (x_sign = [-1, 1])
-        box(x_sign * loadcell_front_stop_x, [stop_y - loadcell_front_stop_t, stop_y],
-            [floor_top_z - internal_feature_embed, loadcell_top_z - 1]);
+// Floor pins in the four edge notches hold the plate in X and Y. They end
+// flush with its top face, below the switch.
+module notch_pins() {
+    for (x_sign = [-1, 1], y_sign = [-1, 1])
+        translate([x_sign * notch_x, y_sign * lc_W / 2, floor_top_z - internal_feature_embed])
+            cylinder(d = notch_pin_d, h = loadcell_top_z - floor_top_z + internal_feature_embed);
+}
+
+module battery_rear_stop() {
+    y0 = battery_rear_y + battery_stop_clear;
+    box(span(0, bat_W / 2 - 3), [y0, y0 + battery_rear_stop_t],
+        [floor_top_z - internal_feature_embed, battery_top_z - 1]);
 }
 
 // Floor column from the front wall to the battery front, which it stops. It
@@ -96,23 +103,18 @@ module pcb_column() {
                 [pcb_column_top_z - internal_feature_embed, pcb_board_bottom_z]);
 }
 
-// Front posts merge into the front wall; their flat inner faces guide the
-// board's long edges. Rear posts stand in the load cell's rear notches and
-// merge into the rear wall behind it.
+// The posts merge into the front and rear walls; the front posts' flat inner
+// faces guide the board's long edges, and the rear ones mirror them.
 module screw_posts() {
-    for (x_sign = [-1, 1]) {
+    guide_x = pcb_W / 2 + pcb_guide_clear;
+    for (x_sign = [-1, 1], y_sign = [-1, 1])
         linear_extrude(height = seam_z)
             hull() {
-                translate([x_sign * front_screw_x, front_screw_y])
+                translate([x_sign * screw_x, y_sign * screw_y])
                     circle(d = screw_post_d);
-                translate([x_sign > 0 ? pcb_W / 2 + pcb_guide_clear : -front_screw_x, inner_front_y - internal_feature_embed])
-                    square([front_screw_x - pcb_W / 2 - pcb_guide_clear, front_screw_y - inner_front_y + internal_feature_embed]);
+                translate([x_sign > 0 ? guide_x : -screw_x, y_sign > 0 ? screw_y : -inner_rear_y - internal_feature_embed])
+                    square([screw_x - guide_x, inner_rear_y + internal_feature_embed - screw_y]);
             }
-        translate([x_sign * notch_x, rear_screw_y, 0])
-            cylinder(d = notch_post_d, h = seam_z);
-        box(span(x_sign * notch_x, notch_post_d / 2),
-            [lc_W / 2 + loadcell_guard_clear, inner_rear_y + internal_feature_embed], [0, seam_z]);
-    }
 }
 
 module screw_pilots() {
@@ -187,7 +189,8 @@ module main_part() {
                         cavity_2d();
             }
             loadcell_pads();
-            loadcell_front_stops();
+            notch_pins();
+            battery_rear_stop();
             pcb_column();
             screw_posts();
             main_carabiner_slot_walls();

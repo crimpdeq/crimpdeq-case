@@ -40,13 +40,11 @@ inner_end_x = lc_L / 2 + loadcell_guard_clear;
 end_groove_x = inner_end_x + slot_wall_fit + slot_seal_overlap;
 outer_end_x = end_groove_x + wall_t;
 
-// The rear screws stand in the load cell's rear notches, screw_edge_inset in
-// front of the rear face. The rear wall is thicker than wall_t and stops the
-// battery.
+// The plan is symmetric about both axes: the rear wall mirrors the front one,
+// and the band behind the battery mirrors the board's front band.
+inner_rear_y = -inner_front_y;
+outer_rear_y = -outer_front_y;
 notch_x = lc_L / 2 - notch_xA;
-rear_screw_y = lc_W / 2;
-outer_rear_y = rear_screw_y + screw_edge_inset;
-inner_rear_y = battery_rear_y + battery_stop_clear;
 
 // Front-wall switch over the load cell's front-right corner, beside the
 // battery leads' bend. The model spans its measured depth from the outer face.
@@ -55,25 +53,21 @@ switch_z = loadcell_top_z + switch_loadcell_clear + switch_h / 2;
 switch_rear_y = outer_front_y + switch_depth;
 switch_grip_y = outer_front_y + switch_grip_len; // inner end of the opening
 
-// 45 degree chamfers at the four corners: |x| + y = k at the rear and
-// |x| - y = k at the front. The inner rear chamfer passes the guarded
-// load-cell corner; the flat front wall carries the switch flange.
+// 45 degree chamfers at the four corners: |x| +/- y = chamfer_k. The inner
+// chamfers pass outside the guarded load-cell corners; the flat front wall
+// carries the switch flange.
 chamfer_wall_k = wall_t * sqrt(2);
-inner_rear_k = lc_L / 2 + lc_W / 2 + 2 * loadcell_guard_clear;
-outer_rear_k = inner_rear_k + chamfer_wall_k;
-outer_front_k = max(
-    outer_rear_k,
+chamfer_k = max(
+    lc_L / 2 + lc_W / 2 + 2 * loadcell_guard_clear + chamfer_wall_k,
     switch_x + switch_w / 2 + switch_flange + case_corner_r - outer_front_y
 );
-inner_front_k = outer_front_k - chamfer_wall_k;
+inner_chamfer_k = chamfer_k - chamfer_wall_k;
 
-// The front screws flank the board, and their posts guide its long edges.
-front_screw_x = pcb_W / 2 + pcb_guide_clear + screw_post_d / 2;
-front_screw_y = outer_front_y + screw_edge_inset;
-screw_centers = [
-    [-front_screw_x, front_screw_y], [front_screw_x, front_screw_y],
-    [-notch_x, rear_screw_y], [notch_x, rear_screw_y]
-];
+// The screws sit screw_edge_inset inside the front and rear faces, beside the
+// board; the front posts guide its long edges.
+screw_x = pcb_W / 2 + pcb_guide_clear + screw_post_d / 2;
+screw_y = outer_rear_y - screw_edge_inset;
+screw_centers = [[-screw_x, -screw_y], [screw_x, -screw_y], [-screw_x, screw_y], [screw_x, screw_y]];
 
 // USB-C receptacle, its front-wall opening and the cable overmold pocket.
 usb_x = (usb_rect[0] + usb_rect[1]) / 2;
@@ -95,18 +89,17 @@ carabiner_slot_d = eye_d + 2 * eye_slot_clear;
 carabiner_slot_inner_x = bat_W / 2 + battery_side_clear + loadcell_slot_wall_t;
 slot_wall_outer_y = carabiner_slot_d / 2 + loadcell_slot_wall_t;
 
-assert(front_screw_y - screw_post_d / 2 < inner_front_y,
-    "Front screw posts must merge into the front wall.");
-assert(outer_rear_y - inner_rear_y >= wall_t,
-    str("The rear wall is thinner than wall_t: ", outer_rear_y - inner_rear_y, " mm."));
-assert(inner_rear_y >= lc_W / 2 + loadcell_guard_clear,
-    "The rear wall must clear the load cell.");
+assert(screw_y + screw_post_d / 2 > inner_rear_y,
+    "Screw posts must merge into the front and rear walls.");
+assert(screw_y - screw_post_d / 2 > battery_rear_y + battery_stop_clear,
+    "The rear screw posts must stay behind the battery.");
+assert(inner_rear_y > battery_rear_y + battery_stop_clear,
+    "The rear wall must clear the battery.");
 assert(switch_rear_y + switch_wire_bend < -carabiner_slot_d / 2 - loadcell_slot_wall_t,
     "The switch and its wire bend must stay in front of the carabiner slot walls.");
-assert(outer_front_k + outer_front_y > 0 && outer_rear_k - outer_rear_y > 0,
+assert(chamfer_k - outer_rear_y > 0,
     "The chamfers must leave flat front and rear walls.");
-assert(outer_end_x - outer_front_k < -slot_wall_outer_y - slot_wall_fit
-    && outer_rear_k - outer_end_x > slot_wall_outer_y + slot_wall_fit,
+assert(chamfer_k - outer_end_x > slot_wall_outer_y + slot_wall_fit,
     "The chamfers must leave end walls round the carabiner slot exits and grooves.");
 assert(carabiner_shank_d < eye_ring_bore_d && eye_ring_bore_d < eye_d,
     str("Carabiner diameters must satisfy shank < ring bore < eye. Got ",
@@ -117,7 +110,7 @@ assert(carabiner_slot_inner_x < eye_x - carabiner_shank_d / 2,
 assert(slot_wall_outer_y + slot_wall_fit < lc_W / 2,
     "Carabiner slot walls must leave the load-cell corners covered.");
 assert(notch_x - notch_d / 2 > bat_W / 2 + battery_side_clear,
-    "The rear screw posts must clear the battery.");
+    "The notch pins must clear the battery.");
 assert(usb_pocket_floor_y - outer_front_y > 0 && inner_front_y - usb_pocket_floor_y >= usb_pocket_min_web,
     str("USB-C pocket must leave a front-wall web. web=", inner_front_y - usb_pocket_floor_y, " mm."));
 
@@ -135,21 +128,21 @@ module each_screw(z_pos) {
             children();
 }
 
-// Octagonal plan with flat front, rear and end walls and 45 degree chamfers.
-function plan_points(front_y, rear_y, end_x, front_k, rear_k) = [
-    [end_x, end_x - front_k], [end_x, rear_k - end_x], [rear_k - rear_y, rear_y],
-    [rear_y - rear_k, rear_y], [-end_x, rear_k - end_x], [-end_x, end_x - front_k],
-    [-(front_k + front_y), front_y], [front_k + front_y, front_y]
+// Octagonal plan with flat front, rear and end walls and 45 degree chamfers,
+// symmetric about both axes.
+function plan_points(half_y, half_x, k) = [
+    [half_x, half_x - k], [half_x, k - half_x], [k - half_y, half_y], [half_y - k, half_y],
+    [-half_x, k - half_x], [-half_x, half_x - k], [half_y - k, -half_y], [k - half_y, -half_y]
 ];
 
 module case_outline_2d() {
     offset(r = case_corner_r)
         offset(delta = -case_corner_r)
-            polygon(plan_points(outer_front_y, outer_rear_y, outer_end_x, outer_front_k, outer_rear_k));
+            polygon(plan_points(outer_rear_y, outer_end_x, chamfer_k));
 }
 
 module cavity_2d() {
-    polygon(plan_points(inner_front_y, inner_rear_y, inner_end_x, inner_front_k, inner_rear_k));
+    polygon(plan_points(inner_rear_y, inner_end_x, inner_chamfer_k));
 }
 
 module carabiner_slot_2d(x_sign) {

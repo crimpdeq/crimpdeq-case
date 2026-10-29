@@ -44,8 +44,7 @@ loadcell_pad_size = 5;
 notch_d = 6;
 notch_xA = 20;
 notch_xB = 60;
-// The rear screw posts stand in the rear notches.
-notch_post_clear = 0.1; // radial
+notch_pin_clear = 0.1; // radial, floor pins in the notches
 
 // Shell shared by the main body and lid.
 wall_t = 2.4;
