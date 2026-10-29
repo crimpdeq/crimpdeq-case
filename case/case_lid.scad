@@ -185,7 +185,7 @@ module lid_part() {
         screw_holes();
         led_view_holes();
         lid_carabiner_slot_cuts();
-        usb_pocket_cut();
+        usb_pocket_cut(lid_seat_play);
         brand_engrave_lid();
     }
 }
