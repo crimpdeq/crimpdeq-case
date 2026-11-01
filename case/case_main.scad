@@ -26,7 +26,6 @@ loadcell_notch_guide_h = 4;
 loadcell_notch_guide_clear = 0.2;
 loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
-pcb_column_loadcell_clear = 0.3; // PCB columns stand this far in front of the load cell
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
 battery_guide_h = bat_T * 0.6;
@@ -98,7 +97,6 @@ battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
 pcb_guide_top_z = pcb_board_top_z + pcb_guide_above;
-pcb_column_rear_y = lc_W / 2 + pcb_column_loadcell_clear;
 
 assert(switch_y_min >= loadcell_y_max,
     str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));

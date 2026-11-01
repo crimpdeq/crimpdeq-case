@@ -108,6 +108,7 @@ pcb_support_columns = [
     [-16.5, -8.3, -pcb_L / 2, 12.1],
     [8.3, 12.3, 7.0, pcb_L / 2 + 1]
 ];
+pcb_column_loadcell_clear = 0.3; // from the columns to the load-cell front edge
 // THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
 // and E-, A-, A+, E+ on the front edge (J12, J10, J9, J11).
 pcb_cable_pads = [

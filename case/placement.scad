@@ -47,6 +47,8 @@ pcb_board_top_z = pcb_board_bottom_z + pcb_board_t;
 pcb_bottom_z = pcb_board_bottom_z - usb_h;
 pcb_top_z = pcb_board_top_z + pcb_module_h;
 pcb_rear_y = pcb_y_offset - pcb_L / 2;
+// Floor-anchored PCB columns stand in front of the load cell.
+pcb_column_rear_y = lc_W / 2 + pcb_column_loadcell_clear;
 usb_rear_y = pcb_y_offset + usb_y - usb_d / 2;
 
 // USB-C receptacle, its front-wall opening, and the cable overmold pocket.
