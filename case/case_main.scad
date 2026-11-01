@@ -26,7 +26,7 @@ loadcell_notch_guide_h = 4;
 loadcell_notch_guide_clear = 0.2;
 loadcell_support_corner_size = 8;
 loadcell_support_corner_inset = 2;
-battery_support_front_column_clear = 0.3; // battery front stop gap to the PCB columns
+pcb_column_loadcell_clear = 0.3; // PCB columns stand this far in front of the load cell
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
 battery_guide_h = bat_T * 0.6;
@@ -36,11 +36,6 @@ pcb_guide_lead_in = 0.6;
 pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
 // Parts can also slide by the guide clearance before the lid rear stops engage.
 pcb_part_clear_xy = pcb_guide_clear + pcb_part_clear;
-// Low rib from the battery front to the front wall in front of the battery's
-// front-right corner, fused to the right PCB column and the notch guide. It
-// stops the battery like the left column but stays below it, so the switch
-// and battery wires pass over it.
-battery_front_rib_x = [12.0, 16.5];
 
 internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
 
@@ -103,7 +98,7 @@ battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
 pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
 pcb_guide_top_z = pcb_board_top_z + pcb_guide_above;
-battery_stop_y = battery_front_y + battery_support_front_column_clear;
+pcb_column_rear_y = lc_W / 2 + pcb_column_loadcell_clear;
 
 assert(switch_y_min >= loadcell_y_max,
     str("Switch overlaps load cell by ", loadcell_y_max - switch_y_min, " mm (Y)."));
@@ -127,8 +122,6 @@ assert(usb_center_z + usb_pocket_h / 2 <= outer_z_max - 1,
     "USB-C pocket must stay below the lid seam.");
 assert(abs(usb_x) + usb_pocket_w / 2 <= case_corner_x - 1,
     "USB-C pocket must stay on the flat front wall.");
-assert(battery_stop_y >= loadcell_y_max,
-    "PCB columns must stand in front of the load cell.");
 for (c = pcb_support_columns)
     assert(min(abs(c[0]), abs(c[1])) >= switch_w / 2 + switch_clear + 0.3,
         str("PCB column must clear the switch cavity: ", c));
@@ -217,9 +210,8 @@ module loadcell_support() {
 
 // Floor-anchored pads under the rear battery corners, behind the load cell,
 // with guides beside and behind each corner. Lid hold-downs clamp the battery
-// onto them. The PCB columns and the battery-front rib stop the battery
-// front, which settles onto the strain-gauge cover. Nothing may hang over the
-// load cell, or it would not drop in.
+// onto them. Its front settles onto the strain-gauge cover. Nothing may hang
+// over the load cell, or it would not drop in.
 module battery_rear_supports() {
     floor_z = inner_z_min - internal_feature_embed;
     guide_top_z = battery_bottom_z + min(battery_guide_h, bat_T);
@@ -281,22 +273,16 @@ module pcb_keepout() {
     }
 }
 
-// Floor-anchored columns in front of the battery carry the board under its
-// support windows. A column that reaches the battery front stops it. Nothing
-// hangs over the load cell or battery, so they print without support and
-// both drop straight in. Lid tabs behind the board take USB-C insertion loads.
+// Floor-anchored columns in front of the load cell carry the board under its
+// support windows. Nothing hangs over the load cell or battery, so they print
+// without support and both drop straight in. Lid tabs behind the board take USB-C insertion loads.
 module pcb_supports() {
     difference() {
         for (c = pcb_support_columns)
-            box([c[0], c[1]], [max(pcb_y_offset + c[2], battery_stop_y), pcb_y_offset + c[3]],
+            box([c[0], c[1]], [max(pcb_y_offset + c[2], pcb_column_rear_y), pcb_y_offset + c[3]],
                 [inner_z_min - internal_feature_embed, pcb_guide_top_z]);
         pcb_keepout();
     }
-}
-
-module battery_front_rib() {
-    box(battery_front_rib_x, [battery_stop_y, inner_y_max + internal_feature_embed],
-        [inner_z_min - internal_feature_embed, battery_bottom_z]);
 }
 
 // Thickens the front wall round the switch opening to switch_grip_len,
@@ -417,7 +403,6 @@ module main_part() {
             loadcell_support();
             battery_rear_supports();
             pcb_supports();
-            battery_front_rib();
             switch_collar();
             notch_pins();
             loadcell_notch_guides();

@@ -35,7 +35,7 @@ major version; PCB V1 uses case `v0.4.0`.
 ## Components
 
 - [Crimpdeq PCB V3](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v3.0.0)
-- [2000mAh battery](https://www.aliexpress.us/item/3256809404408618.html)
+- [800 mAh battery](https://es.aliexpress.com/item/1005010306922880.html) (6 × 30 × 42 mm)
 - [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html)
 - Load cell from this [crane scale](https://www.aliexpress.com/item/1005002719645426.html)
 

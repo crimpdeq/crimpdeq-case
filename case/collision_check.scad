@@ -203,9 +203,8 @@ module switch_wire_probe() {
         wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
 }
 
-// Battery leads leave its rear end, rise behind it and run forward over its
-// right edge, beside the board, then drop in front of it and split to the
-// B- and B+ pads.
+// Battery leads leave its rear end, rise behind it and run forward beside its
+// right edge and the board, then split to the B- and B+ pads.
 module battery_wire_probe() {
     rear_y = battery_y_offset - bat_L / 2 - 0.25 - wire_pair[1] / 2;
     over_z = battery_top_z + 0.05 + wire_pair_stacked[2] / 2;
@@ -226,15 +225,15 @@ module battery_wire_probe() {
         wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
 }
 
-// Load-cell wires leave the gauge cover toward the front, run left under the
-// battery, rise beyond its side, run forward outside the left PCB column and
-// cross under the board to the front-edge pads.
+// Load-cell wires leave the gauge cover toward the front, run left in front
+// of the battery, rise and run forward outside the left PCB column and cross
+// under the board to the front-edge pads.
 module loadcell_wire_probe() {
     w = loadcell_wire_bundle[0];
     h = loadcell_wire_bundle[1];
     exit_y = gauge_cover_y + gauge_cover_l / 2;
     lane_y = [exit_y, exit_y + w];
-    side_x = -(bat_W / 2 + 2.5);
+    side_x = pcb_support_columns[0][0] - 0.5 - w / 2;
     run_x = [side_x - w / 2, side_x + w / 2];
     pad_y = pcb_y_offset + pcb_cable_pads[4][1];
     cross_y = [pad_y - w / 2, pad_y + w / 2];

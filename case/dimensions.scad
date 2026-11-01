@@ -18,9 +18,8 @@ eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
 eye_ring_bore_d = 15; // pressed-in eye ring, not modelled in load_cell.scad
 carabiner_shank_d = 12;
-// Radial clearance from each eye hole to its slot wall. The battery sides line
-// up with the inner edges of the eyes, so the battery bay cuts each slot short
-// on its inboard side.
+// Radial clearance from each eye hole to its slot wall. The battery bay wall
+// cuts each slot short on its inboard side.
 eye_slot_clear = 2.5;
 
 // Silicone-covered strain gauge at the load-cell center, on the face toward
@@ -62,14 +61,17 @@ slot_wall_fit = 0.6;
 // round the end is a labyrinth instead of a slit from the slot into the bay.
 slot_seal_overlap = 1.5;
 
-// Battery
-bat_L = 50;
-bat_W = 34;
-bat_T = 10;
-battery_side_clear = 0.5; // to the bay walls beside the eye slots
+// Battery: 800 mAh LiPo, 6 x 30 x 42 mm overall.
+bat_L = 42;
+bat_W = 30;
+bat_T = 6;
+// To the bay walls beside the eye slots. The battery leads run forward in
+// this gap, beside the board.
+battery_side_clear = 2.5;
 // Pads under the battery's rear corners, behind the load cell.
 battery_pad_size = 8;
 battery_pad_inset = 1; // from the battery's rear and side edges
+battery_pad_loadcell_clear = 1; // from the pads to the load cell
 // Lid hold-downs above the pads press the battery onto them by one 0.2 mm
 // layer, so it cannot rattle. Re-measure bat_T if the battery changes: a
 // thicker one adds its excess to this preload.
@@ -98,7 +100,7 @@ pcb_support_windows = [
 ];
 // Floor-anchored column under each support window. The board keepout carves
 // their tops, so they touch only the windows. The left column rises past the
-// board as its left-edge guide, and its rear end stops the battery.
+// board as its left-edge guide and stops in front of the load cell.
 // The right one starts at its window and runs into the front wall; it stops
 // the board moving right through the USB-C shell, whose legs are
 // through-hole. Both keep clear of the cable pads.
