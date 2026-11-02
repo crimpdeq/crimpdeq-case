@@ -45,6 +45,7 @@ battery_pad_y = [battery_pad_y0, battery_pad_y0 + battery_pad_size];
 switch_x = (pcb_support_columns[0][1] + pcb_support_columns[1][0]) / 2;
 switch_z = inner_z_min + switch_h / 2;
 switch_bezel_top_z = switch_z + switch_bezel_h / 2;
+switch_cavity_x = span(switch_x, switch_w / 2 + switch_clear);
 
 // The board sits in front of the battery, so the USB-C cable pocket, which
 // must clear the switch bezel below it, sets the board height.

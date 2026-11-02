@@ -81,7 +81,6 @@ shank_clear_depth = screw_tip_depth - screw_thread_len;
 
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h / 2;
-switch_cavity_x = span(switch_x, switch_w / 2 + switch_clear);
 battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
 battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
 pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
