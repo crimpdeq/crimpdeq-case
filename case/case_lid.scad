@@ -78,7 +78,7 @@ hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 head_recess_depth = screw_head_recess;
 // The rear lip sits behind the PCB, above the battery.
 align_lip_h_eff = align_lip_enable ? max(0, min(align_lip_h, lid_z_min - battery_top_z - 0.4)) : 0;
-battery_side_wall_x = bat_W / 2 + battery_side_clear + battery_side_wall_t / 2;
+battery_side_wall_x = battery_bay_half_w + battery_side_wall_t / 2;
 // Extend through the lid thickness so the walls fuse into the roof; their
 // lower ends also stop the load cell from lifting.
 battery_side_wall_h = lid_z_max - hold_down_target_z;
@@ -87,10 +87,8 @@ status_led_view_y = pcb_y_offset + status_led_y;
 rgb_led_view_x = rgb_led_x;
 rgb_led_view_y = pcb_y_offset + rgb_led_y;
 pcb_top_clamp_h = lid_z_min - (pcb_board_top_z - pcb_top_clamp_preload);
-// Over the main-body pads, inside the board's width: the battery leads run
-// forward over the battery's edge just beyond it. The inset keeps them there
-// wherever the lid seats.
-battery_hold_down_x = [battery_pad_x[0], min(battery_pad_x[1], pcb_W / 2)] + [1, -1] * lid_seat_play;
+// Over the main-body pads, inset so they stay there wherever the lid seats.
+battery_hold_down_x = battery_pad_x + [1, -1] * lid_seat_play;
 battery_hold_down_y = battery_pad_y + [1, -1] * lid_seat_play;
 battery_hold_down_z_min = battery_top_z - battery_hold_down_preload;
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
@@ -122,8 +120,8 @@ assert(!battery_side_wall_enable || battery_side_wall_x + battery_side_wall_t / 
 assert(pcb_rear_stop_x[0] >= max(-pcb_module_rect[0], pcb_module_rect[1]) + 1
     && pcb_rear_stop_x[1] <= pcb_W / 2,
     "PCB rear stops must sit behind the board, clear of the antenna overhang.");
-assert(pcb_rear_stop_z_min >= battery_top_z + 1,
-    "PCB rear stops must stay above the battery.");
+assert(pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t >= battery_front_y + 1,
+    "PCB rear stops must stand in front of the battery.");
 assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
     "PCB rear stops must bear on the full board edge above their chamfer.");
 assert(pcb_top_clamp_inset > pcb_rear_stop_clear,

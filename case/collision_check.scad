@@ -95,13 +95,20 @@ module screw_core_probe() {
         cylinder(d = 1.0, h = screw_len);
 }
 
-// Strips beside each side of the switch opening at its inner end. Only the
-// collar is there, so they find material only if the opening grips the bezel
-// over the whole switch_grip_len.
-module switch_grip_probe() {
+// Strips through the panel beside each side of the cutout, where the snap
+// clips catch. Each must find the panel over its whole thickness.
+module switch_panel_probe(x_sign) {
+    translate([switch_x + x_sign * (switch_cutout_w / 2 + switch_cutout_clear + 0.3),
+            (switch_panel_y + outer_y_max) / 2, switch_z])
+        cube([0.1, switch_panel_t - 0.1, switch_cutout_h - 1], center = true);
+}
+
+// Room behind the panel for the clips: the same strips just behind it.
+module switch_clip_space_probe() {
     for (x_sign = [-1, 1])
-        translate([x_sign * (switch_w / 2 + 0.06), switch_grip_y + 0.06, switch_z])
-            cube([0.1, 0.1, switch_h - 1], center = true);
+        translate([switch_x + x_sign * (switch_cutout_w / 2 + switch_cutout_clear + 0.3),
+                switch_panel_y - 0.5, switch_z])
+            cube([0.1, 0.8, switch_cutout_h - 1], center = true);
 }
 
 module asm_battery() {
@@ -115,9 +122,7 @@ module asm_pcb() {
 }
 
 module asm_switch(inset = 0) {
-    translate([switch_x, switch_y, switch_z])
-        rotate([0, switch_rot_y, 0])
-            cube([switch_w - 2 * inset, switch_d, switch_h - 2 * inset], center = true);
+    switch_body(inset);
 }
 
 // Vertical drop-in paths from each seat to above the case. The board path
@@ -142,11 +147,12 @@ module pcb_board_drop_in_probe() {
 }
 
 // The board under each lid clamp, which the clamps press by their preload.
+// It overshoots the board top by 0.01 mm, so rounding there leaves no sliver.
 module pcb_clamp_contact() {
     intersection() {
         pcb_top_clamps();
         translate([-50, -50, pcb_board_bottom_z])
-            cube([100, 100, pcb_board_t]);
+            cube([100, 100, pcb_board_t + 0.01]);
     }
 }
 
@@ -185,17 +191,17 @@ wire_pair_stacked = [1, 1, 2] * wire_env; // two wires stacked in Z
 function pad_point(i, z) = [pcb_cable_pads[i][0], pcb_y_offset + pcb_cable_pads[i][1], z];
 
 // Switch wires turn up behind the joints, in the bend zone in front of the
-// battery and load cell, run right over the battery-front rib and forward
-// beside the right PCB column, then split to the SW+ and SW- pads.
+// battery and load cell, run right and forward beside the right PCB column,
+// then split to the SW+ and SW- pads.
 module switch_wire_probe() {
-    bend_y = switch_y - switch_d / 2 - switch_wire_bend / 2;
+    bend_y = switch_rear_y - switch_wire_bend / 2;
     run_z = switch_z + switch_h / 2 + switch_clear + wire_pair[2] / 2 + 0.05;
     lane_x = pcb_cable_pads[2][0] + 1;
     split = [lane_x, pcb_y_offset + pcb_cable_pads[2][1], run_z];
     pad_z = pcb_board_bottom_z - wire_env / 2 - 0.05;
     wire_path([
-        [0, bend_y, switch_z],
-        [0, bend_y, run_z],
+        [switch_x, bend_y, switch_z],
+        [switch_x, bend_y, run_z],
         [lane_x, bend_y, run_z],
         split
     ], wire_pair);
@@ -315,10 +321,16 @@ if (mode == "main_lid") {
     intersection() { main_part(); battery_wire_probe(); }
 } else if (mode == "main_loadcell_wires") {
     intersection() { main_part(); loadcell_wire_probe(); }
-} else if (mode == "main_switch_grip") {
-    intersection() { main_part(); switch_grip_probe(); }
+} else if (mode == "main_switch_panel_x_neg") {
+    intersection() { main_part(); switch_panel_probe(-1); }
+} else if (mode == "main_switch_panel_x_pos") {
+    intersection() { main_part(); switch_panel_probe(1); }
+} else if (mode == "main_switch_clip_space") {
+    intersection() { main_part(); switch_clip_space_probe(); }
+} else if (mode == "switch_usb_cable") {
+    intersection() { switch_bezel(); usb_cable_fit_probe(); }
 } else if (mode == "main_switch") {
-    // The bezel is a press fit in the opening, so it may touch its sides.
+    // The clips bear on the panel, so shrink the switch off its faces.
     intersection() { main_part(); asm_switch(inset = 0.01); }
 } else if (mode == "main_screw_pilot_fit") {
     intersection() { main_part(); screw_core_probe(); }

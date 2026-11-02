@@ -35,8 +35,8 @@ major version; PCB V1 uses case `v0.4.0`.
 ## Components
 
 - [Crimpdeq PCB V3](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v3.0.0)
-- [800 mAh battery](https://es.aliexpress.com/item/1005010306922880.html) (6 × 30 × 42 mm)
-- [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html)
+- 800 mAh 102530 LiPo battery (10 × 25 × 30 mm)
+- Snap-in rocker switch with a 21 × 15 mm bezel and a 19 × 13 mm panel cutout
 - Load cell from this [crane scale](https://www.aliexpress.com/item/1005002719645426.html)
 
 ## Requirements
@@ -104,7 +104,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, battery hold-down preload and alignment over its pads, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, battery hold-down preload and alignment over its pads, the switch panel its snap clips catch, the switch bezel clear of the USB-C cable, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
 
 ```bash
 bash scripts/check-collisions.sh

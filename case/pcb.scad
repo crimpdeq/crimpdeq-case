@@ -22,7 +22,7 @@ module pcb_parts_2d(windows) {
     }
 }
 
-// Origin: board center on its underside (KiCad F.Cu, toward the battery).
+// Origin: board center on its underside (KiCad F.Cu, toward the floor).
 module pcb_model() {
     color("green")
         translate([0, 0, pcb_board_t / 2])

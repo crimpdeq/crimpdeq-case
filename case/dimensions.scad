@@ -61,13 +61,14 @@ slot_wall_fit = 0.6;
 // round the end is a labyrinth instead of a slit from the slot into the bay.
 slot_seal_overlap = 1.5;
 
-// Battery: 800 mAh LiPo, 6 x 30 x 42 mm overall.
-bat_L = 42;
-bat_W = 30;
-bat_T = 6;
-// To the bay walls beside the eye slots. The battery leads run forward in
-// this gap, beside the board.
-battery_side_clear = 2.5;
+// Battery: 800 mAh 102530 LiPo, 10 x 25 x 30 mm overall, leads leaving one
+// 25 mm end, which faces the rear wall.
+bat_L = 30;
+bat_W = 25;
+bat_T = 10;
+// Inner faces of the bay walls beside the eye slots. The battery leads run
+// forward between them and the battery, beside the board.
+battery_bay_half_w = 17.5;
 // Pads under the battery's rear corners, behind the load cell.
 battery_pad_size = 8;
 battery_pad_inset = 1; // from the battery's rear and side edges
@@ -79,7 +80,7 @@ battery_hold_down_preload = 0.2;
 
 // PCB revision 3 (crimpdeq-pcb pcb/crimpdeq, board center (142.45, 67.40)).
 // The board is installed bottom-side up with its USB-C edge toward the front
-// wall: KiCad F.Cu faces the battery and B.Cu (LEDs and ESP32 module) faces
+// wall: KiCad F.Cu faces the floor and B.Cu (LEDs and ESP32 module) faces
 // the lid. That flip turns about the X axis, and KiCad's Y axis points down,
 // so a KiCad offset (dx, dy) from the board center is case-local (dx, dy).
 // Rectangles below are [x_min, x_max, y_min, y_max] in that frame, taken
@@ -87,11 +88,11 @@ battery_hold_down_preload = 0.2;
 pcb_L = 30;
 pcb_W = 30;
 pcb_board_t = 1.6;
-pcb_bottom_parts_h = 1.8; // tallest F.Cu part over the battery (L1, Bourns SRN4018)
+pcb_bottom_parts_h = 1.8; // tallest F.Cu part (L1, Bourns SRN4018)
 pcb_top_parts_h = 1.5; // B.Cu SOT-23-5/SOD-123 parts, below the module and RGB LED
 pcb_module_h = 2.4; // ESP32-C3-MINI-1
 pcb_module_rect = [-7.25, 5.95, -20.2, -3.6]; // its antenna overhangs the rear edge
-// Bare F.Cu areas in front of the battery that case supports may touch:
+// Bare F.Cu areas that case supports may touch:
 // left of the ADS1220 and the 100R filter resistors, between the USB-C
 // connector and the right-edge cable pads, and behind those pads.
 pcb_support_windows = [
@@ -103,10 +104,11 @@ pcb_support_windows = [
 // board as its left-edge guide and stops in front of the load cell.
 // The right one starts at its window and runs into the front wall; it stops
 // the board moving right through the USB-C shell, whose legs are
-// through-hole. Both keep clear of the cable pads.
+// through-hole. Both keep clear of the cable pads, and the switch body
+// stands between them.
 pcb_support_columns = [
-    [-16.5, -8.3, -pcb_L / 2, 12.1],
-    [8.3, 12.3, 7.0, pcb_L / 2 + 1]
+    [-16.5, -13.0, -pcb_L / 2, 12.1],
+    [9.7, 12.3, 7.0, pcb_L / 2 + 1]
 ];
 pcb_column_loadcell_clear = 0.3; // from the columns to the load-cell front edge
 // THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
@@ -165,7 +167,6 @@ rgb_led_h = 1.6;
 // The battery's rear pads hold it this far above the load cell. Nothing may
 // hang over the load cell, so its front settles onto the gauge cover.
 loadcell_to_battery_gap = gauge_cover_h + 0.5;
-battery_to_pcb_gap = 0.5; // relief so the PCB does not rest directly on the battery
 battery_rear_gap = 0.2; // minimum battery rear-edge gap to the inner rear wall
 
 // Inner cavity clearances
@@ -175,19 +176,27 @@ front_clear = 2.0;
 top_clear = 0.5; // ESP32 module-to-lid gap
 pcb_front_gap = 0.2; // board front edge to the inner front wall; the USB-C connector continues into the wall opening
 
-// Side switch (KCD11 10x15 mm). Measured 15.2 mm from its front to the end of
-// its heat-shrunk solder joints; all of it is taken as behind the outer wall
-// face, the worst case.
-switch_w = 15;
-switch_h = 10;
-switch_depth = 15.2;
+// Front switch: snap-in rocker with a 21 x 15 mm bezel on the outer face of
+// the front wall, 21 mm along X. Taken from the product drawing: 12 mm of
+// body behind the bezel, then 8 mm quick-connect tabs; the wires are soldered
+// to the tabs, with 1.5 mm of joint and heat-shrink past their tips. The
+// cutout is the usual 19 x 13 mm for this bezel.
+switch_bezel_w = 21;
+switch_bezel_h = 15;
+switch_front_depth = 6; // bezel and rocker in front of the wall
+switch_cutout_w = 19;
+switch_cutout_h = 13;
+switch_cutout_clear = 0.1; // a side, as printed holes come out small
+switch_w = switch_bezel_w; // behind the wall, across the sprung snap clips
+switch_h = switch_cutout_h;
+switch_depth = 12 + 8 + 1.5; // behind the outer wall face
 switch_d = switch_depth - wall_t; // behind the inner wall face
-switch_rot_y = 0;
 switch_clear = 0.4;
-// The bezel is held only by friction in its wall opening. v2.0.0's 3.0 mm
-// wall held it; a collar behind the thinner front wall restores that length.
-switch_grip_len = 3.0;
-switch_collar_t = 1.2;
+// The snap clips catch the inside of the wall round the cutout, thinned to
+// this panel. Estimated from the clip shoulders in the drawing; measure them.
+switch_panel_t = 1.2;
+// Bezel to the USB-C cable pocket above it.
+switch_usb_gap = 0.6;
 // Room behind the solder joints for the wires to turn up, in front of the
 // load cell and battery.
 switch_wire_bend = 3.5;

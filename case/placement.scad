@@ -22,7 +22,7 @@ case_inner_y_max = max(
     pcb_L / 2 + front_clear,
     lc_W / 2 + switch_wire_bend + switch_d
 );
-switch_y = case_inner_y_max - switch_d / 2;
+switch_rear_y = case_inner_y_max - switch_d; // end of the solder joints
 pcb_y_offset = case_inner_y_max - pcb_front_gap - pcb_L / 2;
 // The battery is too short to reach the load-cell front edge from its rear
 // pads, so the pads sit just behind the load cell and the battery front lies
@@ -40,29 +40,30 @@ battery_pad_x = [bat_W / 2 - battery_pad_inset - battery_pad_size, bat_W / 2 - b
 battery_pad_y0 = battery_y_offset - bat_L / 2 + battery_pad_inset;
 battery_pad_y = [battery_pad_y0, battery_pad_y0 + battery_pad_size];
 
-// Only the low F.Cu parts sit over the battery; the taller USB-C connector
-// hangs in front of it.
-pcb_board_bottom_z = battery_top_z + battery_to_pcb_gap + pcb_bottom_parts_h;
+// The switch stands on the floor between the PCB columns, its bezel centered
+// on its body.
+switch_x = (pcb_support_columns[0][1] + pcb_support_columns[1][0]) / 2;
+switch_z = inner_z_min + switch_h / 2;
+switch_bezel_top_z = switch_z + switch_bezel_h / 2;
+
+// The board sits in front of the battery, so the USB-C cable pocket, which
+// must clear the switch bezel below it, sets the board height.
+usb_pocket_w = usb_overmold_w + 2 * usb_pocket_clear;
+usb_pocket_h = usb_overmold_h + 2 * usb_pocket_clear;
+usb_center_z = switch_bezel_top_z + switch_usb_gap + usb_pocket_h / 2;
+pcb_board_bottom_z = usb_center_z + usb_h / 2;
 pcb_board_top_z = pcb_board_bottom_z + pcb_board_t;
 pcb_bottom_z = pcb_board_bottom_z - usb_h;
 pcb_top_z = pcb_board_top_z + pcb_module_h;
 pcb_rear_y = pcb_y_offset - pcb_L / 2;
 // Floor-anchored PCB columns stand in front of the load cell.
 pcb_column_rear_y = lc_W / 2 + pcb_column_loadcell_clear;
-usb_rear_y = pcb_y_offset + usb_y - usb_d / 2;
 
 // USB-C receptacle, its front-wall opening, and the cable overmold pocket.
-usb_center_z = pcb_board_bottom_z - usb_h / 2;
 usb_face_y = pcb_y_offset + usb_y + usb_d / 2; // receptacle mating face
 usb_hole_w = usb_w + 2 * usb_hole_clear;
 usb_hole_h = usb_h + 2 * usb_hole_clear;
 usb_pocket_floor_y = usb_face_y + usb_overmold_stop_gap;
-usb_pocket_w = usb_overmold_w + 2 * usb_pocket_clear;
-usb_pocket_h = usb_overmold_h + 2 * usb_pocket_clear;
-
-switch_h_eff = (abs(switch_rot_y) % 180 == 90) ? switch_w : switch_h;
-switch_x = 0;
-switch_z = inner_z_min + switch_h_eff / 2;
 
 // Shell bounds shared by the main body and lid.
 inner_x_min = -case_inner_x_half;
@@ -71,7 +72,7 @@ inner_y_min = case_inner_y_min;
 inner_y_max = case_inner_y_max;
 outer_y_min = inner_y_min - wall_t;
 outer_y_max = inner_y_max + wall_t;
-switch_grip_y = outer_y_max - switch_grip_len; // inner end of the switch opening
+switch_panel_y = outer_y_max - switch_panel_t; // inner face of the switch panel
 brand_y = (outer_y_min + outer_y_max) / 2;
 
 // Hexagonal plan: flat front and rear walls and a point at each end, where
@@ -98,19 +99,21 @@ screw_centers = [
 eye_x = lc_L / 2 - eye_center_offset;
 carabiner_loaded_x = eye_x + (eye_ring_bore_d - carabiner_shank_d) / 2;
 carabiner_slot_d = eye_d + 2 * eye_slot_clear;
-carabiner_slot_inner_x = bat_W / 2 + battery_side_clear + loadcell_slot_wall_t;
+carabiner_slot_inner_x = battery_bay_half_w + loadcell_slot_wall_t;
 
 assert(case_inner_y_min <= min(
         -lc_W / 2 - rear_clear,
         pcb_y_offset - pcb_L / 2 - rear_clear,
         battery_y_offset - bat_L / 2 - battery_rear_gap),
     "The mirrored rear wall must enclose the load cell, PCB and battery.");
-assert(switch_y - switch_d / 2 - switch_wire_bend >= max(lc_W / 2, battery_front_y),
+assert(switch_rear_y - switch_wire_bend >= max(lc_W / 2, battery_front_y),
     "The switch wire bend must stay clear of the load cell and battery.");
 assert(battery_pad_y[1] < -lc_W / 2,
     "Battery pads and their lid hold-downs must stay behind the load cell.");
-assert(usb_rear_y >= battery_front_y + 0.5,
-    "The USB-C connector must hang in front of the battery.");
+assert(pcb_rear_y >= battery_front_y + 0.5,
+    "The board must sit in front of the battery, as its height ignores it.");
+assert(bat_W / 2 + 0.5 <= battery_bay_half_w,
+    "The battery must fit between the bay walls.");
 assert(case_corner_x > case_inner_x_half && case_corner_x < case_tip_x,
     str("Facets must leave flat front and rear walls wider than the bay. corner_x=", case_corner_x, " mm."));
 assert(carabiner_shank_d < eye_ring_bore_d && eye_ring_bore_d < eye_d,
@@ -122,10 +125,27 @@ assert(carabiner_slot_inner_x < eye_x - carabiner_shank_d / 2,
 assert(carabiner_slot_d / 2 + loadcell_slot_wall_t < lc_W / 2 + loadcell_guard_clear,
     "Carabiner slot walls must leave the load-cell corners covered.");
 
+function span(center, half) = [center - half, center + half];
+
 // Axis-aligned box spanning the [min, max] pairs x, y and z.
 module box(x, y, z) {
     translate([min(x), min(y), min(z)])
         cube([abs(x[1] - x[0]), abs(y[1] - y[0]), abs(z[1] - z[0])]);
+}
+
+// Switch behind the wall: the body with its sprung clips, then the part in the
+// panel cutout. inset shrinks it off the faces it bears on.
+module switch_body(inset = 0) {
+    box(span(switch_x, switch_w / 2 - inset), [switch_rear_y, switch_panel_y - inset],
+        span(switch_z, switch_h / 2 - inset));
+    box(span(switch_x, switch_cutout_w / 2 - inset), [switch_panel_y - inset - 0.01, outer_y_max],
+        span(switch_z, switch_cutout_h / 2 - inset));
+}
+
+// Bezel and rocker in front of the outer wall face.
+module switch_bezel() {
+    box(span(switch_x, switch_bezel_w / 2), [outer_y_max, outer_y_max + switch_front_depth],
+        span(switch_z, switch_bezel_h / 2));
 }
 
 module each_corner(z_pos) {
