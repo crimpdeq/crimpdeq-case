@@ -409,6 +409,17 @@ if (mode == "main_lid") {
         }
 } else if (mode == "lid_battery_hold_down_preload") {
     intersection() { battery_hold_downs(); translate([0, 0, -battery_hold_down_preload - 0.05]) asm_battery(); }
+} else if (mode == "lid_battery_front_stop_seat") {
+    // Wherever the lid seats, the stop clears the battery front.
+    for (d = lid_seat_shifts)
+        intersection() { translate([d[0], d[1], 0]) battery_front_stop(); asm_battery(); }
+} else if (mode == "lid_battery_front_stop") {
+    // With the lid seated forward, the battery is caught within its stop gap
+    // plus the seat play.
+    intersection() {
+        translate([0, lid_seat_play, 0]) battery_front_stop();
+        translate([0, battery_front_stop_clear + lid_seat_play + 0.05, 0]) asm_battery();
+    }
 } else if (mode == "lid_pcb_clamped") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_pcb_outside_clamps") {

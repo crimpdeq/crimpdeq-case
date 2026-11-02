@@ -112,6 +112,8 @@ checks=(
     "lid_battery_outside_hold_downs empty"
     "lid_battery_hold_down_preload empty"
     "lid_battery_hold_downs_off_pads empty"
+    "lid_battery_front_stop_seat empty"
+    "lid_battery_front_stop nonempty"
     "lid_pcb_clamped nonempty"
     "lid_pcb_outside_clamps empty"
     "lid_pcb_rear_travel empty"

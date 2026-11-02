@@ -26,7 +26,8 @@ switch_rear_y = case_inner_y_max - switch_d; // end of the solder joints
 pcb_y_offset = case_inner_y_max - pcb_front_gap - pcb_L / 2;
 // The battery is too short to reach the load-cell front edge from its rear
 // pads, so the pads sit just behind the load cell and the battery front lies
-// over the gauge cover, where nothing can stop it. The lid clamp holds it.
+// over the gauge cover, where nothing in the main body can stop it. The lid
+// clamp and a lid stop in front of it hold it.
 battery_y_offset = -lc_W / 2 - battery_pad_loadcell_clear - battery_pad_size - battery_pad_inset + bat_L / 2;
 // The plan is symmetric about the load cell, so the rear wall mirrors the
 // front one and every rear envelope must fit inside it.

@@ -52,6 +52,11 @@ pcb_rear_stop_clear = 0.25;
 pcb_rear_stop_below = 1.0; // reach below the board underside
 pcb_rear_stop_chamfer = 0.8;
 
+// Wall in front of the battery, so it cannot slide forward off its clamped
+// rear pads. It reaches down to the battery's mid-height, high above the gauge
+// cover, and stays inside the battery's width, clear of its side leads.
+battery_front_stop_t = 2.4;
+
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
 status_led_view_d = 2.6;
@@ -92,6 +97,7 @@ battery_hold_down_x = battery_pad_x + [1, -1] * lid_seat_play;
 battery_hold_down_y = battery_pad_y + [1, -1] * lid_seat_play;
 battery_hold_down_z_min = battery_top_z - battery_hold_down_preload;
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
+battery_front_stop_y = battery_front_y + battery_front_stop_clear;
 
 assert(head_recess_depth < lid_t - 0.5,
     str("screw_head_recess must leave lid material under the head. recess=", head_recess_depth, " mm."));
@@ -122,6 +128,8 @@ assert(pcb_rear_stop_x[0] >= max(-pcb_module_rect[0], pcb_module_rect[1]) + 1
     "PCB rear stops must sit behind the board, clear of the antenna overhang.");
 assert(pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t >= battery_front_y + 1,
     "PCB rear stops must stand in front of the battery.");
+assert(battery_front_stop_clear > lid_seat_play,
+    "The battery front stop must clear the battery wherever the lid seats.");
 assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
     "PCB rear stops must bear on the full board edge above their chamfer.");
 assert(pcb_top_clamp_inset > pcb_rear_stop_clear,
@@ -279,6 +287,11 @@ module battery_hold_downs() {
             [battery_hold_down_z_min, lid_z_min + internal_feature_embed]);
 }
 
+module battery_front_stop() {
+    box(span(0, bat_W / 2), [battery_front_stop_y, battery_front_stop_y + battery_front_stop_t],
+        [battery_bottom_z + bat_T / 2, lid_z_min + internal_feature_embed]);
+}
+
 module pcb_rear_stops() {
     w = pcb_rear_stop_x[1] - pcb_rear_stop_x[0];
     y0 = pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t;
@@ -312,6 +325,7 @@ module lid_part() {
             pcb_top_clamps();
             pcb_rear_stops();
             battery_hold_downs();
+            battery_front_stop();
             lid_carabiner_slot_walls();
         }
         corner_holes(screw_clear_d, lid_z_min - align_lip_h_eff, lid_z_max);

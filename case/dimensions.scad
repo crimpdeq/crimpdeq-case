@@ -77,6 +77,9 @@ battery_pad_loadcell_clear = 1; // from the pads to the load cell
 // layer, so it cannot rattle. Re-measure bat_T if the battery changes: a
 // thicker one adds its excess to this preload.
 battery_hold_down_preload = 0.2;
+// Gap from the battery front to the lid stop in front of it. Larger than
+// lid_seat_play, so the lid seats without pushing the battery back.
+battery_front_stop_clear = 0.6;
 
 // PCB revision 3 (crimpdeq-pcb pcb/crimpdeq, board center (142.45, 67.40)).
 // The board is installed bottom-side up with its USB-C edge toward the front
