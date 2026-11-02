@@ -95,6 +95,20 @@ module screw_core_probe() {
         cylinder(d = 1.0, h = screw_len);
 }
 
+// Full-diameter screw in the post, above and within its threaded length.
+// Above it the screw must turn freely; within it, it must form a thread.
+module screw_shank_probe() {
+    post_top_z = pcb_top_z + top_clear;
+    each_corner(post_top_z - screw_tip_depth + screw_thread_len + 0.05)
+        cylinder(d = screw_d, h = screw_tip_depth - screw_thread_len);
+}
+
+module screw_thread_probe() {
+    post_top_z = pcb_top_z + top_clear;
+    each_corner(post_top_z - screw_tip_depth)
+        cylinder(d = screw_d, h = screw_thread_len - 0.05);
+}
+
 // Strips through the panel beside each side of the cutout, where the snap
 // clips catch. Each must find the panel over its whole thickness.
 module switch_panel_probe(x_sign) {
@@ -334,6 +348,10 @@ if (mode == "main_lid") {
     intersection() { main_part(); asm_switch(inset = 0.01); }
 } else if (mode == "main_screw_pilot_fit") {
     intersection() { main_part(); screw_core_probe(); }
+} else if (mode == "main_screw_shank_clear") {
+    intersection() { main_part(); screw_shank_probe(); }
+} else if (mode == "main_screw_thread") {
+    intersection() { main_part(); screw_thread_probe(); }
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
 } else if (mode == "main_usb_overmold_stop") {

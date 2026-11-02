@@ -96,6 +96,8 @@ checks=(
     "main_slot_seal_xp_yn nonempty"
     "main_slot_seal_xp_yp nonempty"
     "main_screw_pilot_fit empty"
+    "main_screw_shank_clear empty"
+    "main_screw_thread nonempty"
     "main_usb_cable empty"
     "main_usb_overmold_stop nonempty"
     "lid_loadcell empty"

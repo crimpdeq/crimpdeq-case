@@ -207,8 +207,11 @@ switch_wire_bend = 3.5;
 // facet wall along a layer line.
 screw_edge_inset = 5.25;
 screw_len = 10; // under the head
+screw_d = 2.5; // thread major diameter
 screw_head_d = 5.2; // typical M2.5 button/pan head clearance
 screw_head_recess = 1.8; // recess depth so heads do not protrude
-// 45 degree countersink at each pilot entrance. Plastic the screw displaces
-// collects in it instead of curling up above the post and holding the lid off.
-screw_pilot_chamfer = 0.6;
+// The seated screw forms its thread in the post only over this length above
+// its tip, about 2.5 diameters; a clear bore takes the rest. Forming it over
+// all 9.4 mm took more torque than the M2.5 shank carries, and screws twisted
+// off flush with the post.
+screw_thread_len = 6;

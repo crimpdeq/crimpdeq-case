@@ -2,7 +2,7 @@
 // Main enclosure part (base body)
 // - USB-C opening
 // - load-cell saddle with open carabiner U-slots
-// - corner threaded pilot holes for M2.5x10 screws
+// - corner pilot holes for M2.5x10 screws, threaded only near the tip
 //
 
 include <placement.scad>
@@ -41,8 +41,11 @@ internal_feature_embed = 0.15; // overlap floor-anchored features into the shell
 usb_hole_corner_r = 0.8;
 
 screw_post_d = 6.5;
-screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
+// Pilot the screw forms its thread in. Printed holes come out small, so it is
+// modelled near the M2.5 minor diameter plus that shrinkage.
+screw_thread_d = 2.3;
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
+screw_shank_clear_d = 2.8; // bore above the threaded length
 
 brand_text = "Crimpdeq";
 brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
@@ -77,8 +80,8 @@ notch_y2 = lc_W / 2;
 notch_pin_d = max(0.2, notch_d - notch_pin_clear);
 notch_pin_h = 6 + loadcell_lift;
 
-// The screw passes the lid material under its head recess, then threads in.
-thread_depth = screw_len - (lid_t - screw_head_recess) + screw_thread_tip_clear;
+thread_depth = screw_tip_depth + screw_thread_tip_clear;
+shank_clear_depth = screw_tip_depth - screw_thread_len;
 
 loadcell_y_max = lc_W / 2;
 switch_top_z = switch_z + switch_h / 2;
@@ -122,8 +125,10 @@ assert(pcb_guide_lead_in > 0 && pcb_guide_lead_in < pcb_guide_above + pcb_board_
     str("pcb_guide_lead_in must stay within the edge guides. Got ", pcb_guide_lead_in, " mm."));
 assert(screw_edge_inset - screw_post_d / 2 < wall_t,
     "Screw posts must merge into the walls.");
-assert(screw_thread_d + 2 * screw_pilot_chamfer <= screw_post_d - 2,
-    "Screw pilot chamfers must leave at least 1 mm of post rim.");
+assert(screw_thread_d < screw_d && screw_d < screw_shank_clear_d && screw_shank_clear_d <= screw_post_d - 3,
+    "The screw must thread in the pilot, pass the clear bore and leave 1.5 mm of post rim.");
+assert(shank_clear_depth > 0 && screw_thread_len >= 2 * screw_d,
+    "The screw must thread at least two diameters below a clear bore.");
 assert(screw_post_d > screw_thread_d,
     str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(thread_depth <= outer_z_max - outer_z_min - 1,
@@ -314,11 +319,6 @@ module corner_thread_holes(d, z_top, depth) {
     }
 }
 
-module corner_pilot_chamfers(d, depth) {
-    each_corner(outer_z_max - depth)
-        cylinder(d1 = d, d2 = d + 2 * (depth + 0.1), h = depth + 0.1);
-}
-
 module corner_screw_posts(d, z0, z1) {
     post_h = z1 - z0;
     if (post_h > 0) {
@@ -404,7 +404,7 @@ module main_part() {
         }
 
         corner_thread_holes(screw_thread_d, outer_z_max, thread_depth);
-        corner_pilot_chamfers(screw_thread_d, screw_pilot_chamfer);
+        corner_thread_holes(screw_shank_clear_d, outer_z_max, shank_clear_depth);
 
         carabiner_slot_cuts();
 
