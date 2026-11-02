@@ -41,11 +41,7 @@ internal_feature_embed = 0.15; // overlap floor-anchored features into the shell
 usb_hole_corner_r = 0.8;
 
 screw_post_d = 6.5;
-// Pilot the screw forms its thread in. Printed holes come out small, so it is
-// modelled near the M2.5 minor diameter plus that shrinkage.
-screw_thread_d = 2.3;
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
-screw_shank_clear_d = 2.8; // bore above the threaded length
 
 brand_text = "Crimpdeq";
 brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
