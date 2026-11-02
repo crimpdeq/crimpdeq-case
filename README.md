@@ -19,6 +19,20 @@ layout. From `v3.1.0`, releases also include `crimpdeq-case.3mf`, a Bambu Studio
 both parts laid out and the [print settings](#build-the-bambu-studio-project) applied. The V3
 parts need no support.
 
+### Test the screws first
+
+`case/screw_test.scad` is one corner of the main body and of the lid, cut from the real parts
+round a screw. Print it with the case settings and drive an M2.5×10 screw in before printing the
+whole case:
+
+```bash
+openscad -o screw_test.stl case/screw_test.scad
+```
+
+The screw should turn freely through the top 3.4 mm of the post, then cut its thread over the
+last 6 mm and seat flush in the lid recess without forcing. Back it out and drive it in again a
+few times: it should keep holding.
+
 To assemble the case, follow the [Crimpdeq book](https://book.crimpdeq.com/assembly/crimpdeq/index.html).
 
 ## Compatibility
@@ -126,6 +140,7 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 - `case/assembly.scad`: combined internal assembly preview (load cell, battery, PCB, switch)
 - `case/collision_check.scad`: geometry intersections used for automated collision checks
 - `case/dimensions.scad`: shared dimensions and clearances
+- `case/screw_test.scad`: printable screw corner of the main body and lid
 - `scripts/check-collisions.sh`: CI/local collision validation script
 - `scripts/export-bambu-project.py`: Bambu Studio project with the print settings
 
