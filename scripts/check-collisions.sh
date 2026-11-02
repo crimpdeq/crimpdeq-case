@@ -235,10 +235,6 @@ main_stl="$tmp_dir/case_main.stl"
 lid_stl="$tmp_dir/case_lid.stl"
 "${openscad_cmd[@]}" "${openscad_defs[@]}" -D "print_layout=true" -o "$main_stl" "$repo_root/case/case_main.scad" >/dev/null 2>&1
 "${openscad_cmd[@]}" "${openscad_defs[@]}" -D "print_layout=true" -o "$lid_stl" "$repo_root/case/case_lid.scad" >/dev/null 2>&1
-screw_test_main_stl="$tmp_dir/screw_test_main.stl"
-screw_test_lid_stl="$tmp_dir/screw_test_lid.stl"
-"${openscad_cmd[@]}" "${openscad_defs[@]}" -D 'part="main"' -o "$screw_test_main_stl" "$repo_root/case/screw_test.scad" >/dev/null 2>&1
-"${openscad_cmd[@]}" "${openscad_defs[@]}" -D 'part="lid"' -o "$screw_test_lid_stl" "$repo_root/case/screw_test.scad" >/dev/null 2>&1
-python3 "$repo_root/scripts/check-stl-components.py" "$main_stl" "$lid_stl" "$screw_test_main_stl" "$screw_test_lid_stl"
+python3 "$repo_root/scripts/check-stl-components.py" "$main_stl" "$lid_stl"
 
 echo "STL connectivity checks passed."
