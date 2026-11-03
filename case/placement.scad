@@ -38,6 +38,12 @@ battery_top_z = battery_bottom_z + bat_T;
 battery_front_y = battery_y_offset + bat_L / 2;
 // Rear face of the lid stop that keeps the battery from sliding forward.
 battery_front_stop_y = battery_front_y + battery_front_stop_clear;
+// Its X spans stay inside the battery's width, clear of its side leads, and
+// split round the ESP32 antenna above it.
+battery_front_stop_x = [
+    [-bat_W / 2, pcb_module_rect[0] - battery_front_stop_antenna_clear],
+    [pcb_module_rect[1] + battery_front_stop_antenna_clear, bat_W / 2]
+];
 // +X rear pad; the -X one mirrors it.
 battery_pad_x = [bat_W / 2 - battery_pad_inset - battery_pad_size, bat_W / 2 - battery_pad_inset];
 battery_pad_y0 = battery_y_offset - bat_L / 2 + battery_pad_inset;

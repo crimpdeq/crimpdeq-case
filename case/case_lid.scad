@@ -52,17 +52,6 @@ pcb_rear_stop_clear = 0.25;
 pcb_rear_stop_below = 1.0; // reach below the board underside
 pcb_rear_stop_chamfer = 0.8;
 
-// Wall in front of the battery, so it cannot slide forward off its clamped
-// rear pads. It reaches down to the battery's mid-height, high above the gauge
-// cover, and stays inside the battery's width, clear of its side leads. It is
-// split round the ESP32 antenna, which overhangs the board's rear edge above it.
-battery_front_stop_t = 2.4;
-battery_front_stop_antenna_clear = 1.0; // covers the board and lid play
-battery_front_stop_x = [
-    [-bat_W / 2, pcb_module_rect[0] - battery_front_stop_antenna_clear],
-    [pcb_module_rect[1] + battery_front_stop_antenna_clear, bat_W / 2]
-];
-
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
 status_led_view_d = 2.6;
@@ -294,6 +283,9 @@ module battery_hold_downs() {
             [battery_hold_down_z_min, lid_z_min + internal_feature_embed]);
 }
 
+// Wall in front of the battery, so it cannot slide forward off its clamped
+// rear pads. It reaches down to the battery's mid-height, high above the gauge
+// cover.
 module battery_front_stop() {
     for (x = battery_front_stop_x)
         box(x, [battery_front_stop_y, battery_front_stop_y + battery_front_stop_t],

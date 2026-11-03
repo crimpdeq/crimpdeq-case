@@ -80,6 +80,10 @@ battery_hold_down_preload = 0.2;
 // Gap from the battery front to the lid stop in front of it. Larger than
 // lid_seat_play, so the lid seats without pushing the battery back.
 battery_front_stop_clear = 0.6;
+battery_front_stop_t = 2.4;
+// From the stop to the ESP32 antenna overhanging the board's rear edge,
+// covering the board and lid play.
+battery_front_stop_antenna_clear = 1.0;
 
 // PCB revision 3 (crimpdeq-pcb pcb/crimpdeq, board center (142.45, 67.40)).
 // The board is installed bottom-side up with its USB-C edge toward the front
