@@ -97,7 +97,6 @@ battery_hold_down_x = battery_pad_x + [1, -1] * lid_seat_play;
 battery_hold_down_y = battery_pad_y + [1, -1] * lid_seat_play;
 battery_hold_down_z_min = battery_top_z - battery_hold_down_preload;
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
-battery_front_stop_y = battery_front_y + battery_front_stop_clear;
 
 assert(head_recess_depth < lid_t - 0.5,
     str("screw_head_recess must leave lid material under the head. recess=", head_recess_depth, " mm."));

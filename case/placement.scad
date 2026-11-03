@@ -36,6 +36,8 @@ case_inner_y_min = -case_inner_y_max;
 battery_bottom_z = loadcell_top_z + loadcell_to_battery_gap;
 battery_top_z = battery_bottom_z + bat_T;
 battery_front_y = battery_y_offset + bat_L / 2;
+// Rear face of the lid stop that keeps the battery from sliding forward.
+battery_front_stop_y = battery_front_y + battery_front_stop_clear;
 // +X rear pad; the -X one mirrors it.
 battery_pad_x = [bat_W / 2 - battery_pad_inset - battery_pad_size, bat_W / 2 - battery_pad_inset];
 battery_pad_y0 = battery_y_offset - bat_L / 2 + battery_pad_inset;
