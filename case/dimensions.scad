@@ -218,7 +218,11 @@ screw_head_recess = 1.8; // recess depth so heads do not protrude
 // all 9.4 mm took more torque than the M2.5 shank carries, and screws twisted
 // off flush with the post.
 screw_thread_len = 6;
-// Pilot the screw forms its thread in. Printed holes come out small, so it is
-// modelled near the M2.5 minor diameter plus that shrinkage.
-screw_thread_d = 2.3;
-screw_shank_clear_d = 2.8; // bore above the threaded length
+// Pilot the screw forms its thread in. Below about 2.24 mm the plastic it
+// displaces overfills its thread grooves and jams it; a 2.3 mm model printed
+// near 2.15 mm and still twisted heads off. Printed holes come out about
+// 0.15 mm small, so this prints near that balance, about 50% thread depth.
+screw_thread_d = 2.4;
+// Bore above the threaded length. It prints about 0.15 mm small too, and
+// must still clear the 2.5 mm thread crests.
+screw_shank_clear_d = 3.0;
