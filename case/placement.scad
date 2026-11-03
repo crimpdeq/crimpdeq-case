@@ -43,18 +43,16 @@ battery_pad_x = [bat_W / 2 - battery_pad_inset - battery_pad_size, bat_W / 2 - b
 battery_pad_y0 = battery_y_offset - bat_L / 2 + battery_pad_inset;
 battery_pad_y = [battery_pad_y0, battery_pad_y0 + battery_pad_size];
 
-// The switch stands on the floor between the PCB columns, its bezel centered
-// on its body.
+// The switch stands on the floor between the PCB columns.
 switch_x = (pcb_support_columns[0][1] + pcb_support_columns[1][0]) / 2;
 switch_z = inner_z_min + switch_h / 2;
-switch_bezel_top_z = switch_z + switch_bezel_h / 2;
 switch_cavity_x = span(switch_x, switch_w / 2 + switch_clear);
 
 // The board sits in front of the battery, so the USB-C cable pocket, which
-// must clear the switch bezel below it, sets the board height.
+// must clear the switch opening below it, sets the board height.
 usb_pocket_w = usb_overmold_w + 2 * usb_pocket_clear;
 usb_pocket_h = usb_overmold_h + 2 * usb_pocket_clear;
-usb_center_z = switch_bezel_top_z + switch_usb_gap + usb_pocket_h / 2;
+usb_center_z = switch_z + switch_h / 2 + switch_usb_gap + usb_pocket_h / 2;
 pcb_board_bottom_z = usb_center_z + usb_h / 2;
 pcb_board_top_z = pcb_board_bottom_z + pcb_board_t;
 pcb_bottom_z = pcb_board_bottom_z - usb_h;
@@ -76,7 +74,7 @@ inner_y_min = case_inner_y_min;
 inner_y_max = case_inner_y_max;
 outer_y_min = inner_y_min - wall_t;
 outer_y_max = inner_y_max + wall_t;
-switch_panel_y = outer_y_max - switch_panel_t; // inner face of the switch panel
+switch_grip_y = outer_y_max - switch_grip_len; // inner end of the switch opening
 brand_y = (outer_y_min + outer_y_max) / 2;
 
 // Hexagonal plan: flat front and rear walls and a point at each end, where
@@ -139,19 +137,11 @@ module box(x, y, z) {
         cube([abs(x[1] - x[0]), abs(y[1] - y[0]), abs(z[1] - z[0])]);
 }
 
-// Switch behind the wall: the body with its sprung clips, then the part in the
-// panel cutout. inset shrinks it off the faces it bears on.
+// Switch from its face, flush with the outer wall, to its solder joints.
+// inset shrinks it off the opening sides that grip its bezel.
 module switch_body(inset = 0) {
-    box(span(switch_x, switch_w / 2 - inset), [switch_rear_y, switch_panel_y - inset],
+    box(span(switch_x, switch_w / 2 - inset), [switch_rear_y, outer_y_max],
         span(switch_z, switch_h / 2 - inset));
-    box(span(switch_x, switch_cutout_w / 2 - inset), [switch_panel_y - inset - 0.01, outer_y_max],
-        span(switch_z, switch_cutout_h / 2 - inset));
-}
-
-// Bezel and rocker in front of the outer wall face.
-module switch_bezel() {
-    box(span(switch_x, switch_bezel_w / 2), [outer_y_max, outer_y_max + switch_front_depth],
-        span(switch_z, switch_bezel_h / 2));
 }
 
 module each_corner(z_pos) {

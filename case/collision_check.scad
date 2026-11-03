@@ -109,20 +109,13 @@ module screw_thread_probe() {
         cylinder(d = screw_d, h = screw_thread_len - 0.05);
 }
 
-// Strips through the panel beside each side of the cutout, where the snap
-// clips catch. Each must find the panel over its whole thickness.
-module switch_panel_probe(x_sign) {
-    translate([switch_x + x_sign * (switch_cutout_w / 2 + switch_cutout_clear + 0.3),
-            (switch_panel_y + outer_y_max) / 2, switch_z])
-        cube([0.1, switch_panel_t - 0.1, switch_cutout_h - 1], center = true);
-}
-
-// Room behind the panel for the clips: the same strips just behind it.
-module switch_clip_space_probe() {
+// Strips beside each side of the switch opening at its inner end. Only the
+// collar is there, so they find material only if the opening grips the bezel
+// over the whole switch_grip_len.
+module switch_grip_probe() {
     for (x_sign = [-1, 1])
-        translate([switch_x + x_sign * (switch_cutout_w / 2 + switch_cutout_clear + 0.3),
-                switch_panel_y - 0.5, switch_z])
-            cube([0.1, 0.8, switch_cutout_h - 1], center = true);
+        translate([switch_x + x_sign * (switch_w / 2 + 0.06), switch_grip_y + 0.06, switch_z])
+            cube([0.1, 0.1, switch_h - 1], center = true);
 }
 
 module asm_battery() {
@@ -223,13 +216,14 @@ module switch_wire_probe() {
         wire_path([split, pad_point(i, pad_z)], [1, 1, 1] * wire_env);
 }
 
-// Battery leads leave its rear end, rise behind it and run forward beside its
-// right edge and the board, then split to the B- and B+ pads.
+// Battery leads leave its rear end, rise behind it over the rear guides, run
+// forward beside its right edge and the board, their top level with the
+// battery's, then split to the B- and B+ pads.
 module battery_wire_probe() {
     rear_y = battery_y_offset - bat_L / 2 - 0.25 - wire_pair[1] / 2;
-    over_z = battery_top_z + 0.05 + wire_pair_stacked[2] / 2;
+    over_z = battery_top_z - 0.05 - wire_pair_stacked[2] / 2;
     lane_x = pcb_W / 2 + 0.3 + wire_env / 2;
-    split = [lane_x, pcb_y_offset + pcb_cable_pads[0][1], battery_top_z];
+    split = [lane_x, pcb_y_offset + pcb_cable_pads[0][1], over_z];
     pad_z = pcb_board_bottom_z - wire_env / 2 - 0.05;
     wire_path([
         [0, rear_y, battery_bottom_z + wire_pair[2] / 2],
@@ -335,16 +329,10 @@ if (mode == "main_lid") {
     intersection() { main_part(); battery_wire_probe(); }
 } else if (mode == "main_loadcell_wires") {
     intersection() { main_part(); loadcell_wire_probe(); }
-} else if (mode == "main_switch_panel_x_neg") {
-    intersection() { main_part(); switch_panel_probe(-1); }
-} else if (mode == "main_switch_panel_x_pos") {
-    intersection() { main_part(); switch_panel_probe(1); }
-} else if (mode == "main_switch_clip_space") {
-    intersection() { main_part(); switch_clip_space_probe(); }
-} else if (mode == "switch_usb_cable") {
-    intersection() { switch_bezel(); usb_cable_fit_probe(); }
+} else if (mode == "main_switch_grip") {
+    intersection() { main_part(); switch_grip_probe(); }
 } else if (mode == "main_switch") {
-    // The clips bear on the panel, so shrink the switch off its faces.
+    // The bezel is a press fit in the opening, so shrink it off the sides.
     intersection() { main_part(); asm_switch(inset = 0.01); }
 } else if (mode == "main_screw_pilot_fit") {
     intersection() { main_part(); screw_core_probe(); }

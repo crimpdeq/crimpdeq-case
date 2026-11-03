@@ -110,8 +110,8 @@ pcb_support_windows = [
 // through-hole. Both keep clear of the cable pads, and the switch body
 // stands between them.
 pcb_support_columns = [
-    [-16.5, -13.0, -pcb_L / 2, 12.1],
-    [9.7, 12.3, 7.0, pcb_L / 2 + 1]
+    [-16.5, -8.3, -pcb_L / 2, 12.1],
+    [8.3, 12.3, 7.0, pcb_L / 2 + 1]
 ];
 pcb_column_loadcell_clear = 0.3; // from the columns to the load-cell front edge
 // THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
@@ -179,26 +179,19 @@ front_clear = 2.0;
 top_clear = 0.5; // ESP32 module-to-lid gap
 pcb_front_gap = 0.2; // board front edge to the inner front wall; the USB-C connector continues into the wall opening
 
-// Front switch: snap-in rocker with a 21 x 15 mm bezel on the outer face of
-// the front wall, 21 mm along X. Taken from the product drawing: 12 mm of
-// body behind the bezel, then 8 mm quick-connect tabs; the wires are soldered
-// to the tabs, with 1.5 mm of joint and heat-shrink past their tips. The
-// cutout is the usual 19 x 13 mm for this bezel.
-switch_bezel_w = 21;
-switch_bezel_h = 15;
-switch_front_depth = 6; // bezel and rocker in front of the wall
-switch_cutout_w = 19;
-switch_cutout_h = 13;
-switch_cutout_clear = 0.1; // a side, as printed holes come out small
-switch_w = switch_bezel_w; // behind the wall, across the sprung snap clips
-switch_h = switch_cutout_h;
-switch_depth = 12 + 8 + 1.5; // behind the outer wall face
+// Front switch (KCD11 10x15 mm), 15 mm along X. Measured 15.2 mm from its
+// front to the end of its heat-shrunk solder joints; all of it is taken as
+// behind the outer wall face, the worst case.
+switch_w = 15;
+switch_h = 10;
+switch_depth = 15.2;
 switch_d = switch_depth - wall_t; // behind the inner wall face
 switch_clear = 0.4;
-// The snap clips catch the inside of the wall round the cutout, thinned to
-// this panel. Estimated from the clip shoulders in the drawing; measure them.
-switch_panel_t = 1.2;
-// Bezel to the USB-C cable pocket above it.
+// The bezel is held only by friction in its wall opening. v2.0.0's 3.0 mm
+// wall held it; a collar behind the thinner front wall restores that length.
+switch_grip_len = 3.0;
+switch_collar_t = 1.2;
+// Switch opening to the USB-C cable pocket above it.
 switch_usb_gap = 0.6;
 // Room behind the solder joints for the wires to turn up, in front of the
 // load cell and battery.

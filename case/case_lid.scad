@@ -54,8 +54,14 @@ pcb_rear_stop_chamfer = 0.8;
 
 // Wall in front of the battery, so it cannot slide forward off its clamped
 // rear pads. It reaches down to the battery's mid-height, high above the gauge
-// cover, and stays inside the battery's width, clear of its side leads.
+// cover, and stays inside the battery's width, clear of its side leads. It is
+// split round the ESP32 antenna, which overhangs the board's rear edge above it.
 battery_front_stop_t = 2.4;
+battery_front_stop_antenna_clear = 1.0; // covers the board and lid play
+battery_front_stop_x = [
+    [-bat_W / 2, pcb_module_rect[0] - battery_front_stop_antenna_clear],
+    [pcb_module_rect[1] + battery_front_stop_antenna_clear, bat_W / 2]
+];
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
@@ -129,6 +135,8 @@ assert(pcb_rear_y - pcb_rear_stop_clear - pcb_rear_stop_t >= battery_front_y + 1
     "PCB rear stops must stand in front of the battery.");
 assert(battery_front_stop_clear > lid_seat_play,
     "The battery front stop must clear the battery wherever the lid seats.");
+for (x = battery_front_stop_x)
+    assert(x[1] - x[0] >= 3, "Each battery front stop must be at least 3 mm wide.");
 assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
     "PCB rear stops must bear on the full board edge above their chamfer.");
 assert(pcb_top_clamp_inset > pcb_rear_stop_clear,
@@ -287,8 +295,9 @@ module battery_hold_downs() {
 }
 
 module battery_front_stop() {
-    box(span(0, bat_W / 2), [battery_front_stop_y, battery_front_stop_y + battery_front_stop_t],
-        [battery_bottom_z + bat_T / 2, lid_z_min + internal_feature_embed]);
+    for (x = battery_front_stop_x)
+        box(x, [battery_front_stop_y, battery_front_stop_y + battery_front_stop_t],
+            [battery_bottom_z + bat_T / 2, lid_z_min + internal_feature_embed]);
 }
 
 module pcb_rear_stops() {

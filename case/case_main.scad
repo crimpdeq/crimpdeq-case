@@ -91,12 +91,10 @@ assert(switch_rear_y >= loadcell_y_max,
     str("Switch overlaps load cell by ", loadcell_y_max - switch_rear_y, " mm (Y)."));
 assert(switch_top_z <= pcb_bottom_z,
     str("Switch overlaps PCB by ", switch_top_z - pcb_bottom_z, " mm (Z)."));
-assert(switch_z - switch_bezel_h / 2 >= outer_z_min + 0.5,
-    "The switch bezel must stay on the front wall above the floor.");
-assert(abs(switch_x) + switch_bezel_w / 2 <= case_corner_x - 1,
-    "The switch bezel must stay on the flat front wall.");
-assert(switch_cutout_w + 2 * switch_cutout_clear < switch_w && switch_panel_t < wall_t,
-    "The switch clips need a panel rim beside the cutout, thinner than the wall.");
+assert(abs(switch_x) + switch_w / 2 + switch_collar_t <= case_corner_x - 1,
+    "The switch opening and its collar must stay on the flat front wall.");
+assert(switch_grip_len >= wall_t,
+    str("switch_grip_len must be at least wall_t. Got ", switch_grip_len, " mm."));
 assert(battery_rear_gap_actual >= -0.001 && battery_front_gap_actual >= -0.001,
     str("Battery exceeds cavity bounds. rear_gap=", battery_rear_gap_actual, " front_gap=", battery_front_gap_actual));
 assert(pcb_front_gap >= 0 && pcb_front_gap <= front_clear + rear_clear,
@@ -274,14 +272,20 @@ module pcb_supports() {
     }
 }
 
-// Cavity for the switch body and its sprung clips. It reaches into the front
-// wall, leaving the thin panel the clips catch round the cutout.
+// Thickens the front wall round the switch opening to switch_grip_len,
+// standing on the floor.
+module switch_collar() {
+    box(span(switch_x, switch_w / 2 + switch_collar_t), [switch_grip_y, inner_y_max + internal_feature_embed],
+        [inner_z_min - internal_feature_embed, switch_z + switch_h / 2 + switch_collar_t]);
+}
+
+// Cavity for the switch body, ending at the collar, and the opening through
+// the wall and collar that grips the bezel over switch_grip_len.
 module switch_cut() {
-    box(switch_cavity_x, [switch_rear_y - switch_clear, switch_panel_y],
+    box(switch_cavity_x, [switch_rear_y - switch_clear, switch_grip_y],
         span(switch_z, switch_h / 2 + switch_clear));
-    box(span(switch_x, switch_cutout_w / 2 + switch_cutout_clear),
-        [switch_panel_y - 0.1, outer_y_max + 0.1],
-        span(switch_z, switch_cutout_h / 2 + switch_cutout_clear));
+    box(span(switch_x, switch_w / 2), [switch_grip_y - 0.1, outer_y_max + 0.1],
+        span(switch_z, switch_h / 2));
 }
 
 module notch_pins() {
@@ -389,6 +393,7 @@ module main_part() {
             loadcell_support();
             battery_rear_supports();
             pcb_supports();
+            switch_collar();
             notch_pins();
             loadcell_notch_guides();
             main_carabiner_slot_walls();

@@ -29,10 +29,8 @@ module loadcell_model() {
 }
 
 module switch_model() {
-    color("red") {
+    color("red")
         switch_body();
-        switch_bezel();
-    }
 }
 
 module full_assembly(show_pcb = true) {
