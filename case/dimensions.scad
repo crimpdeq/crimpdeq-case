@@ -43,8 +43,10 @@ lid_t = 2.4;
 // lid holes, plus 0.2 mm for printed walls off size.
 lid_seat_play = 0.45;
 // Symmetric hexagonal plan: flat front and rear walls and a point at each
-// end. 60 degrees from the X axis makes every interior angle 120 degrees.
-case_facet_angle = 60;
+// end. 67 degrees from the X axis, against 60 for a regular hexagon, keeps a
+// clear point at each end and makes the case 6.5 mm shorter for under 1% more
+// material: the flat walls grow as the plan shrinks.
+case_facet_angle = 67;
 
 // Electronics bay half-width around the battery guides. Beyond it, nothing in
 // the main body may touch the load cell.
