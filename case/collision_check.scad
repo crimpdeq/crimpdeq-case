@@ -99,8 +99,8 @@ module screw_core_probe() {
 // Full-diameter screw in the post, above and within its threaded length.
 // Above it the screw must turn freely; within it, it must form a thread.
 module screw_shank_probe() {
-    each_corner(inner_z_max - screw_tip_depth + screw_thread_len + 0.05)
-        cylinder(d = screw_d, h = screw_tip_depth - screw_thread_len);
+    each_corner(inner_z_max - shank_clear_depth + 0.05)
+        cylinder(d = screw_d, h = shank_clear_depth);
 }
 
 module screw_thread_probe() {

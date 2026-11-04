@@ -62,7 +62,6 @@ notch_pin_d = notch_d - notch_pin_clear;
 notch_pin_h = 6 + loadcell_lift;
 
 thread_depth = screw_tip_depth + screw_thread_tip_clear;
-shank_clear_depth = screw_tip_depth - screw_thread_len;
 
 pcb_guide_top_z = pcb_board_top_z + pcb_guide_above;
 
