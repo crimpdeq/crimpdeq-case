@@ -239,6 +239,8 @@ screw_thread_d = 2.1;
 // must still clear the thread crests.
 screw_shank_clear_d = 3.0;
 screw_clear_d = 3.0; // lid hole, loose so the lid seats easily on the posts
+// 90 degree countersink from the lid top down to the clearance hole.
+countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
 // The lid may seat anywhere within the play of the screws in their lid holes,
 // plus 0.2 mm for printed walls off size.
 lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;

@@ -55,8 +55,6 @@ print_layout = false; // true: flip lid for support-free printing (outer top fac
 /*** Derived placement ***/
 hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 
-// 90 degree countersink from the lid top down to the clearance hole.
-countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
 
 battery_side_wall_x = battery_bay_half_w + battery_side_wall_t / 2;
 // Extend through the lid thickness so the walls fuse into the roof; their
