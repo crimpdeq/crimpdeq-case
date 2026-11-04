@@ -17,9 +17,7 @@ $fn = render_fn;
 /*** Enclosure parameters ***/
 floor_t = 2.4;
 
-notch_pin_clear = 0.2;
 notch_pin_embed = 0.4;
-notch_pin_top_clear = 1.0;
 loadcell_notch_guide_len = 7.5;
 loadcell_notch_guide_w = 1.0;
 loadcell_notch_guide_h = 4;
@@ -29,24 +27,14 @@ loadcell_support_corner_inset = 2;
 battery_guide_clear = 0.5;
 battery_guide_t = 1.8;
 battery_guide_h = bat_T * 0.6;
-pcb_guide_clear = 0.25;
 pcb_guide_above = 1.0; // edge guides rise above the board top face
 pcb_guide_lead_in = 0.6;
-pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
-// Parts can also slide by the guide clearance before the lid rear stops engage.
-pcb_part_clear_xy = pcb_guide_clear + pcb_part_clear;
-
-internal_feature_embed = 0.15; // overlap floor-anchored features into the shell for a fused STL
 
 usb_hole_corner_r = 0.8;
 
 screw_post_d = 6.5;
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
 
-brand_text = "Crimpdeq";
-brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
-brand_size = 9.5;
-brand_depth = 0.8;
 rear_brand_text = "crimpdeq.com";
 rear_brand_font = brand_font;
 rear_brand_depth = 0.8;
@@ -63,9 +51,6 @@ print_layout = false; // true: place bottom on Z=0 for direct STL slicing
 // Span the flat rear wall up to where the facets start.
 rear_brand_w = 2 * (case_corner_x - rear_brand_margin);
 
-// Top of the PCB stack sizes the enclosure height.
-inner_z_max = pcb_top_z + top_clear;
-
 outer_z_min = inner_z_min - floor_t;
 outer_z_max = inner_z_max;
 
@@ -73,36 +58,18 @@ notch_x1 = -lc_L / 2 + notch_xA;
 notch_x2 = -lc_L / 2 + notch_xB;
 notch_y1 = -lc_W / 2;
 notch_y2 = lc_W / 2;
-notch_pin_d = max(0.2, notch_d - notch_pin_clear);
+notch_pin_d = notch_d - notch_pin_clear;
 notch_pin_h = 6 + loadcell_lift;
 
 thread_depth = screw_tip_depth + screw_thread_tip_clear;
 shank_clear_depth = screw_tip_depth - screw_thread_len;
 
-loadcell_y_max = lc_W / 2;
-switch_top_z = switch_z + switch_h / 2;
-battery_rear_gap_actual = (battery_y_offset - bat_L / 2) - inner_y_min;
-battery_front_gap_actual = inner_y_max - (battery_y_offset + bat_L / 2);
-pcb_rear_gap_actual = (pcb_y_offset - pcb_L / 2) - inner_y_min;
-pcb_front_gap_actual = inner_y_max - (pcb_y_offset + pcb_L / 2);
 pcb_guide_top_z = pcb_board_top_z + pcb_guide_above;
 
-assert(switch_rear_y >= loadcell_y_max,
-    str("Switch overlaps load cell by ", loadcell_y_max - switch_rear_y, " mm (Y)."));
-assert(switch_top_z <= pcb_bottom_z,
-    str("Switch overlaps PCB by ", switch_top_z - pcb_bottom_z, " mm (Z)."));
 assert(abs(switch_x) + switch_w / 2 + switch_collar_t <= case_corner_x - 1,
     "The switch opening and its collar must stay on the flat front wall.");
 assert(switch_grip_len >= wall_t,
     str("switch_grip_len must be at least wall_t. Got ", switch_grip_len, " mm."));
-assert(battery_rear_gap_actual >= -0.001 && battery_front_gap_actual >= -0.001,
-    str("Battery exceeds cavity bounds. rear_gap=", battery_rear_gap_actual, " front_gap=", battery_front_gap_actual));
-assert(pcb_front_gap >= 0 && pcb_front_gap <= front_clear + rear_clear,
-    str("pcb_front_gap out of range: ", pcb_front_gap, " mm."));
-assert(pcb_rear_gap_actual >= -0.001 && pcb_front_gap_actual >= -0.001,
-    str("PCB exceeds cavity bounds. rear_gap=", pcb_rear_gap_actual, " front_gap=", pcb_front_gap_actual));
-assert(abs(pcb_front_gap_actual - pcb_front_gap) <= 0.01,
-    str("PCB front wall clearance mismatch: target=", pcb_front_gap, " actual=", pcb_front_gap_actual));
 assert(usb_pocket_floor_y - inner_y_max >= usb_pocket_min_web && usb_pocket_floor_y < outer_y_max,
     str("USB-C pocket must leave a front-wall web. web=", usb_pocket_floor_y - inner_y_max, " mm."));
 assert(usb_center_z + usb_pocket_h / 2 <= outer_z_max - 1,
@@ -122,8 +89,6 @@ assert(screw_thread_d < screw_d && screw_d < screw_shank_clear_d && screw_shank_
     "The screw must thread in the pilot, pass the clear bore and leave 1.5 mm of post rim.");
 assert(shank_clear_depth > 0 && screw_thread_len >= 2 * screw_d,
     "The screw must thread at least two diameters below a clear bore.");
-assert(screw_post_d > screw_thread_d,
-    str("screw_post_d must exceed screw_thread_d. post_d=", screw_post_d, " thread_d=", screw_thread_d));
 assert(thread_depth <= outer_z_max - outer_z_min - 1,
     str("Screw pilot depth ", thread_depth, " mm does not fit the post."));
 assert(rear_brand_depth > 0 && rear_brand_depth < wall_t,
@@ -181,18 +146,16 @@ module notch_pin(x, y) {
 }
 
 module loadcell_support() {
-    if (loadcell_lift > 0) {
-        support_xy = loadcell_support_corner_size;
-        support_h = loadcell_lift + internal_feature_embed;
-        support_z = inner_z_min - internal_feature_embed + support_h / 2;
-        support_x = pod_half_x - loadcell_support_corner_inset - support_xy / 2;
-        support_y = lc_W / 2 - loadcell_support_corner_inset - support_xy / 2;
+    support_xy = loadcell_support_corner_size;
+    support_h = loadcell_lift + internal_feature_embed;
+    support_z = inner_z_min - internal_feature_embed + support_h / 2;
+    support_x = pod_half_x - loadcell_support_corner_inset - support_xy / 2;
+    support_y = lc_W / 2 - loadcell_support_corner_inset - support_xy / 2;
 
-        for (x_sign = [-1, 1])
-            for (y_sign = [-1, 1])
-                translate([x_sign * support_x, y_sign * support_y, support_z])
-                    cube([support_xy, support_xy, support_h], center = true);
-    }
+    for (x_sign = [-1, 1])
+        for (y_sign = [-1, 1])
+            translate([x_sign * support_x, y_sign * support_y, support_z])
+                cube([support_xy, support_xy, support_h], center = true);
 }
 
 // Floor-anchored pads under the rear battery corners, behind the load cell,
@@ -310,21 +273,13 @@ module loadcell_notch_guides() {
 }
 
 module corner_thread_holes(d, z_top, depth) {
-    if (depth > 0) {
-        hole_h = depth + 0.2;
-        hole_z = z_top - depth / 2 + 0.1;
-        each_corner(hole_z)
-            cylinder(d = d, h = hole_h, center = true);
-    }
+    each_corner(z_top - depth / 2 + 0.1)
+        cylinder(d = d, h = depth + 0.2, center = true);
 }
 
 module corner_screw_posts(d, z0, z1) {
-    post_h = z1 - z0;
-    if (post_h > 0) {
-        post_z = (z0 + z1) / 2;
-        each_corner(post_z)
-            cylinder(d = d, h = post_h, center = true);
-    }
+    each_corner((z0 + z1) / 2)
+        cylinder(d = d, h = z1 - z0, center = true);
 }
 
 module main_carabiner_slot_walls() {

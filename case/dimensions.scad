@@ -35,13 +35,18 @@ loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, heig
 notch_d = 6;
 notch_xA = 20;
 notch_xB = 60;
+notch_pin_clear = 0.2; // pin diameter under the notch diameter
 
 // Shell shared by the main body and lid.
 wall_t = 2.4;
 lid_t = 2.4;
-// The lid may seat anywhere within the 0.25 mm play of the screws in their
-// lid holes, plus 0.2 mm for printed walls off size.
-lid_seat_play = 0.45;
+// Overlap of internal features into the shell, so each part exports fused.
+internal_feature_embed = 0.15;
+// Engraved on the main-body floor and the lid.
+brand_text = "Crimpdeq";
+brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
+brand_size = 9.5;
+brand_depth = 0.8;
 // Symmetric hexagonal plan: flat front and rear walls and a point at each
 // end. 67 degrees from the X axis, against 60 for a regular hexagon, keeps a
 // clear point at each end and makes the case 6.5 mm shorter for under 1% more
@@ -120,6 +125,10 @@ pcb_support_columns = [
     [8.3, 12.3, 7.0, pcb_L / 2 + 1]
 ];
 pcb_column_loadcell_clear = 0.3; // from the columns to the load-cell front edge
+pcb_guide_clear = 0.25; // from the board edges to the left edge guide
+pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
+// From the board's rear edge to the lid stops that take USB-C insertion loads.
+pcb_rear_stop_clear = 0.25;
 // THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
 // and E-, A-, A+, E+ on the front edge (J12, J10, J9, J11).
 pcb_cable_pads = [
@@ -225,3 +234,7 @@ screw_thread_d = 2.4;
 // Bore above the threaded length. It prints about 0.15 mm small too, and
 // must still clear the 2.5 mm thread crests.
 screw_shank_clear_d = 3.0;
+screw_clear_d = 3.0; // lid hole, loose so the lid seats easily on the posts
+// The lid may seat anywhere within the play of the screws in their lid holes,
+// plus 0.2 mm for printed walls off size.
+lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;

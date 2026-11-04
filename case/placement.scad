@@ -64,6 +64,12 @@ pcb_board_top_z = pcb_board_bottom_z + pcb_board_t;
 pcb_bottom_z = pcb_board_bottom_z - usb_h;
 pcb_top_z = pcb_board_top_z + pcb_module_h;
 pcb_rear_y = pcb_y_offset - pcb_L / 2;
+// Parts can also slide by the guide clearance before the lid rear stops engage.
+pcb_part_clear_xy = pcb_guide_clear + pcb_part_clear;
+// The top of the PCB stack sets the main-body top, where the lid rests.
+inner_z_max = pcb_top_z + top_clear;
+lid_z_min = inner_z_max;
+lid_z_max = lid_z_min + lid_t;
 // Floor-anchored PCB columns stand in front of the load cell.
 pcb_column_rear_y = lc_W / 2 + pcb_column_loadcell_clear;
 
@@ -74,8 +80,6 @@ usb_hole_h = usb_h + 2 * usb_hole_clear;
 usb_pocket_floor_y = usb_face_y + usb_overmold_stop_gap;
 
 // Shell bounds shared by the main body and lid.
-inner_x_min = -case_inner_x_half;
-inner_x_max = case_inner_x_half;
 inner_y_min = case_inner_y_min;
 inner_y_max = case_inner_y_max;
 outer_y_min = inner_y_min - wall_t;
@@ -118,6 +122,8 @@ assert(case_inner_y_min <= min(
     "The mirrored rear wall must enclose the load cell, PCB and battery.");
 assert(switch_rear_y - switch_wire_bend >= max(lc_W / 2, battery_front_y),
     "The switch wire bend must stay clear of the load cell and battery.");
+assert(switch_z + switch_h / 2 <= pcb_bottom_z,
+    str("Switch overlaps PCB by ", switch_z + switch_h / 2 - pcb_bottom_z, " mm (Z)."));
 assert(battery_pad_y[1] < -lc_W / 2,
     "Battery pads and their lid hold-downs must stay behind the load cell.");
 assert(pcb_rear_y >= battery_front_y + 0.5,

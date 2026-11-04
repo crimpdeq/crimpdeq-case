@@ -11,14 +11,6 @@ include <placement.scad>
 render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
-loadcell_y_max = lc_W / 2;
-switch_top_z = switch_z + switch_h / 2;
-
-assert(switch_rear_y >= loadcell_y_max,
-    str("Switch overlaps load cell by ", loadcell_y_max - switch_rear_y, " mm (Y)."));
-assert(switch_top_z <= pcb_bottom_z,
-    str("Switch overlaps PCB by ", switch_top_z - pcb_bottom_z, " mm (Z)."));
-
 module loadcell_model() {
     color("silver")
         linear_extrude(height = lc_T, center = true)
@@ -38,7 +30,7 @@ module full_assembly(show_pcb = true) {
         loadcell_model();
 
     // Battery laying flat on top of the load cell.
-    translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T/2])
+    translate([0, battery_y_offset, battery_bottom_z + bat_T / 2])
         battery_model(rounded = true);
 
     if (show_pcb)

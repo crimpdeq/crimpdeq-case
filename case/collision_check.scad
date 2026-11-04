@@ -15,6 +15,8 @@ $fn = render_fn;
 mode = "main_lid";
 
 lid_seat_shifts = [[1, 0], [-1, 0], [0, 1], [0, -1]] * lid_seat_play;
+// Shifts this far inside or past a clearance must miss or hit its stop.
+probe_eps = 0.05;
 
 module asm_loadcell() {
     translate([0, 0, loadcell_center_z])
@@ -90,7 +92,7 @@ module corner_roof_probe(x_sign, y_sign) {
 
 // Core of each M2.5x10 screw, from its seated head to its tip.
 module screw_core_probe() {
-    head_seat_z = pcb_top_z + top_clear + lid_t - screw_head_recess;
+    head_seat_z = lid_z_max - screw_head_recess;
     each_corner(head_seat_z - screw_len)
         cylinder(d = 1.0, h = screw_len);
 }
@@ -98,14 +100,12 @@ module screw_core_probe() {
 // Full-diameter screw in the post, above and within its threaded length.
 // Above it the screw must turn freely; within it, it must form a thread.
 module screw_shank_probe() {
-    post_top_z = pcb_top_z + top_clear;
-    each_corner(post_top_z - screw_tip_depth + screw_thread_len + 0.05)
+    each_corner(inner_z_max - screw_tip_depth + screw_thread_len + 0.05)
         cylinder(d = screw_d, h = screw_tip_depth - screw_thread_len);
 }
 
 module screw_thread_probe() {
-    post_top_z = pcb_top_z + top_clear;
-    each_corner(post_top_z - screw_tip_depth)
+    each_corner(inner_z_max - screw_tip_depth)
         cylinder(d = screw_d, h = screw_thread_len - 0.05);
 }
 
@@ -119,7 +119,7 @@ module switch_grip_probe() {
 }
 
 module asm_battery() {
-    translate([0, battery_y_offset, loadcell_top_z + loadcell_to_battery_gap + bat_T / 2])
+    translate([0, battery_y_offset, battery_bottom_z + bat_T / 2])
         battery_model(rounded = true);
 }
 
@@ -296,9 +296,9 @@ if (mode == "main_lid") {
 } else if (mode == "main_eye_access_x_pos") {
     intersection() { main_part(); carabiner_eye_probe(1); }
 } else if (mode == "main_notch_retention_y_neg") {
-    intersection() { notch_pins(); translate([0, -0.15, 0]) asm_loadcell(); }
+    intersection() { notch_pins(); translate([0, -notch_pin_clear / 2 - probe_eps, 0]) asm_loadcell(); }
 } else if (mode == "main_notch_retention_y_pos") {
-    intersection() { notch_pins(); translate([0, 0.15, 0]) asm_loadcell(); }
+    intersection() { notch_pins(); translate([0, notch_pin_clear / 2 + probe_eps, 0]) asm_loadcell(); }
 } else if (mode == "main_loadcell_eps_z_plus") {
     intersection() { main_part(); translate([0, 0, 0.05]) asm_loadcell(); }
 } else if (mode == "main_battery") {
@@ -312,13 +312,14 @@ if (mode == "main_lid") {
 } else if (mode == "main_pcb_drop_in") {
     intersection() { main_part(); pcb_board_drop_in_probe(); }
 } else if (mode == "main_pcb_eps_x_neg") {
-    intersection() { main_part(); translate([-0.2, 0, 0.05]) asm_pcb(); }
+    intersection() { main_part(); translate([-pcb_guide_clear + probe_eps, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_eps_x_pos") {
-    intersection() { main_part(); translate([0.2, 0, 0.05]) asm_pcb(); }
+    intersection() { main_part(); translate([pcb_guide_clear - probe_eps, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_guide_x_neg") {
-    intersection() { main_part(); translate([-0.3, 0, 0.05]) asm_pcb(); }
+    intersection() { main_part(); translate([-pcb_guide_clear - probe_eps, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_usb_side_stop") {
-    intersection() { main_part(); translate([0.5, 0, 0.05]) asm_pcb(); }
+    // The right column stops the USB-C shell.
+    intersection() { main_part(); translate([pcb_part_clear_xy + probe_eps, 0, 0.05]) asm_pcb(); }
 } else if (mode == "main_pcb_eps_yz_plus") {
     intersection() { main_part(); translate([0, 0.05, 0.05]) asm_pcb(); }
 } else if (mode == "main_cable_pad_wires") {
@@ -393,7 +394,7 @@ if (mode == "main_lid") {
             translate([d[0], d[1], 0]) battery_hold_downs();
             for (s = [-1, 1])
                 box(s * (battery_pad_x + [-0.01, 0.01]), battery_pad_y + [-0.01, 0.01],
-                    [battery_bottom_z, pcb_top_z + top_clear + lid_t]);
+                    [battery_bottom_z, lid_z_max]);
         }
 } else if (mode == "lid_battery_hold_down_preload") {
     intersection() { battery_hold_downs(); translate([0, 0, -battery_hold_down_preload - 0.05]) asm_battery(); }
@@ -413,9 +414,9 @@ if (mode == "main_lid") {
 } else if (mode == "lid_pcb_outside_clamps") {
     lid_pcb_outside_clamps(0);
 } else if (mode == "lid_pcb_rear_travel") {
-    lid_pcb_outside_clamps(-0.24);
+    lid_pcb_outside_clamps(-pcb_rear_stop_clear + 0.01);
 } else if (mode == "lid_pcb_rear_stop") {
-    intersection() { pcb_rear_stops(); translate([0, -0.3, 0]) asm_pcb(); }
+    intersection() { pcb_rear_stops(); translate([0, -pcb_rear_stop_clear - probe_eps, 0]) asm_pcb(); }
 } else if (mode == "lid_switch_wires") {
     intersection() { lid_part(); switch_wire_probe(); }
 } else if (mode == "lid_battery_wires") {
