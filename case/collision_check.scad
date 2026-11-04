@@ -17,6 +17,8 @@ mode = "main_lid";
 lid_seat_shifts = [[1, 0], [-1, 0], [0, 1], [0, -1]] * lid_seat_play;
 // Shifts this far inside or past a clearance must miss or hit its stop.
 probe_eps = 0.05;
+// Lid material left between the title and each LED view hole.
+brand_led_web = 1.0;
 
 module asm_loadcell() {
     translate([0, 0, loadcell_center_z])
@@ -439,6 +441,8 @@ if (mode == "main_lid") {
         lid_part();
         led_sightline_probe(rgb_led_x, rgb_led_y, max(rgb_led_w, rgb_led_l), rgb_led_h);
     }
+} else if (mode == "lid_brand_led_holes") {
+    intersection() { brand_engrave_lid(); led_view_holes(grow = brand_led_web); }
 } else if (mode == "loadcell_battery") {
     intersection() { asm_loadcell(); asm_battery(); }
 } else if (mode == "loadcell_pcb") {

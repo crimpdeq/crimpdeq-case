@@ -153,22 +153,23 @@ module lid_screw_head_fit_probe() {
         cylinder(d = screw_fit_head_d, h = screw_fit_head_h, center = true);
 }
 
-module led_view_hole(x, y, d) {
+// grow widens each hole by that much on every side.
+module led_view_hole(x, y, d, grow) {
     translate([x, y, lid_z_min - 0.1])
-        cylinder(d = d, h = lid_t + 0.3, center = false);
+        cylinder(d = d + 2 * grow, h = lid_t + 0.3, center = false);
 
     translate([x, y, lid_z_max - led_view_chamfer_depth])
         cylinder(
-            d1 = d,
-            d2 = d + 2 * led_view_chamfer_delta,
+            d1 = d + 2 * grow,
+            d2 = d + 2 * (led_view_chamfer_delta + grow),
             h = led_view_chamfer_depth + 0.2,
             center = false
         );
 }
 
-module led_view_holes() {
-    led_view_hole(status_led_view_x, status_led_view_y, status_led_view_d);
-    led_view_hole(rgb_led_view_x, rgb_led_view_y, rgb_led_view_d);
+module led_view_holes(grow = 0) {
+    led_view_hole(status_led_view_x, status_led_view_y, status_led_view_d, grow);
+    led_view_hole(rgb_led_view_x, rgb_led_view_y, rgb_led_view_d, grow);
 }
 
 module lid_carabiner_slot_walls() {

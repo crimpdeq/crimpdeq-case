@@ -12,7 +12,7 @@
 - Keep both load-cell eyes accessible through isolated vertical U-slots that open through each case end, with `eye_slot_clear` around each eye; the inboard edge stops at the battery bay wall. A 12 mm carabiner shank must fit centered in the 15 mm eye-ring bore and bearing on its outer side.
 - The facets must enclose all four load-cell corners and clear the load cell, while all four edge notches remain retained.
 - The USB-C connector must remain accessible through an aligned wall opening with enough clearance to insert a charging cable.
-- Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes.
+- Both the battery-status LED and RGB LED must remain visible through separate, aligned lid holes clear of the lid title.
 - Keep each `Crimpdeq` title centered on its intended enclosure face.
 - The KCD11 switch must remain accessible through an aligned front-wall opening that grips its bezel over `switch_grip_len`, clear of the USB-C cable pocket.
 - Fasteners are M2.5×10. Keep screw centers aligned between main and lid, clear of the battery, and with pilot holes deeper than the seated screw. Screws form their thread only over `screw_thread_len` near the tip, below a clear bore, so driving them cannot twist the heads off.

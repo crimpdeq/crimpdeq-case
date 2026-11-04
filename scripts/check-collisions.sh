@@ -123,6 +123,7 @@ checks=(
     "lid_screw_head_fit empty"
     "lid_status_led_sightline empty"
     "lid_rgb_led_sightline empty"
+    "lid_brand_led_holes empty"
     "loadcell_battery empty"
     "loadcell_pcb empty"
     "loadcell_switch empty"
