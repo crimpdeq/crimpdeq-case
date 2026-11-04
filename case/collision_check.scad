@@ -17,8 +17,6 @@ mode = "main_lid";
 lid_seat_shifts = [[1, 0], [-1, 0], [0, 1], [0, -1]] * lid_seat_play;
 // Shifts this far inside or past a clearance must miss or hit its stop.
 probe_eps = 0.05;
-// Lid material left between the title and each LED view hole.
-brand_led_web = 1.0;
 
 module asm_loadcell() {
     translate([0, 0, loadcell_center_z])

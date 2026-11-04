@@ -47,6 +47,7 @@ brand_text = "Crimpdeq";
 brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
 brand_size = 9.5;
 brand_depth = 0.8;
+brand_led_web = 1.0; // lid material between the lid title and each LED view hole
 // Symmetric hexagonal plan: flat front and rear walls and a point at each
 // end. 67 degrees from the X axis, against 60 for a regular hexagon, keeps a
 // clear point at each end and makes the case 6.5 mm shorter for under 1% more
