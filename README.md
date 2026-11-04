@@ -133,7 +133,7 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 
 - `.github/workflows/cad_ci.yml`
   - Runs collision checks
-  - Builds `case_main.stl` and `case_lid.stl`
+  - Builds `case_main.stl` and `case_lid.stl` in print layout
   - Uploads STL artifacts for CI runs
 - `.github/workflows/release.yml`
   - Builds the release STL files in print layout and `crimpdeq-case.3mf` when a GitHub Release is created
