@@ -212,27 +212,29 @@ switch_usb_gap = 0.6;
 // load cell and battery.
 switch_wire_bend = 3.5;
 
-// M2.5x10 fasteners shared by main and lid, one at each faceted corner.
+// Countersunk Phillips self-tapping screws, sold as M2.5x10, one at each
+// faceted corner. Their coarse ~0.9 mm pitch thread forms in PLA with far
+// less torque than the M2.5 machine screws that twisted off in the posts.
 // Each center sits this far inside both the front or rear face and the facet
 // face, as in v2.0.0. Screwing into a pilot 3.4 mm from the facet split the
 // facet wall along a layer line.
 screw_edge_inset = 5.25;
-screw_len = 10; // under the head
-screw_d = 2.5; // thread major diameter
-screw_head_d = 5.2; // typical M2.5 button/pan head clearance
-screw_head_recess = 1.8; // recess depth so heads do not protrude
+screw_len = 10.3; // measured overall, head included
+screw_d = 2.4; // measured across the thread crests
+screw_head_d = 4.8; // measured; 90 degree countersunk head
+// Lid countersink diameter at the lid top. The head seats
+// (screw_countersink_d - screw_head_d) / 2 below flush.
+screw_countersink_d = 5.0;
 // The seated screw forms its thread in the post only over this length above
-// its tip, about 2.5 diameters; a clear bore takes the rest. Forming it over
-// all 9.4 mm took more torque than the M2.5 shank carries, and screws twisted
-// off flush with the post.
+// its tip, 2.5 diameters; a clear bore takes the rest, so the post top cannot
+// bulge into the lid.
 screw_thread_len = 6;
-// Pilot the screw forms its thread in. Below about 2.24 mm the plastic it
-// displaces overfills its thread grooves and jams it; a 2.3 mm model printed
-// near 2.15 mm and still twisted heads off. Printed holes come out about
-// 0.15 mm small, so this prints near that balance, about 50% thread depth.
-screw_thread_d = 2.4;
+// Pilot the screw forms its thread in. Printed holes come out about 0.15 mm
+// small, so this prints near 1.95 mm, about 0.8 of the thread diameter, the
+// usual pilot for thread-forming screws in plastic.
+screw_thread_d = 2.1;
 // Bore above the threaded length. It prints about 0.15 mm small too, and
-// must still clear the 2.5 mm thread crests.
+// must still clear the thread crests.
 screw_shank_clear_d = 3.0;
 screw_clear_d = 3.0; // lid hole, loose so the lid seats easily on the posts
 // The lid may seat anywhere within the play of the screws in their lid holes,

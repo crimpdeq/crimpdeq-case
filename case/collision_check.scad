@@ -92,10 +92,9 @@ module corner_roof_probe(x_sign, y_sign) {
         cube([1, 1, 30], center = true);
 }
 
-// Core of each M2.5x10 screw, from its seated head to its tip.
+// Core of each screw, from its seated head to its tip.
 module screw_core_probe() {
-    head_seat_z = lid_z_max - screw_head_recess;
-    each_corner(head_seat_z - screw_len)
+    each_corner(lid_z_max - screw_head_sink - screw_len)
         cylinder(d = 1.0, h = screw_len);
 }
 
@@ -430,7 +429,11 @@ if (mode == "main_lid") {
 } else if (mode == "lid_screw_shank_fit") {
     intersection() { lid_part(); lid_screw_shank_fit_probe(); }
 } else if (mode == "lid_screw_head_fit") {
-    intersection() { lid_part(); lid_screw_head_fit_probe(); }
+    // Just above its seat, the head clears the countersink...
+    intersection() { lid_part(); lid_screw_head_probe(probe_eps); }
+} else if (mode == "lid_screw_head_seat") {
+    // ...and just below it, the head bears on the countersink cone.
+    intersection() { lid_part(); lid_screw_head_probe(-probe_eps); }
 } else if (mode == "lid_status_led_sightline") {
     intersection() {
         lid_part();

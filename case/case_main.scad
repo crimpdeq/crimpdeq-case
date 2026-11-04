@@ -2,7 +2,7 @@
 // Main enclosure part (base body)
 // - USB-C opening
 // - load-cell saddle with open carabiner U-slots
-// - corner pilot holes for M2.5x10 screws, threaded only near the tip
+// - corner pilot holes for the self-tapping screws, threaded only near the tip
 //
 
 include <placement.scad>

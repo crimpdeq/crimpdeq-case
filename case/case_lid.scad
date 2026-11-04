@@ -17,9 +17,6 @@ loadcell_hold_down_clear = 0.6;
 
 screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly
 screw_hole_lead_in_depth = 1.0;
-screw_fit_shank_d = 2.6; // fit-check envelope for an M2.5 screw shank through the lid
-screw_fit_head_d = 5.0; // fit-check envelope for a typical M2.5 pan/button head
-screw_fit_head_h = 1.6;
 
 // Alignment lip (underside) inside the rear wall, behind the battery leads.
 // Rear-only so the USB-side connector area stays clear.
@@ -58,6 +55,10 @@ print_layout = false; // true: flip lid for support-free printing (outer top fac
 /*** Derived placement ***/
 hold_down_target_z = loadcell_top_z + loadcell_hold_down_clear;
 
+// 90 degree countersink from the lid top down to the clearance hole.
+countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
+screw_head_h = (screw_head_d - screw_d) / 2;
+
 battery_side_wall_x = battery_bay_half_w + battery_side_wall_t / 2;
 // Extend through the lid thickness so the walls fuse into the roof; their
 // lower ends also stop the load cell from lifting.
@@ -73,23 +74,17 @@ battery_hold_down_y = battery_pad_y + [1, -1] * lid_seat_play;
 battery_hold_down_z_min = battery_top_z - battery_hold_down_preload;
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
 
-assert(screw_head_recess < lid_t - 0.5,
-    str("screw_head_recess must leave lid material under the head. recess=", screw_head_recess, " mm."));
+assert(screw_head_d < screw_countersink_d && screw_d < screw_clear_d,
+    "The screw head and shank must clear the countersink and lid hole.");
+assert(countersink_depth + screw_hole_lead_in_depth <= lid_t - 0.3,
+    str("The countersink and lead-in must leave a straight lid hole. countersink=",
+        countersink_depth, " mm."));
 assert(screw_hole_lead_in_d >= screw_clear_d,
     str("screw_hole_lead_in_d must be >= screw_clear_d. lead_in_d=", screw_hole_lead_in_d,
         " clear_d=", screw_clear_d));
 assert(screw_hole_lead_in_depth >= 0 && screw_hole_lead_in_depth <= lid_t,
     str("screw_hole_lead_in_depth must be within [0, lid_t]. depth=", screw_hole_lead_in_depth,
         " lid_t=", lid_t));
-assert(screw_fit_shank_d > 0 && screw_fit_shank_d < screw_clear_d,
-    str("screw_fit_shank_d must be > 0 and < screw_clear_d. fit=", screw_fit_shank_d,
-        " clear=", screw_clear_d));
-assert(screw_fit_head_d > 0 && screw_fit_head_d < screw_head_d,
-    str("screw_fit_head_d must be > 0 and < screw_head_d. fit=", screw_fit_head_d,
-        " recess=", screw_head_d));
-assert(screw_fit_head_h > 0 && screw_fit_head_h < screw_head_recess,
-    str("screw_fit_head_h must be > 0 and < screw_head_recess. fit=", screw_fit_head_h,
-        " recess=", screw_head_recess));
 assert(battery_side_wall_x + battery_side_wall_t / 2 <= carabiner_slot_inner_x + 0.001,
     str("Battery side walls reach into the carabiner slots by ",
         battery_side_wall_x + battery_side_wall_t / 2 - carabiner_slot_inner_x, " mm (X)."));
@@ -133,9 +128,10 @@ module corner_holes(d, z0, z1) {
         cylinder(d = d, h = z1 - z0 + 0.2, center = true);
 }
 
-module corner_head_recesses(d, depth) {
-    each_corner(lid_z_max - depth / 2 + 0.1)
-        cylinder(d = d, h = depth + 0.2, center = true);
+// Runs 0.1 mm past the lid top at the same 45 degree slope.
+module corner_countersinks() {
+    each_corner(lid_z_max - countersink_depth)
+        cylinder(d1 = screw_clear_d, d2 = screw_countersink_d + 0.2, h = countersink_depth + 0.1);
 }
 
 module corner_hole_lead_ins(d0, d1, depth) {
@@ -144,13 +140,13 @@ module corner_hole_lead_ins(d0, d1, depth) {
 }
 
 module lid_screw_shank_fit_probe() {
-    corner_holes(screw_fit_shank_d, lid_z_min - align_lip_h - 0.2, lid_z_max + 0.2);
+    corner_holes(screw_d, lid_z_min - align_lip_h - 0.2, lid_z_max + 0.2);
 }
 
-module lid_screw_head_fit_probe() {
-    head_z = lid_z_max - screw_fit_head_h / 2;
-    each_corner(head_z)
-        cylinder(d = screw_fit_head_d, h = screw_fit_head_h, center = true);
+// Seated countersunk heads, raised by dz.
+module lid_screw_head_probe(dz) {
+    each_corner(lid_z_max - screw_head_sink - screw_head_h + dz)
+        cylinder(d1 = screw_d, d2 = screw_head_d, h = screw_head_h);
 }
 
 // grow widens each hole by that much on every side.
@@ -271,7 +267,7 @@ module lid_part() {
         }
         corner_holes(screw_clear_d, lid_z_min - align_lip_h, lid_z_max);
         corner_hole_lead_ins(screw_hole_lead_in_d, screw_clear_d, screw_hole_lead_in_depth);
-        corner_head_recesses(screw_head_d, screw_head_recess);
+        corner_countersinks();
         led_view_holes();
         lid_carabiner_slot_cuts();
         // Brand engraving on outer top face.

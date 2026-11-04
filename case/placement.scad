@@ -99,8 +99,10 @@ case_corner_x = (facet_k - facet_n[1] * outer_y_max) / facet_n[0];
 // post merges into the front or rear wall and the facet wall.
 screw_y = outer_y_max - screw_edge_inset;
 screw_x = (facet_k - screw_edge_inset - facet_n[1] * screw_y) / facet_n[0];
+// The seated head sinks this far below the lid top in its countersink.
+screw_head_sink = (screw_countersink_d - screw_head_d) / 2;
 // Seated screw tip below the post top, which the lid rests on.
-screw_tip_depth = screw_len - (lid_t - screw_head_recess);
+screw_tip_depth = screw_len + screw_head_sink - lid_t;
 screw_centers = [
     [-screw_x, -screw_y], [screw_x, -screw_y],
     [-screw_x, screw_y], [screw_x, screw_y]

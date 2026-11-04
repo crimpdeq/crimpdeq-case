@@ -121,6 +121,7 @@ checks=(
     "lid_loadcell_wires empty"
     "lid_screw_shank_fit empty"
     "lid_screw_head_fit empty"
+    "lid_screw_head_seat nonempty"
     "lid_status_led_sightline empty"
     "lid_rgb_led_sightline empty"
     "lid_brand_led_holes empty"
