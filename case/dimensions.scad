@@ -223,6 +223,7 @@ screw_edge_inset = 5.25;
 screw_len = 10.3; // measured overall, head included
 screw_d = 2.4; // measured across the thread crests
 screw_head_d = 4.8; // measured; 90 degree countersunk head
+screw_head_h = (screw_head_d - screw_d) / 2; // its 90 degree cone down to the thread
 // Lid countersink diameter at the lid top. The head seats
 // (screw_countersink_d - screw_head_d) / 2 below flush.
 screw_countersink_d = 5.0;
