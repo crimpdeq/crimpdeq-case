@@ -35,8 +35,9 @@ major version; PCB V1 uses case `v0.4.0`.
 ## Components
 
 - [Crimpdeq PCB V3](https://github.com/crimpdeq/crimpdeq-pcb/releases/tag/v3.0.0)
-- [2000mAh battery](https://www.aliexpress.us/item/3256809404408618.html)
+- 800 mAh 102530 LiPo battery (10 × 25 × 30 mm)
 - [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html)
+- 4 × countersunk Phillips self-tapping screws sold as M2.5×10 (2.4 mm thread, 4.8 mm head, 10.3 mm overall)
 - Load cell from this [crane scale](https://www.aliexpress.com/item/1005002719645426.html)
 
 ## Requirements
@@ -104,7 +105,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, battery hold-down preload and alignment over its pads, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell end clearance, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, PCB support columns and edge guides, lid clamp preload, lid rear stops, battery hold-down preload and alignment over its pads, a lid stop that catches the battery sliding forward, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket, and separate lid view holes for the battery-status and RGB LEDs, clear of the lid title.
 
 ```bash
 bash scripts/check-collisions.sh
@@ -133,7 +134,7 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 
 - `.github/workflows/cad_ci.yml`
   - Runs collision checks
-  - Builds `case_main.stl` and `case_lid.stl`
+  - Builds `case_main.stl` and `case_lid.stl` in print layout
   - Uploads STL artifacts for CI runs
 - `.github/workflows/release.yml`
   - Builds the release STL files in print layout and `crimpdeq-case.3mf` when a GitHub Release is created

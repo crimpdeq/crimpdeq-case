@@ -18,9 +18,8 @@ eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
 eye_ring_bore_d = 15; // pressed-in eye ring, not modelled in load_cell.scad
 carabiner_shank_d = 12;
-// Radial clearance from each eye hole to its slot wall. The battery sides line
-// up with the inner edges of the eyes, so the battery bay cuts each slot short
-// on its inboard side.
+// Radial clearance from each eye hole to its slot wall. The battery bay wall
+// cuts each slot short on its inboard side.
 eye_slot_clear = 2.5;
 
 // Silicone-covered strain gauge at the load-cell center, on the face toward
@@ -36,16 +35,24 @@ loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, heig
 notch_d = 6;
 notch_xA = 20;
 notch_xB = 60;
+notch_pin_clear = 0.2; // pin diameter under the notch diameter
 
 // Shell shared by the main body and lid.
 wall_t = 2.4;
 lid_t = 2.4;
-// The lid may seat anywhere within the 0.25 mm play of the screws in their
-// lid holes, plus 0.2 mm for printed walls off size.
-lid_seat_play = 0.45;
+// Overlap of internal features into the shell, so each part exports fused.
+internal_feature_embed = 0.15;
+// Engraved on the main-body floor and the lid.
+brand_text = "Crimpdeq";
+brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
+brand_size = 9.5;
+brand_depth = 0.8;
+brand_led_web = 1.0; // lid material between the lid title and each LED view hole
 // Symmetric hexagonal plan: flat front and rear walls and a point at each
-// end. 60 degrees from the X axis makes every interior angle 120 degrees.
-case_facet_angle = 60;
+// end. 67 degrees from the X axis, against 60 for a regular hexagon, keeps a
+// clear point at each end and makes the case 6.5 mm shorter for under 1% more
+// material: the flat walls grow as the plan shrinks.
+case_facet_angle = 67;
 
 // Electronics bay half-width around the battery guides. Beyond it, nothing in
 // the main body may touch the load cell.
@@ -62,22 +69,33 @@ slot_wall_fit = 0.6;
 // round the end is a labyrinth instead of a slit from the slot into the bay.
 slot_seal_overlap = 1.5;
 
-// Battery
-bat_L = 50;
-bat_W = 34;
+// Battery: 800 mAh 102530 LiPo, 10 x 25 x 30 mm overall, leads leaving one
+// 25 mm end, which faces the rear wall.
+bat_L = 30;
+bat_W = 25;
 bat_T = 10;
-battery_side_clear = 0.5; // to the bay walls beside the eye slots
+// Inner faces of the bay walls beside the eye slots. The battery leads run
+// forward between them and the battery, beside the board.
+battery_bay_half_w = 17.5;
 // Pads under the battery's rear corners, behind the load cell.
 battery_pad_size = 8;
 battery_pad_inset = 1; // from the battery's rear and side edges
+battery_pad_loadcell_clear = 1; // from the pads to the load cell
 // Lid hold-downs above the pads press the battery onto them by one 0.2 mm
 // layer, so it cannot rattle. Re-measure bat_T if the battery changes: a
 // thicker one adds its excess to this preload.
 battery_hold_down_preload = 0.2;
+// Gap from the battery front to the lid stop in front of it. Larger than
+// lid_seat_play, so the lid seats without pushing the battery back.
+battery_front_stop_clear = 0.6;
+battery_front_stop_t = 2.4;
+// From the stop to the ESP32 antenna overhanging the board's rear edge,
+// covering the board and lid play.
+battery_front_stop_antenna_clear = 1.0;
 
 // PCB revision 3 (crimpdeq-pcb pcb/crimpdeq, board center (142.45, 67.40)).
 // The board is installed bottom-side up with its USB-C edge toward the front
-// wall: KiCad F.Cu faces the battery and B.Cu (LEDs and ESP32 module) faces
+// wall: KiCad F.Cu faces the floor and B.Cu (LEDs and ESP32 module) faces
 // the lid. That flip turns about the X axis, and KiCad's Y axis points down,
 // so a KiCad offset (dx, dy) from the board center is case-local (dx, dy).
 // Rectangles below are [x_min, x_max, y_min, y_max] in that frame, taken
@@ -85,11 +103,11 @@ battery_hold_down_preload = 0.2;
 pcb_L = 30;
 pcb_W = 30;
 pcb_board_t = 1.6;
-pcb_bottom_parts_h = 1.8; // tallest F.Cu part over the battery (L1, Bourns SRN4018)
+pcb_bottom_parts_h = 1.8; // tallest F.Cu part (L1, Bourns SRN4018)
 pcb_top_parts_h = 1.5; // B.Cu SOT-23-5/SOD-123 parts, below the module and RGB LED
 pcb_module_h = 2.4; // ESP32-C3-MINI-1
 pcb_module_rect = [-7.25, 5.95, -20.2, -3.6]; // its antenna overhangs the rear edge
-// Bare F.Cu areas in front of the battery that case supports may touch:
+// Bare F.Cu areas that case supports may touch:
 // left of the ADS1220 and the 100R filter resistors, between the USB-C
 // connector and the right-edge cable pads, and behind those pads.
 pcb_support_windows = [
@@ -98,14 +116,20 @@ pcb_support_windows = [
 ];
 // Floor-anchored column under each support window. The board keepout carves
 // their tops, so they touch only the windows. The left column rises past the
-// board as its left-edge guide, and its rear end stops the battery.
+// board as its left-edge guide and stops in front of the load cell.
 // The right one starts at its window and runs into the front wall; it stops
 // the board moving right through the USB-C shell, whose legs are
-// through-hole. Both keep clear of the cable pads.
+// through-hole. Both keep clear of the cable pads, and the switch body
+// stands between them.
 pcb_support_columns = [
     [-16.5, -8.3, -pcb_L / 2, 12.1],
     [8.3, 12.3, 7.0, pcb_L / 2 + 1]
 ];
+pcb_column_loadcell_clear = 0.3; // from the columns to the load-cell front edge
+pcb_guide_clear = 0.25; // from the board edges to the left edge guide
+pcb_part_clear = 0.2; // below F.Cu parts and around the USB-C connector
+// From the board's rear edge to the lid stops that take USB-C insertion loads.
+pcb_rear_stop_clear = 0.25;
 // THT cable pad centers: B-, B+, SW+, SW- on the right edge (J5, J7, J6, J8)
 // and E-, A-, A+, E+ on the front edge (J12, J10, J9, J11).
 pcb_cable_pads = [
@@ -162,7 +186,6 @@ rgb_led_h = 1.6;
 // The battery's rear pads hold it this far above the load cell. Nothing may
 // hang over the load cell, so its front settles onto the gauge cover.
 loadcell_to_battery_gap = gauge_cover_h + 0.5;
-battery_to_pcb_gap = 0.5; // relief so the PCB does not rest directly on the battery
 battery_rear_gap = 0.2; // minimum battery rear-edge gap to the inner rear wall
 
 // Inner cavity clearances
@@ -172,31 +195,52 @@ front_clear = 2.0;
 top_clear = 0.5; // ESP32 module-to-lid gap
 pcb_front_gap = 0.2; // board front edge to the inner front wall; the USB-C connector continues into the wall opening
 
-// Side switch (KCD11 10x15 mm). Measured 15.2 mm from its front to the end of
-// its heat-shrunk solder joints; all of it is taken as behind the outer wall
-// face, the worst case.
+// Front switch (KCD11 10x15 mm), 15 mm along X. Measured 15.2 mm from its
+// front to the end of its heat-shrunk solder joints; all of it is taken as
+// behind the outer wall face, the worst case.
 switch_w = 15;
 switch_h = 10;
 switch_depth = 15.2;
 switch_d = switch_depth - wall_t; // behind the inner wall face
-switch_rot_y = 0;
 switch_clear = 0.4;
 // The bezel is held only by friction in its wall opening. v2.0.0's 3.0 mm
 // wall held it; a collar behind the thinner front wall restores that length.
 switch_grip_len = 3.0;
 switch_collar_t = 1.2;
+// Switch opening to the USB-C cable pocket above it.
+switch_usb_gap = 0.6;
 // Room behind the solder joints for the wires to turn up, in front of the
 // load cell and battery.
 switch_wire_bend = 3.5;
 
-// M2.5x10 fasteners shared by main and lid, one at each faceted corner.
+// Countersunk Phillips self-tapping screws, sold as M2.5x10, one at each
+// faceted corner. Their coarse ~0.9 mm pitch thread forms in PLA with far
+// less torque than the M2.5 machine screws that twisted off in the posts.
 // Each center sits this far inside both the front or rear face and the facet
 // face, as in v2.0.0. Screwing into a pilot 3.4 mm from the facet split the
 // facet wall along a layer line.
 screw_edge_inset = 5.25;
-screw_len = 10; // under the head
-screw_head_d = 5.2; // typical M2.5 button/pan head clearance
-screw_head_recess = 1.8; // recess depth so heads do not protrude
-// 45 degree countersink at each pilot entrance. Plastic the screw displaces
-// collects in it instead of curling up above the post and holding the lid off.
-screw_pilot_chamfer = 0.6;
+screw_len = 10.3; // measured overall, head included
+screw_d = 2.4; // measured across the thread crests
+screw_head_d = 4.8; // measured; 90 degree countersunk head
+screw_head_h = (screw_head_d - screw_d) / 2; // its 90 degree cone down to the thread
+// Lid countersink diameter at the lid top. The head seats
+// (screw_countersink_d - screw_head_d) / 2 below flush.
+screw_countersink_d = 5.0;
+// The seated screw forms its thread in the post only over this length above
+// its tip, 2.5 diameters; a clear bore takes the rest, so the post top cannot
+// bulge into the lid.
+screw_thread_len = 6;
+// Pilot the screw forms its thread in. Printed holes come out about 0.15 mm
+// small, so this prints near 1.95 mm, about 0.8 of the thread diameter, the
+// usual pilot for thread-forming screws in plastic.
+screw_thread_d = 2.1;
+// Bore above the threaded length. It prints about 0.15 mm small too, and
+// must still clear the thread crests.
+screw_shank_clear_d = 3.0;
+screw_clear_d = 3.0; // lid hole, loose so the lid seats easily on the posts
+// 90 degree countersink from the lid top down to the clearance hole.
+countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
+// The lid may seat anywhere within the play of the screws in their lid holes,
+// plus 0.2 mm for printed walls off size.
+lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;
