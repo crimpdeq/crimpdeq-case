@@ -144,6 +144,26 @@ module lid_pcb_outside_clamp(dy) {
     }
 }
 
+// The receptacle rises into the lid pocket. Wherever the lid seats and the
+// board sits within its play, only the clamp may touch it.
+module usb_receptacle_in_pocket() {
+    for (d = lid_seat_shifts,
+         g = [[pcb_guide_clear, 0], [-pcb_guide_clear, 0], [0, -pcb_front_gap], [0, pcb_rear_stop_clear]])
+        intersection() {
+            translate([d[0], d[1], 0])
+                difference() {
+                    lid_part();
+                    minkowski() {
+                        usb_clamp();
+                        cube(0.02, center = true);
+                    }
+                }
+            translate([g[0], pcb_y + g[1], pcb_board_top_z])
+                linear_extrude(height = usb_h)
+                    pcb_rect_2d(usb_rect);
+        }
+}
+
 // Wherever the lid seats and the board sits within its guides, the clamp
 // stays on the flat shell top. A shifted clamp edge may land exactly on the
 // shell's edge, so widen the shell by 0.01 mm.
@@ -417,6 +437,8 @@ if (mode == "main_lid_eps_up") {
     lid_pcb_outside_clamp(pcb_rear_stop_clear - 0.01);
 } else if (mode == "lid_pcb_rear_stop") {
     intersection() { pcb_rear_stops(); translate([0, pcb_rear_stop_clear + 0.05, 0]) asm_pcb(); }
+} else if (mode == "lid_usb_receptacle_pocket") {
+    usb_receptacle_in_pocket();
 } else if (mode == "lid_usb_clamp_off_shell") {
     usb_clamp_off_shell();
 } else if (mode == "lid_usb_cable") {

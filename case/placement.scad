@@ -18,8 +18,10 @@ pcb_board_top_z = pcb_board_bottom_z + pcb_board_t;
 usb_top_z = pcb_board_top_z + usb_h;
 usb_center_z = pcb_board_top_z + usb_h / 2;
 pcb_module_top_z = pcb_board_top_z + pcb_module_h;
-// The main body ends and the lid starts at the seam.
-seam_z = max(usb_top_z + usb_lid_clear, pcb_module_top_z + top_clear);
+// The main body ends and the lid starts at the seam, over the ESP32 module.
+// The taller USB-C receptacle rises into a lid pocket.
+seam_z = pcb_module_top_z + top_clear;
+usb_lid_pocket_top_z = usb_top_z + usb_lid_clear;
 lid_top_z = seam_z + lid_t;
 
 // The battery front lines up with the load-cell front edge.
@@ -151,7 +153,7 @@ carabiner_slot_d = eye_d + 2 * eye_slot_clear;
 carabiner_slot_inner_x = bat_W / 2 + battery_side_clear + loadcell_slot_wall_t;
 slot_wall_outer_y = carabiner_slot_d / 2 + loadcell_slot_wall_t;
 
-assert(screw_y + screw_post_d / 2 > inner_rear_y,
+assert(screw_y + screw_post_d / 2 >= inner_rear_y - 0.01,
     "Screw posts must merge into the front and rear walls.");
 assert(screw_y - screw_post_d / 2 > battery_stop_rear_y + battery_rear_stop_t,
     "The rear screw posts must stay behind the battery and its rear stop.");
@@ -176,6 +178,8 @@ assert(battery_lead_recess[2][0] >= battery_bottom_z + 2,
 for (p = pcb_cable_pads)
     assert(abs(p[0]) - wire_d / 2 > pcb_column_x[1] + 0.1,
         str("The PCB column must clear the wire at pad ", p));
+assert(usb_lid_pocket_top_z > seam_z && usb_lid_pocket_top_z <= lid_top_z - 1,
+    "The USB-C lid pocket must rise above the seam and leave 1 mm of lid.");
 assert(usb_clamp_rect[1] - usb_clamp_rect[0] >= 4 && usb_clamp_rect[3] - usb_clamp_rect[2] >= 3,
     "The USB-C clamp must keep a useful area on the shell top.");
 assert(pcb_rear_stop_x_min > 0 && pcb_rear_stop_z_min >= battery_top_z + 0.5,

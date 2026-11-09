@@ -124,6 +124,7 @@ checks=(
     "lid_pcb_outside_clamp empty"
     "lid_pcb_rear_travel empty"
     "lid_pcb_rear_stop nonempty"
+    "lid_usb_receptacle_pocket empty"
     "lid_usb_clamp_off_shell empty"
     "lid_usb_cable empty"
     "lid_usb_cable_shifted empty"

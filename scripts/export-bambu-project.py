@@ -35,11 +35,11 @@ PLATE_NAME = "Main body and lid"
 
 PROCESS_OVERRIDES = {
     "layer_height": "0.2",
-    # Six loops fill the 2.4 mm shell with perimeters.
-    "wall_loops": "6",
-    # Six top and six bottom layers make the 2.4 mm floor and lid solid.
-    "top_shell_layers": "6",
-    "bottom_shell_layers": "6",
+    # Five loops fill the 2.0 mm shell with perimeters.
+    "wall_loops": "5",
+    # Five top and five bottom layers make the 2.0 mm floor and lid solid.
+    "top_shell_layers": "5",
+    "bottom_shell_layers": "5",
     "sparse_infill_density": "20%",
     # Neither part needs support: every main-body feature stands on the floor
     # and every lid feature grows up from its outer face.

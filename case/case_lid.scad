@@ -2,7 +2,8 @@
 // Lid enclosure part
 // - screw holes aligned with case_main.scad
 // - carabiner slot walls that close the electronics bay above the load cell
-// - USB-C shell clamp, PCB rear stops, battery hold-downs and rear stop
+// - USB-C receptacle pocket and shell clamp, PCB rear stops, battery hold-downs
+//   and rear stop
 // - countersunk screw holes
 //
 
@@ -14,7 +15,7 @@ $fn = render_fn;
 
 /*** Enclosure parameters ***/
 screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly
-screw_hole_lead_in_depth = 1.0;
+screw_hole_lead_in_depth = 0.6;
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
@@ -82,9 +83,19 @@ module lid_carabiner_slot_cuts() {
                 carabiner_slot_2d(x_sign);
 }
 
+// The receptacle rises above the seam into this pocket, which clears it
+// wherever the lid seats and the board sits within its guides.
+module usb_lid_pocket() {
+    translate([0, pcb_y, seam_z - 0.1])
+        linear_extrude(height = usb_lid_pocket_top_z - seam_z + 0.1)
+            offset(delta = lid_seat_play + pcb_guide_clear + usb_lid_clear)
+                pcb_rect_2d(usb_rect);
+}
+
+// Hangs from the pocket roof onto the shell top.
 module usb_clamp() {
     translate([0, pcb_y, usb_top_z - usb_clamp_preload])
-        linear_extrude(height = seam_z + internal_feature_embed - (usb_top_z - usb_clamp_preload))
+        linear_extrude(height = usb_lid_pocket_top_z + internal_feature_embed - (usb_top_z - usb_clamp_preload))
             pcb_rect_2d(usb_clamp_rect);
 }
 
@@ -129,7 +140,6 @@ module lid_part() {
                 linear_extrude(height = lid_t)
                     case_outline_2d();
             lid_carabiner_slot_walls();
-            usb_clamp();
             pcb_rear_stops();
             battery_hold_downs();
             battery_rear_stop();
@@ -138,8 +148,10 @@ module lid_part() {
         led_view_holes();
         lid_carabiner_slot_cuts();
         usb_pocket_cut(lid_seat_play);
+        usb_lid_pocket();
         brand_engrave_lid();
     }
+    usb_clamp();
 }
 
 module lid_part_print_layout() {

@@ -46,7 +46,7 @@ major version; PCB V1 uses case `v0.4.0`.
 
 ## Design
 
-The case is 90 × 65.4 × 29 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
+The case is 89.2 × 64.6 × 27.6 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
 45° chamfers, symmetric about both axes. Everything stacks over the load cell:
 
 - The load cell goes in with its strain-gauge cover facing the floor and its wires toward the
@@ -67,8 +67,9 @@ wall. The slot exits 19.5 mm from the eye center (V3: 23 mm). The end walls carr
 each lid slot-wall end, so the gap round it is a labyrinth.
 
 The board rests on two fingers on a floor column, on the bare strips between each wire-pad
-column and the USB-C shell legs. A lid pad presses the flat top of the USB-C shell, right above
-them, by a one-layer (0.1 mm) preload. The front screw posts guide the board's long edges, and
+column and the USB-C shell legs. The receptacle rises above the seam into a lid pocket, where
+a pad presses the flat top of the USB-C shell, right above them, by a one-layer (0.1 mm)
+preload. The front screw posts guide the board's long edges, and
 chamfered lid tabs behind its rear edge take USB-C insertion loads. The receptacle sits in a
 front-wall opening that runs out through the top of the main body, so the board drops straight
 in. A 13.65 × 7.8 mm overmold pocket lets a cable's molded overmold (up to the 12.85 × 7.0 mm
@@ -154,15 +155,15 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 | Setting | Value |
 |---|---|
 | Layer height | 0.2 mm |
-| Walls | 6 (solid 2.4 mm shell) |
-| Top/bottom layers | 6 (solid floor and lid) |
+| Walls | 5 (solid 2.0 mm shell) |
+| Top/bottom layers | 5 (solid floor and lid) |
 | Infill | 20% |
 | Supports | None |
 | Brim | None |
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, the receptacle's lid pocket wherever the lid seats, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
 
 ```bash
 bash scripts/check-collisions.sh

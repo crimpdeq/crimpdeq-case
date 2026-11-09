@@ -46,10 +46,11 @@ notch_xA = 20;
 notch_xB = 60;
 notch_pin_clear = 0.1; // radial, floor pins in the notches
 
-// Shell shared by the main body and lid.
-wall_t = 2.4;
-floor_t = 2.4;
-lid_t = 2.4;
+// Shell shared by the main body and lid: five 0.4 mm perimeters in the walls,
+// ten 0.2 mm layers in the floor and lid.
+wall_t = 2.0;
+floor_t = 2.0;
+lid_t = 2.0;
 // Rounds the outer vertical edges.
 case_corner_r = 1;
 
@@ -147,7 +148,8 @@ usb_overmold_stop_gap = 0.3;
 usb_hole_clear = 0.55; // around the connector body
 usb_pocket_clear = 0.4; // around the cable overmold
 usb_pocket_min_web = 0.8; // front wall left behind the pocket
-usb_lid_clear = 0.4; // receptacle top to the lid underside
+// The receptacle rises above the seam into a lid pocket this far clear of it.
+usb_lid_clear = 0.4;
 // The lid clamp presses the board onto the column fingers through the flat
 // shell top, right above them, by one 0.2 mm layer: it ends on a layer
 // boundary and the lid flexes to absorb it.
