@@ -111,6 +111,10 @@ usb_clamp_rect = [
 ];
 pcb_rear_stop_x = [pcb_rear_stop_x_min, pcb_W / 2];
 pcb_rear_stop_z_min = pcb_board_bottom_z - pcb_rear_stop_below;
+// Gap from the board's rear edge to the rear stops. A lid seated fully
+// forward closes it by lid_seat_play, and the board can then give only
+// pcb_front_gap before it meets the front wall.
+pcb_rear_stop_clear = lid_seat_play - pcb_front_gap + 0.1;
 // How far the board can slide back before the rear stops hold it, wherever
 // the lid seats.
 pcb_rear_travel = pcb_rear_stop_clear + lid_seat_play;

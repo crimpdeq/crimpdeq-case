@@ -184,7 +184,6 @@ top_clear = 0.5; // minimum ESP32 module-to-lid gap
 // assembly forward as the lid closes.
 pcb_rear_stop_x_min = 3.5; // |x| from the board center; they run to its edges
 pcb_rear_stop_t = 2.4;
-pcb_rear_stop_clear = 0.25;
 pcb_rear_stop_below = 1.0; // reach below the board underside
 pcb_rear_stop_chamfer = 0.8;
 

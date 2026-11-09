@@ -122,6 +122,7 @@ checks=(
     "lid_battery_lift nonempty"
     "lid_pcb_clamped nonempty"
     "lid_pcb_outside_clamp empty"
+    "lid_pcb_seat_shifted empty"
     "lid_pcb_rear_travel empty"
     "lid_pcb_rear_stop nonempty"
     "lid_usb_receptacle_pocket empty"

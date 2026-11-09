@@ -164,6 +164,23 @@ module usb_receptacle_in_pocket() {
         }
 }
 
+// Wherever the lid seats, the lid touches the board only through the clamp,
+// with the board as far forward as the front wall lets it go.
+module lid_pcb_seat_shifted() {
+    for (d = lid_seat_shifts)
+        intersection() {
+            translate([d[0], d[1], 0])
+                difference() {
+                    lid_part();
+                    minkowski() {
+                        usb_clamp();
+                        cube(0.02, center = true);
+                    }
+                }
+            translate([0, d[1] < 0 ? 0.05 - pcb_front_gap : 0, 0]) asm_pcb();
+        }
+}
+
 // Wherever the lid seats and the board sits within its guides, the clamp
 // stays on the flat shell top. A shifted clamp edge may land exactly on the
 // shell's edge, so widen the shell by 0.01 mm.
@@ -432,6 +449,8 @@ if (mode == "main_lid_eps_up") {
     intersection() { lid_part(); asm_pcb(); }
 } else if (mode == "lid_pcb_outside_clamp") {
     lid_pcb_outside_clamp(0);
+} else if (mode == "lid_pcb_seat_shifted") {
+    lid_pcb_seat_shifted();
 } else if (mode == "lid_pcb_rear_travel") {
     // Just inside the rear stop clearance.
     lid_pcb_outside_clamp(pcb_rear_stop_clear - 0.01);
