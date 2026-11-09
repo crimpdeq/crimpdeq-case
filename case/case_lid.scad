@@ -2,7 +2,8 @@
 // Lid enclosure part
 // - screw holes aligned with case_main.scad
 // - carabiner slot walls that close the electronics bay above the load cell
-// - USB-C shell clamp, PCB rear stops and battery hold-downs
+// - USB-C shell clamp, PCB rear stops, battery hold-downs and rear stop
+// - countersunk screw holes
 //
 
 include <placement.scad>
@@ -12,12 +13,8 @@ render_fn = is_undef(render_fn) ? 96 : render_fn;
 $fn = render_fn;
 
 /*** Enclosure parameters ***/
-screw_clear_d = 3.0; // slightly looser clearance so the lid seats more easily on the posts
 screw_hole_lead_in_d = 3.8; // underside funnel for easier post entry during assembly
 screw_hole_lead_in_depth = 1.0;
-screw_fit_shank_d = 2.6; // fit-check envelope for an M2.5 screw shank through the lid
-screw_fit_head_d = 5.0; // fit-check envelope for a typical M2.5 pan/button head
-screw_fit_head_h = 1.6;
 
 internal_feature_embed = 0.15; // overlap underside features into the roof for a fused STL
 
@@ -26,28 +23,31 @@ print_layout = false; // true: flip lid for support-free printing (outer top fac
 /*** Derived placement ***/
 assert(led_window_t > 0 && led_window_t < lid_t - 1,
     "The LED windows must close the holes and leave them deep.");
-assert(screw_head_recess < lid_t - 0.5,
-    str("screw_head_recess must leave lid material under the head. recess=", screw_head_recess, " mm."));
-assert(screw_fit_shank_d < screw_clear_d && screw_fit_head_d < screw_head_d && screw_fit_head_h < screw_head_recess,
-    "Screw fit envelopes must fit their holes.");
+assert(screw_head_d < screw_countersink_d && screw_d < screw_clear_d,
+    "The screw head and shank must clear the countersink and lid hole.");
+assert(countersink_depth + screw_hole_lead_in_depth <= lid_t - 0.3,
+    str("The countersink and lead-in must leave a straight lid hole. countersink=",
+        countersink_depth, " mm."));
 
+// The countersink runs 0.1 mm past the lid top at the same 45 degree slope.
 module screw_holes() {
     each_screw(seam_z - 0.1)
         cylinder(d = screw_clear_d, h = lid_t + 0.2);
     each_screw(seam_z - 0.1)
         cylinder(d1 = screw_hole_lead_in_d, d2 = screw_clear_d, h = screw_hole_lead_in_depth + 0.1);
-    each_screw(lid_top_z - screw_head_recess)
-        cylinder(d = screw_head_d, h = screw_head_recess + 0.1);
+    each_screw(lid_top_z - countersink_depth)
+        cylinder(d1 = screw_clear_d, d2 = screw_countersink_d + 0.2, h = countersink_depth + 0.1);
 }
 
 module lid_screw_shank_fit_probe() {
     each_screw(seam_z - 0.2)
-        cylinder(d = screw_fit_shank_d, h = lid_t + 0.4);
+        cylinder(d = screw_d, h = lid_t + 0.4);
 }
 
-module lid_screw_head_fit_probe() {
-    each_screw(lid_top_z - screw_fit_head_h)
-        cylinder(d = screw_fit_head_d, h = screw_fit_head_h);
+// Seated countersunk heads, raised by dz.
+module lid_screw_head_probe(dz) {
+    each_screw(lid_top_z - screw_head_sink - screw_head_h + dz)
+        cylinder(d1 = screw_d, d2 = screw_head_d, h = screw_head_h);
 }
 
 // Blind from the underside, leaving the window at the outer face.
@@ -108,6 +108,12 @@ module battery_hold_downs() {
             [battery_top_z + battery_hold_down_clear, seam_z + internal_feature_embed]);
 }
 
+// The battery ends over the load cell, so this wall stops just above it.
+module battery_rear_stop() {
+    box(span(0, bat_W / 2 - battery_rear_stop_inset), [battery_stop_rear_y, battery_stop_rear_y + battery_rear_stop_t],
+        [lid_hold_down_z, seam_z + internal_feature_embed]);
+}
+
 module brand_engrave_lid() {
     translate([0, brand_y, lid_top_z - brand_depth])
         linear_extrude(height = brand_depth + 0.1)
@@ -126,6 +132,7 @@ module lid_part() {
             usb_clamp();
             pcb_rear_stops();
             battery_hold_downs();
+            battery_rear_stop();
         }
         screw_holes();
         led_view_holes();

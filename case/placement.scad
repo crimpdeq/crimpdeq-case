@@ -46,9 +46,22 @@ inner_rear_y = -inner_front_y;
 outer_rear_y = -outer_front_y;
 notch_x = lc_L / 2 - notch_xA;
 
-// Front-wall switch over the load cell's front-right corner, beside the
-// battery leads' bend. The model spans its measured depth from the outer face.
-switch_x = bat_W / 2 + battery_lead_bend + switch_clear + switch_w / 2;
+// The screws sit screw_edge_inset inside the front and rear faces, beside the
+// board; the front posts guide its long edges.
+screw_x = pcb_W / 2 + pcb_guide_clear + screw_post_d / 2;
+screw_y = outer_rear_y - screw_edge_inset;
+screw_centers = [[-screw_x, -screw_y], [screw_x, -screw_y], [-screw_x, screw_y], [screw_x, screw_y]];
+// The seated head sinks this far below the lid top in its countersink.
+screw_head_sink = (screw_countersink_d - screw_head_d) / 2;
+// Seated screw tip below the post top, which the lid rests on.
+screw_tip_depth = screw_len + screw_head_sink - lid_t;
+// Clear bore from the post top down to the threaded length.
+shank_clear_depth = screw_tip_depth - screw_thread_len;
+
+// Front-wall switch over the load cell's front-right corner, its collar
+// against the right front screw post. The model spans its measured depth from
+// the outer face.
+switch_x = screw_x + screw_post_d / 2 + switch_collar_t + switch_w / 2;
 switch_z = loadcell_top_z + switch_loadcell_clear + switch_h / 2;
 switch_rear_y = outer_front_y + switch_depth;
 switch_grip_y = outer_front_y + switch_grip_len; // inner end of the opening
@@ -63,25 +76,29 @@ chamfer_k = max(
 );
 inner_chamfer_k = chamfer_k - chamfer_wall_k;
 
-// The screws sit screw_edge_inset inside the front and rear faces, beside the
-// board; the front posts guide its long edges.
-screw_x = pcb_W / 2 + pcb_guide_clear + screw_post_d / 2;
-screw_y = outer_rear_y - screw_edge_inset;
-screw_centers = [[-screw_x, -screw_y], [screw_x, -screw_y], [-screw_x, screw_y], [screw_x, screw_y]];
-
 // Load-cell pads under the battery's side edges.
-loadcell_pad_x = bat_W / 2 - loadcell_pad_size / 2;
-loadcell_pad_y = lc_W / 2 - loadcell_pad_edge_inset - loadcell_pad_size / 2;
+loadcell_pad_x = bat_W / 2 - loadcell_pad_size[0] / 2;
+loadcell_pad_y = lc_W / 2 - loadcell_pad_edge_inset - loadcell_pad_size[1] / 2;
 // Every lid feature over the load cell stops at this height.
 lid_hold_down_z = loadcell_top_z + loadcell_hold_down_clear;
 
 // The PCB column runs from the front wall to battery_stop_front_y, which
 // stops the battery; it spans both support windows and stays below the
-// bottom parts.
+// bottom parts. A lid wall at battery_stop_rear_y stops the battery's rear.
 battery_stop_front_y = battery_front_y - battery_stop_clear;
-battery_stop_rear_y = battery_rear_y + battery_stop_clear;
+battery_stop_rear_y = battery_rear_y + battery_rear_stop_clear;
 pcb_column_x = [pcb_support_windows[0][0], pcb_support_windows[1][1]];
 pcb_column_top_z = pcb_board_bottom_z - pcb_bottom_parts_h - pcb_part_clear;
+// The two battery leads leave the middle of its front end stacked at
+// mid-height and turn right along it to the lane beside the column, through a
+// recess in the column's rear end that runs out through its top. Below the
+// recess the column still stops the battery.
+battery_lead_z = battery_bottom_z + bat_T / 2;
+battery_lead_recess = [
+    [-wire_d / 2 - battery_lead_clear, pcb_column_x[1] + 0.1],
+    [battery_front_y - wire_d - battery_lead_clear, battery_stop_front_y + 0.1],
+    [battery_lead_z - wire_d - battery_lead_clear, pcb_column_top_z + 0.1]
+];
 
 // The lid clamp stays on the shell top wherever the lid seats and the board
 // sits within its play, and behind the front wall.
@@ -136,24 +153,26 @@ slot_wall_outer_y = carabiner_slot_d / 2 + loadcell_slot_wall_t;
 
 assert(screw_y + screw_post_d / 2 > inner_rear_y,
     "Screw posts must merge into the front and rear walls.");
-assert(screw_y - screw_post_d / 2 > battery_rear_y + battery_stop_clear,
-    "The rear screw posts must stay behind the battery.");
-assert(inner_rear_y > battery_rear_y + battery_stop_clear,
-    "The rear wall must clear the battery.");
+assert(screw_y - screw_post_d / 2 > battery_stop_rear_y + battery_rear_stop_t,
+    "The rear screw posts must stay behind the battery and its rear stop.");
+assert(switch_x - switch_w / 2 - switch_clear > bat_W / 2,
+    "The switch must stand beside the battery.");
 assert(switch_rear_y + switch_wire_bend < -carabiner_slot_d / 2 - loadcell_slot_wall_t,
     "The switch and its wire bend must stay in front of the carabiner slot walls.");
 assert(chamfer_k - outer_rear_y > 0,
     "The chamfers must leave flat front and rear walls.");
 assert(chamfer_k - outer_end_x > slot_wall_outer_y + slot_wall_fit,
     "The chamfers must leave end walls round the carabiner slot exits and grooves.");
-assert(loadcell_pad_x - loadcell_pad_size / 2 > gauge_cover_w / 2 + loadcell_wire_bundle[0],
+assert(loadcell_pad_x - loadcell_pad_size[0] / 2 > gauge_cover_w / 2 + loadcell_wire_bundle[0],
     "Load-cell pads must clear the gauge cover and its wires.");
-assert(loadcell_pad_y - loadcell_pad_size / 2 > slot_wall_outer_y,
+assert(loadcell_pad_y - loadcell_pad_size[1] / 2 > slot_wall_outer_y,
     "Load-cell pads must clear the carabiner slot walls.");
-assert(battery_stop_rear_y + battery_rear_stop_t < screw_y - screw_post_d / 2,
-    "The battery rear stop must stay in front of the rear screw posts.");
+assert(battery_rear_stop_clear > lid_seat_play,
+    "The battery rear stop must clear the battery wherever the lid seats.");
 assert(pcb_column_top_z > battery_top_z,
     "The PCB column must cover the battery's front face.");
+assert(battery_lead_recess[2][0] >= battery_bottom_z + 2,
+    "The PCB column must stop the battery below the lead recess.");
 for (p = pcb_cable_pads)
     assert(abs(p[0]) - wire_d / 2 > pcb_column_x[1] + 0.1,
         str("The PCB column must clear the wire at pad ", p));

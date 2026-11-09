@@ -21,9 +21,8 @@ eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
 eye_ring_bore_d = 13.9; // pressed-in eye ring, measured 13.8-13.9 mm; not modelled in load_cell.scad
 carabiner_shank_d = 12;
-// Radial clearance from each eye hole to its slot wall. The battery sides sit
-// inboard of the eyes, so the battery bay cuts each slot short on its inboard
-// side.
+// Radial clearance from each eye hole to its slot wall. The battery bay wall
+// bounds each slot on its inboard side.
 eye_slot_clear = 2.5;
 
 // Silicone-covered strain gauge at the load-cell center. The plate goes in
@@ -39,7 +38,7 @@ loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, heig
 // Floor pads hold the plate this far above the cover's underside, with room
 // for its wires beside it.
 loadcell_cover_clear = 0.5;
-loadcell_pad_size = 5;
+loadcell_pad_size = [3, 5]; // X, Y
 loadcell_pad_edge_inset = 2; // from the plate's long edges
 
 notch_d = 6;
@@ -51,9 +50,6 @@ notch_pin_clear = 0.1; // radial, floor pins in the notches
 wall_t = 2.4;
 floor_t = 2.4;
 lid_t = 2.4;
-// The lid may seat anywhere within the 0.25 mm play of the screws in their
-// lid holes, plus 0.2 mm for printed walls off size.
-lid_seat_play = 0.45;
 // Rounds the outer vertical edges.
 case_corner_r = 1;
 
@@ -73,18 +69,16 @@ slot_wall_fit = 0.6;
 // bay.
 slot_seal_overlap = 1.5;
 
-// Battery: 603040 LiPo cell with its protection board, 6 x 30 x 42 mm overall
-// (https://es.aliexpress.com/item/1005010306922880.html). It lies flat on
-// the load cell with its protection-board end toward the front wall. Its
-// leads leave one corner of that end sideways; turn the cell over so they
-// leave the right (+X) corner, then bend them forward beside it.
-bat_L = 42;
-bat_W = 30;
-bat_T = 6;
+// Battery: 800 mAh 102530 LiPo with its protection board, 10 x 25 x 30 mm
+// overall. It lies flat on the load cell with its protection-board end, which
+// its leads leave from the middle, toward the front wall. If they leave off
+// center, turn the cell over so they leave right of center.
+bat_L = 30;
+bat_W = 25;
+bat_T = 10;
 battery_side_clear = 0.5; // to the bay walls beside the eye slots
-battery_stop_clear = 0.3; // to the front column and the rear wall
-battery_lead_y = 1.5; // lead exit behind the front end, mid protection board
-battery_lead_bend = 2.5; // room beside the right corner for both leads to turn
+battery_stop_clear = 0.3; // to the front column
+battery_lead_clear = 0.3; // round the leads in the front column's recess
 // Lid hold-downs beside the board stop this far above the battery. They limit
 // how far it can lift without pressing it onto the load cell, whose reading
 // would shift under the load.
@@ -92,8 +86,10 @@ battery_hold_down_clear = 0.3;
 // The hold-downs stop this far inside the battery's side and rear edges and
 // behind the switch wire bend.
 battery_hold_down_inset = 0.5;
-// Floor rib behind the battery, in the rear band.
-battery_rear_stop_t = 1.5;
+// Lid wall behind the battery, which ends over the load cell. Its gap is
+// larger than lid_seat_play, so the lid seats without pushing the battery.
+battery_rear_stop_clear = 0.6;
+battery_rear_stop_t = 2.4;
 battery_rear_stop_inset = 3; // from the battery's sides
 
 // PCB: crimpdeq-tscircuit (ADS1220 variant), 17 x 31.5 mm, from its
@@ -206,19 +202,38 @@ switch_collar_t = 1.2;
 switch_wire_bend = 3.5;
 switch_loadcell_clear = 0.5; // switch underside above the load cell
 
-// M2.5x10 fasteners shared by main and lid. Each center sits at least this
-// far inside the outer faces, as in v2.0.0. Screwing into a pilot 3.4 mm from
-// a face split the wall along a layer line.
+// Countersunk Phillips self-tapping screws, sold as M2.5x10, shared by main
+// and lid. Their coarse ~0.9 mm pitch thread forms in PLA with far less
+// torque than the M2.5 machine screws that twisted off in the V3 posts. Each
+// center sits at least this far inside the outer faces, as in v2.0.0.
+// Screwing into a pilot 3.4 mm from a face split the wall along a layer line.
 screw_edge_inset = 5.25;
-screw_len = 10; // under the head
-screw_head_d = 5.2; // typical M2.5 button/pan head clearance
-screw_head_recess = 1.8; // recess depth so heads do not protrude
+screw_len = 10.3; // measured overall, head included
+screw_d = 2.4; // measured across the thread crests
+screw_head_d = 4.8; // measured; 90 degree countersunk head
+screw_head_h = (screw_head_d - screw_d) / 2; // its 90 degree cone down to the thread
+// Lid countersink diameter at the lid top. The head seats
+// (screw_countersink_d - screw_head_d) / 2 below flush.
+screw_countersink_d = 5.0;
 screw_post_d = 6.5;
-screw_thread_d = 2.15; // pilot for M2.5 thread-forming screws in plastic
+// The seated screw forms its thread in the post only over this length above
+// its tip, 2.5 diameters; a clear bore takes the rest, so the post top cannot
+// bulge into the lid.
+screw_thread_len = 6;
+// Pilot the screw forms its thread in. Printed holes come out about 0.15 mm
+// small, so this prints near 1.95 mm, about 0.8 of the thread diameter, the
+// usual pilot for thread-forming screws in plastic.
+screw_thread_d = 2.1;
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
-// 45 degree countersink at each pilot entrance. Plastic the screw displaces
-// collects in it instead of curling up above the post and holding the lid off.
-screw_pilot_chamfer = 0.6;
+// Bore above the threaded length. It prints about 0.15 mm small too, and
+// must still clear the thread crests.
+screw_shank_clear_d = 3.0;
+screw_clear_d = 3.0; // lid hole, loose so the lid seats easily on the posts
+// 90 degree countersink from the lid top down to the clearance hole.
+countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
+// The lid may seat anywhere within the play of the screws in their lid holes,
+// plus 0.2 mm for printed walls off size.
+lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;
 
 // "Crimpdeq" titles on the lid and the bottom. They read along Y, between the
 // carabiner slots, so they are horizontal when the device hangs from its eyes.

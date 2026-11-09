@@ -69,10 +69,22 @@ module slot_seal_probe(x_sign, y_sign) {
         [loadcell_top_z + 1, seam_z - 1]);
 }
 
-// Core of each M2.5x10 screw, from its seated head to its tip.
+// Core of each screw, from its seated head to its tip.
 module screw_core_probe() {
-    each_screw(lid_top_z - screw_head_recess - screw_len)
+    each_screw(lid_top_z - screw_head_sink - screw_len)
         cylinder(d = 1.0, h = screw_len);
+}
+
+// Full-diameter screw in the post, above and within its threaded length.
+// Above it the screw must turn freely; within it, it must form a thread.
+module screw_shank_probe() {
+    each_screw(seam_z - shank_clear_depth + 0.05)
+        cylinder(d = screw_d, h = shank_clear_depth);
+}
+
+module screw_thread_probe() {
+    each_screw(seam_z - screw_tip_depth)
+        cylinder(d = screw_d, h = screw_thread_len - 0.05);
 }
 
 // Strips beside each side of the switch opening at its inner end. Only the
@@ -220,18 +232,15 @@ module loadcell_wire_probe() {
     ], size);
 }
 
-// Battery leads leave the right corner of the front end sideways, turn
-// forward beside it, run left along its front to the lane and forward below
-// the B+ and B- pads.
+// Battery leads leave the middle of the front end, turn right along it
+// through the PCB column's recess to the lane and run forward below the B+
+// and B- pads.
 module battery_wire_probe() {
-    z = battery_bottom_z + bat_T / 2;
-    bend_x = bat_W / 2 + battery_lead_bend / 2;
     run_y = battery_front_y - 0.05 - wire_pair_stacked[1] / 2;
     split = [j4_lane_x, pcb_y + pcb_cable_pads[6][1], pad_run_z];
     wire_path([
-        [bend_x, battery_front_y + battery_lead_y, z],
-        [bend_x, run_y, z],
-        [j4_lane_x, run_y, z],
+        [0, run_y, battery_lead_z],
+        [j4_lane_x, run_y, battery_lead_z],
         [j4_lane_x, run_y, pad_run_z],
         split
     ], wire_pair_stacked);
@@ -314,8 +323,6 @@ if (mode == "main_lid_eps_up") {
     intersection() { main_part(); asm_battery(); }
 } else if (mode == "main_battery_stop_y_neg") {
     intersection() { main_part(); translate([0, -battery_stop_clear - 0.05, 0]) asm_battery(); }
-} else if (mode == "main_battery_stop_y_pos") {
-    intersection() { main_part(); translate([0, battery_stop_clear + 0.05, 0]) asm_battery(); }
 } else if (mode == "main_loadcell_drop_in") {
     intersection() { main_part(); loadcell_drop_in_probe(); }
 } else if (mode == "main_battery_drop_in") {
@@ -350,6 +357,10 @@ if (mode == "main_lid_eps_up") {
     intersection() { main_part(); asm_switch(inset = 0.01); }
 } else if (mode == "main_screw_pilot_fit") {
     intersection() { main_part(); screw_core_probe(); }
+} else if (mode == "main_screw_shank_clear") {
+    intersection() { main_part(); screw_shank_probe(); }
+} else if (mode == "main_screw_thread") {
+    intersection() { main_part(); screw_thread_probe(); }
 } else if (mode == "main_usb_cable") {
     intersection() { main_part(); usb_cable_fit_probe(); }
 } else if (mode == "main_usb_overmold_stop") {
@@ -390,6 +401,11 @@ if (mode == "main_lid_eps_up") {
     intersection() { lid_part(); corner_roof_probe(1, 1); }
 } else if (mode == "lid_battery") {
     intersection() { lid_part(); asm_battery(); }
+} else if (mode == "lid_battery_shifted") {
+    for (d = lid_seat_shifts)
+        intersection() { translate([d[0], d[1], 0]) lid_part(); asm_battery(); }
+} else if (mode == "lid_battery_rear_stop") {
+    intersection() { lid_part(); translate([0, battery_rear_stop_clear + 0.05, 0]) asm_battery(); }
 } else if (mode == "lid_battery_lift") {
     intersection() { lid_part(); translate([0, 0, battery_hold_down_clear + 0.05]) asm_battery(); }
 } else if (mode == "lid_pcb_clamped") {
@@ -419,7 +435,11 @@ if (mode == "main_lid_eps_up") {
 } else if (mode == "lid_screw_shank_fit") {
     intersection() { lid_part(); lid_screw_shank_fit_probe(); }
 } else if (mode == "lid_screw_head_fit") {
-    intersection() { lid_part(); lid_screw_head_fit_probe(); }
+    // Just above its seat, the head clears the countersink...
+    intersection() { lid_part(); lid_screw_head_probe(0.05); }
+} else if (mode == "lid_screw_head_seat") {
+    // ...and just below it, the head bears on the countersink cone.
+    intersection() { lid_part(); lid_screw_head_probe(-0.05); }
 } else if (mode == "lid_status_led_sightline") {
     intersection() {
         lid_part();

@@ -2,6 +2,7 @@
 // Main enclosure part (base body)
 // - load-cell pads and notch pins
 // - floor column carrying the PCB under the USB-C connector
+// - screw pilots for the self-tapping screws, threaded only near the tip
 // - front-wall USB-C opening and switch opening
 // - open carabiner U-slots
 //
@@ -22,16 +23,17 @@ show_lid_preview = true;
 lid_preview_alpha = 0.8; // higher alpha = more opaque
 
 /*** Derived placement ***/
-// The screw passes the lid material under its head recess, then threads in.
-thread_depth = screw_len - (lid_t - screw_head_recess) + screw_thread_tip_clear;
+thread_depth = screw_tip_depth + screw_thread_tip_clear;
 notch_pin_d = notch_d - 2 * notch_pin_clear;
 
 assert(loadcell_top_z < switch_z - switch_h / 2 - switch_clear,
     "The notch pins must stay below the switch.");
 assert(thread_depth <= seam_z - floor_t,
     str("Screw pilot depth ", thread_depth, " mm does not fit the posts."));
-assert(screw_thread_d + 2 * screw_pilot_chamfer <= screw_post_d - 2,
-    "Screw pilot chamfers must leave at least 1 mm of post rim.");
+assert(screw_thread_d < screw_d && screw_d < screw_shank_clear_d && screw_shank_clear_d <= screw_post_d - 3,
+    "The screw must thread in the pilot, pass the clear bore and leave 1.5 mm of post rim.");
+assert(shank_clear_depth > 0 && screw_thread_len >= 2 * screw_d,
+    "The screw must thread at least two diameters below a clear bore.");
 assert(screw_x - screw_post_d / 2 > max([for (p = pcb_cable_pads) abs(p[0])]) + wire_d / 2 + 0.5,
     "The front screw posts must leave a lane beside the wire pads.");
 assert(usb_x + usb_pocket_w / 2 < switch_x - switch_w / 2 - switch_flange - 1,
@@ -39,8 +41,8 @@ assert(usb_x + usb_pocket_w / 2 < switch_x - switch_w / 2 - switch_flange - 1,
 
 module loadcell_pads() {
     for (x_sign = [-1, 1], y_sign = [-1, 1])
-        box(x_sign * span(loadcell_pad_x, loadcell_pad_size / 2),
-            y_sign * span(loadcell_pad_y, loadcell_pad_size / 2),
+        box(x_sign * span(loadcell_pad_x, loadcell_pad_size[0] / 2),
+            y_sign * span(loadcell_pad_y, loadcell_pad_size[1] / 2),
             [floor_top_z - internal_feature_embed, loadcell_bottom_z]);
 }
 
@@ -52,19 +54,17 @@ module notch_pins() {
             cylinder(d = notch_pin_d, h = loadcell_top_z - floor_top_z + internal_feature_embed);
 }
 
-module battery_rear_stop() {
-    box(span(0, bat_W / 2 - battery_rear_stop_inset), [battery_stop_rear_y, battery_stop_rear_y + battery_rear_stop_t],
-        [floor_top_z - internal_feature_embed, battery_top_z - 1]);
-}
-
-// Floor column from the front wall to the battery front, which it stops. It
-// stays below the bottom parts; fingers on top carry the board on its bare
-// support windows, inset by the board's play: pcb_guide_clear sideways and
-// pcb_front_gap toward the rear. The lid clamps the board onto them through
-// the USB-C shell, right above.
+// Floor column from the front wall to the battery front, which it stops, with
+// the battery-lead recess in its rear end. It stays below the bottom parts;
+// fingers on top carry the board on its bare support windows, inset by the
+// board's play: pcb_guide_clear sideways and pcb_front_gap toward the rear.
+// The lid clamps the board onto them through the USB-C shell, right above.
 module pcb_column() {
-    box(pcb_column_x, [inner_front_y - internal_feature_embed, battery_stop_front_y],
-        [floor_top_z - internal_feature_embed, pcb_column_top_z]);
+    difference() {
+        box(pcb_column_x, [inner_front_y - internal_feature_embed, battery_stop_front_y],
+            [floor_top_z - internal_feature_embed, pcb_column_top_z]);
+        box(battery_lead_recess[0], battery_lead_recess[1], battery_lead_recess[2]);
+    }
     translate([0, pcb_y, 0])
         for (w = pcb_support_windows)
             box([w[0] + pcb_guide_clear, w[1] - pcb_guide_clear], [w[2], w[3] - pcb_front_gap],
@@ -88,8 +88,8 @@ module screw_posts() {
 module screw_pilots() {
     each_screw(seam_z - thread_depth)
         cylinder(d = screw_thread_d, h = thread_depth + 0.1);
-    each_screw(seam_z - screw_pilot_chamfer)
-        cylinder(d1 = screw_thread_d, d2 = screw_thread_d + 2 * (screw_pilot_chamfer + 0.1), h = screw_pilot_chamfer + 0.1);
+    each_screw(seam_z - shank_clear_depth)
+        cylinder(d = screw_shank_clear_d, h = shank_clear_depth + 0.1);
 }
 
 // Close the electronics bay below the load cell around each slot.
@@ -159,7 +159,6 @@ module main_part() {
             }
             loadcell_pads();
             notch_pins();
-            battery_rear_stop();
             pcb_column();
             screw_posts();
             main_carabiner_slot_walls();

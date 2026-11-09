@@ -39,29 +39,30 @@ major version; PCB V1 uses case `v0.4.0`.
 ## Components
 
 - [crimpdeq-tscircuit](https://github.com/crimpdeq/crimpdeq-tscircuit) PCB, 17 × 31.5 mm
-- [603040 800 mAh battery](https://es.aliexpress.com/item/1005010306922880.html), 6 × 30 × 42 mm with its protection board
+- 800 mAh 102530 LiPo battery, 10 × 25 × 30 mm with its protection board
 - [KCD11 switch](https://www.aliexpress.us/item/2255800787248498.html), the same 10 × 15 mm part as in V3
 - Load cell from this [crane scale](https://www.aliexpress.com/item/1005002719645426.html)
-- Four M2.5×10 thread-forming screws
+- 4 × countersunk Phillips self-tapping screws sold as M2.5×10 (2.4 mm thread, 4.8 mm head, 10.3 mm overall)
 
 ## Design
 
-The case is 90 × 65.4 × 25 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
+The case is 90 × 65.4 × 29 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
 45° chamfers, symmetric about both axes. Everything stacks over the load cell:
 
 - The load cell goes in with its strain-gauge cover facing the floor and its wires toward the
   front. Four floor pads hold the plate 0.5 mm above the cover, and its wires run under the
   plate. Floor pins in its four edge notches hold it in X and Y.
-- The battery lies flat on the plate's bare top face, protection-board end forward. Turn it
-  over so its leads leave the right corner; they bend forward in a 2.5 mm gap beside it. Lid
-  bars beside the board stop 0.3 mm above the battery: they keep it off the board's bottom parts
-  without pressing it onto the load cell, which would shift the reading.
+- The battery lies flat on the plate's bare top face, protection-board end forward. Its leads
+  leave the middle of that end; if they leave off center, turn it over so they leave right of
+  center. They turn right along its front through a recess in the PCB column. Lid bars beside
+  the board stop 0.3 mm above the battery: they keep it off the board's bottom parts without
+  pressing it onto the load cell, which would shift the reading.
 - The board sits over the battery, top side up and unrotated, so the ESP32 module, the USB-C
   connector and both LEDs face the lid. Its wire-pad end hangs 10.1 mm in front of the battery,
   so every wire reaches its pad from below with room for the solder joint.
 
 Each eye stays reachable through an isolated vertical U-slot that runs out through the case end,
-with 2.5 mm of clearance around the eye; on its inboard side the slot stops at the battery bay
+with 2.5 mm of clearance around the eye; on its inboard side it stays outside the battery bay
 wall. The slot exits 19.5 mm from the eye center (V3: 23 mm). The end walls carry a groove for
 each lid slot-wall end, so the gap round it is a labyrinth.
 
@@ -72,19 +73,22 @@ chamfered lid tabs behind its rear edge take USB-C insertion loads. The receptac
 front-wall opening that runs out through the top of the main body, so the board drops straight
 in. A 13.65 × 7.8 mm overmold pocket lets a cable's molded overmold (up to the 12.85 × 7.0 mm
 maximum in the USB Type-C plug dimensions update) reach within 0.3 mm of the receptacle face; it
-runs out through the lid as a notch, widened by the lid's 0.45 mm seating play so the cable
+runs out through the lid as a notch, widened by the lid's 0.5 mm seating play so the cable
 clears it wherever the lid seats.
 
-The KCD11 sits in the front wall right of the USB-C connector, over the load cell's front-right
-corner and beside the battery leads. A collar behind the wall grips its bezel over 3 mm. Its
+The KCD11 sits in the front wall right of the USB-C connector and the right front screw post,
+over the load cell's front-right corner and beside the battery. A collar behind the wall grips its bezel over 3 mm. Its
 wires turn up behind the solder joints, run over the battery beside the board, forward and down
 to the SW pads. The column sits between the J3 and J4 wire-pad columns, and lanes beside it, inside
 the front posts, carry the load-cell, battery and switch wires to their pads.
 
-The band behind the battery mirrors the board's front band; a floor rib in it stops the
-battery. The four screws flank the board, merged into the front and rear walls; each pilot is
-5.25 mm inside the outer faces, as in V2, and countersunk 0.6 mm. Every lid feature over the
-load cell stops 0.6 mm above it.
+The band behind the battery mirrors the board's front band. The PCB column stops the battery's
+front; it ends over the load cell, so a lid wall 0.6 mm behind it, more than the lid's seating
+play, stops its rear. The four screws flank the board, merged into the front and rear walls, each
+5.25 mm inside the outer faces, as in V2. Their heads seat 0.1 mm below flush in lid
+countersinks, and each screw forms its thread only over the 6 mm near its tip, below a clear
+bore, so driving it cannot twist the head off. Every lid feature over the load cell stops 0.6 mm
+above it.
 
 Both LEDs shine through 0.4 mm windows: their lid holes stop two layers short of the outer
 face, which keeps chalk and dust off the board. Print the lid in a light PLA; black PLA blocks
@@ -158,7 +162,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, screw pilot depth, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, lid rear stops, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
 
 ```bash
 bash scripts/check-collisions.sh
