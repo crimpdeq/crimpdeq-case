@@ -16,7 +16,7 @@ loadcell_lift = 2.0; // support structure height under load cell (from enclosure
 eye_d = 17;
 eye_edge_start = 6;
 eye_center_offset = eye_edge_start + eye_d / 2;
-eye_ring_bore_d = 15; // pressed-in eye ring, not modelled in load_cell.scad
+eye_ring_bore_d = 13.9; // pressed-in eye ring, measured 13.8-13.9 mm; not modelled in load_cell.scad
 carabiner_shank_d = 12;
 // Radial clearance from each eye hole to its slot wall. The battery bay wall
 // cuts each slot short on its inboard side.
