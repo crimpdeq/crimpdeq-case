@@ -247,9 +247,12 @@ lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;
 // carabiner slots, so they are horizontal when the device hangs from its eyes.
 brand_text = "Crimpdeq";
 brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
-brand_l = 44; // along Y
 brand_depth = 0.8;
-brand_margin = 1.5; // to the lid's LED holes and the rear edge
+brand_bottom_margin = 4; // from the front and rear faces
+// The largest centered lid title that keeps brand_led_clear from the LED holes,
+// so the engraving never opens their windows.
+brand_lid_l = 48.6;
+brand_led_clear = 0.6;
 // Rear-wall title, spanning the flat rear wall.
 rear_brand_text = "crimpdeq.com";
 rear_brand_depth = 0.8;

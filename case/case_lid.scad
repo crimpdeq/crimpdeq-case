@@ -138,10 +138,10 @@ module battery_rear_stop() {
 }
 
 module brand_engrave_lid() {
-    translate([0, brand_y, lid_top_z - brand_depth])
+    translate([0, 0, lid_top_z - brand_depth])
         linear_extrude(height = brand_depth + 0.1)
             rotate([0, 0, 90])
-                resize([brand_l, 0], auto = true)
+                resize([brand_lid_l, 0], auto = true)
                     text(brand_text, font = brand_font, halign = "center", valign = "center");
 }
 
