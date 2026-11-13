@@ -96,6 +96,14 @@ module switch_grip_probe() {
             cube([0.1, 0.1, switch_h - 1], center = true);
 }
 
+// A flat plate laid on the front face across the switch, at the height of the
+// rocker's raised end. Only the guard fins reach it, so they hold such a
+// surface off the rocker.
+module switch_guard_plate_probe() {
+    box(span(switch_x, switch_guard_x[1] + 2), [outer_front_y - switch_rocker_h - 0.1, outer_front_y - switch_rocker_h],
+        span(switch_z, 1));
+}
+
 // Vertical drop-in paths from each seat to above the case.
 module loadcell_drop_in_probe() {
     translate([0, 0, loadcell_bottom_z + 0.05])
@@ -392,6 +400,10 @@ if (mode == "main_lid_eps_up") {
 } else if (mode == "main_switch") {
     // The bezel is a press fit in the opening, so it may touch its sides.
     intersection() { main_part(); asm_switch(inset = 0.01); }
+} else if (mode == "main_switch_front") {
+    intersection() { main_part(); asm_switch_front(gap = 0.05); }
+} else if (mode == "main_switch_guard") {
+    intersection() { main_part(); switch_guard_plate_probe(); }
 } else if (mode == "main_screw_pilot_fit") {
     intersection() { main_part(); screw_core_probe(); }
 } else if (mode == "main_screw_shank_clear") {

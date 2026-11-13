@@ -36,12 +36,22 @@ module asm_switch(inset = 0) {
         [switch_z - switch_h / 2 + inset, switch_z + switch_h / 2 - inset]);
 }
 
+// Bezel and rocker in front of the outer face, up to the rocker's raised
+// end, stopping gap short of the face.
+module asm_switch_front(gap = 0) {
+    box(span(switch_x, switch_bezel_half_w), [outer_front_y - switch_rocker_h, outer_front_y - gap],
+        span(switch_z, switch_h / 2 + switch_flange));
+}
+
 module full_assembly(show_pcb = true) {
     color("silver") asm_loadcell();
     asm_battery();
     if (show_pcb)
         asm_pcb();
-    color("red") asm_switch();
+    color("red") {
+        asm_switch();
+        asm_switch_front();
+    }
 }
 
 full_assembly();

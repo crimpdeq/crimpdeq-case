@@ -209,6 +209,13 @@ switch_collar_t = 1.2;
 // Room behind the solder joints for the wires to turn up over the battery.
 switch_wire_bend = 3.5;
 switch_loadcell_clear = 0.5; // switch underside above the load cell
+// Fins on the outer face beside the bezel's ends stand proud of the rocker, so
+// a flat surface the hanging device swings into cannot toggle it. A fingertip
+// fits between them; they are open above and below.
+switch_rocker_h = 4.0; // rocker's raised end above the outer face; estimate, measure it
+switch_guard_proud = 0.5; // fins beyond the rocker's raised end
+switch_guard_t = wall_t;
+switch_guard_clear = 0.4; // fin to the bezel's end
 
 // Countersunk Phillips self-tapping screws, sold as M2.5x10, shared by main
 // and lid. Their coarse ~0.9 mm pitch thread forms in PLA with far less

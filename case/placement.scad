@@ -67,14 +67,21 @@ switch_x = screw_x + screw_post_d / 2 + switch_collar_t + switch_w / 2;
 switch_z = loadcell_top_z + switch_loadcell_clear + switch_h / 2;
 switch_rear_y = outer_front_y + switch_depth;
 switch_grip_y = outer_front_y + switch_grip_len; // inner end of the opening
+// Guard fins beside the bezel's ends: inner faces at +/- switch_guard_x[0]
+// from switch_x, outer faces at +/- switch_guard_x[1].
+switch_bezel_half_w = switch_w / 2 + switch_flange;
+switch_guard_x = [switch_bezel_half_w + switch_guard_clear,
+    switch_bezel_half_w + switch_guard_clear + switch_guard_t];
+switch_guard_y = outer_front_y - switch_rocker_h - switch_guard_proud; // fin tips
+switch_guard_z = span(switch_z, switch_h / 2 + switch_flange + switch_guard_clear);
 
 // 45 degree chamfers at the four corners: |x| +/- y = chamfer_k. The inner
 // chamfers pass outside the guarded load-cell corners; the flat front wall
-// carries the switch flange.
+// carries the switch guard fins.
 chamfer_wall_k = wall_t * sqrt(2);
 chamfer_k = max(
     lc_L / 2 + lc_W / 2 + 2 * loadcell_guard_clear + chamfer_wall_k,
-    switch_x + switch_w / 2 + switch_flange + case_corner_r - outer_front_y
+    switch_x + switch_guard_x[1] + case_corner_r - outer_front_y
 );
 inner_chamfer_k = chamfer_k - chamfer_wall_k;
 

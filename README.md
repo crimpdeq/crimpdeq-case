@@ -46,8 +46,9 @@ major version; PCB V1 uses case `v0.4.0`.
 
 ## Design
 
-The case is 89.2 × 64.6 × 27.6 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, rear and end walls with
-45° chamfers, symmetric about both axes. Everything stacks over the load cell:
+The case is 89.2 × 64.6 × 27.6 mm, 69.1 mm deep over the switch guard (V3: 97.1 × 77.4 × 30.6 mm):
+flat front, rear and end walls with 45° chamfers, symmetric about both axes apart from the switch
+guard. Everything stacks over the load cell:
 
 - The load cell goes in with its strain-gauge cover facing the floor and its wires toward the
   front. Four floor pads hold the plate 0.5 mm above the cover, and its wires run under the
@@ -80,7 +81,10 @@ runs out through the lid as a notch, widened by the lid's 0.5 mm seating play so
 clears it wherever the lid seats.
 
 The KCD11 sits in the front wall right of the USB-C connector and the right front screw post,
-over the load cell's front-right corner and beside the battery. A collar behind the wall grips its bezel over 3 mm. Its
+over the load cell's front-right corner and beside the battery. A collar behind the wall grips its bezel over 3 mm.
+Two fins beside the bezel's ends stand 0.5 mm proud of the rocker's raised end, so the device
+cannot switch off when it swings into a wall or a board; a fingertip fits between them, and they are
+open above and below. The 4 mm rocker height is an estimate: measure your switch before printing. Its
 wires turn up behind the solder joints, run over the battery beside the board, forward and down
 to the SW pads. The column sits between the J3 and J4 wire-pad columns, and lanes beside it, inside
 the front posts, carry the load-cell, battery and switch wires to their pads.
@@ -166,7 +170,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, the receptacle's lid pocket wherever the lid seats, lid rear stops that clear the board wherever the lid seats, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, the receptacle's lid pocket wherever the lid seats, lid rear stops that clear the board wherever the lid seats, the switch opening's grip length, switch guard fins that clear the bezel and stand proud of the rocker, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
 
 ```bash
 bash scripts/check-collisions.sh

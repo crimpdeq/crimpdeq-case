@@ -95,6 +95,8 @@ checks=(
     "main_loadcell_wires empty"
     "main_switch empty"
     "main_switch_grip nonempty"
+    "main_switch_front empty"
+    "main_switch_guard nonempty"
     "main_screw_pilot_fit empty"
     "main_screw_shank_clear empty"
     "main_screw_thread nonempty"

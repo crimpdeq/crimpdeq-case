@@ -3,7 +3,7 @@
 // - load-cell pads and notch pins
 // - floor column carrying the PCB under the USB-C connector
 // - screw pilots for the self-tapping screws, threaded only near the tip
-// - front-wall USB-C opening and switch opening
+// - front-wall USB-C opening, and switch opening with its guard fins
 // - open carabiner U-slots
 //
 
@@ -36,8 +36,8 @@ assert(shank_clear_depth > 0 && screw_thread_len >= 2 * screw_d,
     "The screw must thread at least two diameters below a clear bore.");
 assert(screw_x - screw_post_d / 2 > max([for (p = pcb_cable_pads) abs(p[0])]) + wire_d / 2 + 0.5,
     "The front screw posts must leave a lane beside the wire pads.");
-assert(usb_x + usb_pocket_w / 2 < switch_x - switch_w / 2 - switch_flange - 1,
-    "The switch flange must clear the USB-C pocket.");
+assert(usb_x + usb_pocket_w / 2 < switch_x - switch_guard_x[1] - 1,
+    "The switch guard must clear the USB-C pocket.");
 
 module loadcell_pads() {
     for (x_sign = [-1, 1], y_sign = [-1, 1])
@@ -119,6 +119,20 @@ module switch_collar() {
         [floor_top_z - internal_feature_embed, switch_z + switch_h / 2 + switch_collar_t]);
 }
 
+// Fins beside the bezel's ends with round tips, rooted in the front wall.
+module switch_guard() {
+    r = switch_guard_t / 2;
+    for (x_sign = [-1, 1])
+        translate([switch_x + x_sign * (switch_guard_x[0] + r), 0, switch_guard_z[0]])
+            linear_extrude(height = switch_guard_z[1] - switch_guard_z[0])
+                hull() {
+                    translate([0, switch_guard_y + r])
+                        circle(r = r);
+                    translate([-r, outer_front_y])
+                        square([switch_guard_t, wall_t / 2]);
+                }
+}
+
 // The opening grips the bezel over switch_grip_len; the cavity behind it
 // clears the switch body.
 module switch_cuts() {
@@ -163,6 +177,7 @@ module main_part() {
             screw_posts();
             main_carabiner_slot_walls();
             switch_collar();
+            switch_guard();
         }
         screw_pilots();
         carabiner_slot_cuts();
