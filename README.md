@@ -24,6 +24,18 @@ and tscircuit parts need no support.
 
 To assemble the V3 case, follow the [Crimpdeq book](https://book.crimpdeq.com/assembly/crimpdeq/index.html).
 
+Before printing the full tscircuit case, print the fit coupon: the front bands of both parts,
+with the switch grip, USB-C opening and cable pocket, PCB column, front notch pins, front screw
+posts, LED windows and the lid lip. Screw them together and check the fits on your printer.
+
+```bash
+openscad -D 'part="main"' -o /tmp/fit_coupon_main.stl case/fit_coupon.scad
+openscad -D 'part="lid"' -o /tmp/fit_coupon_lid.stl case/fit_coupon.scad
+```
+
+The switch body sits over the load cell's front-right corner, so assemble in this order: load
+cell, switch, battery, PCB with its wires, then the lid.
+
 ## Compatibility
 
 Use the case release in the row for your PCB revision. From V2 on, the case and PCB share the
@@ -65,8 +77,9 @@ The case is 89.2 × 64.6 × 27.6 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, r
 
 Each eye stays reachable through an isolated vertical U-slot that runs out through the case end,
 with 2.5 mm of clearance around the eye; on its inboard side it stays outside the battery bay
-wall. The slot exits 19.5 mm from the eye center (V3: 23 mm). The end walls carry a groove for
-each lid slot-wall end, so the gap round it is a labyrinth.
+wall. The slot exits 19.5 mm from the eye center (V3: 23 mm). The slot walls are 2 mm thick,
+like the shell, because the tall lid walls take carabiner strikes. The end walls carry a groove
+for each lid slot-wall end, so the gap round it is a labyrinth.
 
 The board rests on two fingers on a floor column, on the bare strips between each wire-pad
 column and the USB-C shell legs. The receptacle rises above the seam into a lid pocket, where
@@ -76,7 +89,7 @@ chamfered lid tabs behind its rear edge take USB-C insertion loads. The receptac
 front-wall opening that runs out through the top of the main body, so the board drops straight
 in. A 13.65 × 7.8 mm overmold pocket lets a cable's molded overmold (up to the 12.85 × 7.0 mm
 maximum in the USB Type-C plug dimensions update) reach within 0.3 mm of the receptacle face; it
-runs out through the lid as a notch, widened by the lid's 0.5 mm seating play so the cable
+runs out through the lid as a notch, widened by the lid's 0.3 mm seating play so the cable
 clears it wherever the lid seats.
 
 The KCD11 sits in the front wall right of the USB-C connector and the right front screw post,
@@ -88,7 +101,13 @@ the front posts, carry the load-cell, battery and switch wires to their pads.
 The band behind the battery mirrors the board's front band. The PCB column stops the battery's
 front; it ends over the load cell, so a lid wall 0.6 mm behind it, more than the lid's seating
 play, stops its rear. Both side ribs are on the lid, so a lid seated off center carries the
-battery with it instead of pinching it. The four screws flank the board, merged into the front and rear walls, each
+battery with it instead of pinching it.
+
+A 1.6 mm lip under the lid fits 0.3 mm inside the main walls at the four corners, along the
+front and rear walls beside the screw posts, the chamfers and the end walls beside the slot-wall
+grooves. Chamfered at its outer bottom edge, it centers the lid as it drops in, locates it
+before the screws go in, and holds the unscrewed lid ends in line with the main body. The four
+screws flank the board, merged into the front and rear walls, each
 5.25 mm inside the outer faces, as in V2. Their heads seat 0.1 mm below flush in lid
 countersinks, and each screw forms its thread only over the 6 mm near its tip, below a clear
 bore, so driving it cannot twist the head off. Every lid feature over the load cell stops 0.6 mm
@@ -166,7 +185,7 @@ printable. If `bambu-studio` on `PATH` is a wrapper script, point
 
 ### Run collision checks
 
-This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its screw play, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, the receptacle's lid pocket wherever the lid seats, lid rear stops that clear the board wherever the lid seats, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
+This validates expected contacts/clearances between the enclosure parts and the internal components, including load-cell pads and notch pins, load-cell corner coverage, loaded and tilted carabiner clearance, vertical drop-in paths for the load cell, battery and PCB, lid clearance over a load cell resting 0.5 mm high, a lid that seats anywhere within its lip play and stops on its lip beyond it, no straight path from the carabiner slots into the bay, the battery's stops and hold-downs wherever the lid seats, the PCB fingers, edge guides and play, the USB-C shell clamp preload and its seat on the shell, the receptacle's lid pocket wherever the lid seats, lid rear stops that clear the board wherever the lid seats, the switch opening's grip length, switch, battery and load-cell wire routes to the cable pads, flush screw heads seated on the lid countersinks, screw pilot depth, a clear bore above each screw's short threaded length, a fully mated USB-C cable with its overmold seated in the front-wall pocket and clear of the lid wherever it seats, and separate lid view holes for the battery-status and RGB LEDs, closed by their windows.
 
 ```bash
 bash scripts/check-collisions.sh
@@ -188,6 +207,7 @@ CHECK_JOBS=4 OPENSCAD_RENDER_FN=24 bash scripts/check-collisions.sh
 - `case/assembly.scad`: internal assembly (load cell, battery, PCB, switch), shared with the checks
 - `case/placement.scad`: derived assembly coordinates and shared outlines
 - `case/collision_check.scad`: geometry intersections used for automated collision checks
+- `case/fit_coupon.scad`: front bands of both parts for a tolerance test print
 - `case/dimensions.scad`: shared dimensions and clearances
 - `scripts/check-collisions.sh`: CI/local collision validation script
 - `scripts/export-bambu-project.py`: Bambu Studio project with the print settings
