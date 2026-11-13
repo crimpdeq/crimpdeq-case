@@ -134,7 +134,7 @@ module brand_engrave_bottom() {
         linear_extrude(height = brand_depth + 0.1)
             mirror([1, 0, 0])
                 rotate([0, 0, -90])
-                    resize([brand_bottom_l, 0], auto = true)
+                    resize([brand_l, 0], auto = true)
                         text(brand_text, font = brand_font, halign = "center", valign = "center");
 }
 

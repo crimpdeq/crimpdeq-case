@@ -121,8 +121,6 @@ pcb_rear_travel = pcb_rear_stop_clear + lid_seat_play;
 
 status_led_view_y = pcb_y + status_led_y;
 rgb_led_view_y = pcb_y + rgb_led_y;
-// Both titles are centered on their face; the LED holes limit the lid one.
-brand_bottom_l = 2 * (outer_rear_y - case_corner_r - brand_bottom_margin);
 rear_brand_w = 2 * (chamfer_k - outer_rear_y - case_corner_r - rear_brand_margin);
 
 // Lid bars beside the board over the battery, from behind the switch wire
