@@ -68,6 +68,10 @@ checks=(
     "main_lid_eps_up empty"
     "main_lid_eps_down nonempty"
     "main_lid_shifted empty"
+    "main_lid_lip_stop_x_neg nonempty"
+    "main_lid_lip_stop_x_pos nonempty"
+    "main_lid_lip_stop_y_neg nonempty"
+    "main_lid_lip_stop_y_pos nonempty"
     "main_loadcell_eps_z_minus nonempty"
     "main_loadcell_eps_z_plus empty"
     "main_loadcell_arm_x_neg empty"
@@ -246,6 +250,10 @@ main_stl="$tmp_dir/case_main.stl"
 lid_stl="$tmp_dir/case_lid.stl"
 "${openscad_cmd[@]}" "${openscad_defs[@]}" -D "print_layout=true" -o "$main_stl" "$repo_root/case/case_main.scad" >/dev/null 2>&1
 "${openscad_cmd[@]}" "${openscad_defs[@]}" -D "print_layout=true" -o "$lid_stl" "$repo_root/case/case_lid.scad" >/dev/null 2>&1
-python3 "$repo_root/scripts/check-stl-components.py" "$main_stl" "$lid_stl"
+coupon_main_stl="$tmp_dir/fit_coupon_main.stl"
+coupon_lid_stl="$tmp_dir/fit_coupon_lid.stl"
+"${openscad_cmd[@]}" "${openscad_defs[@]}" -D 'part="main"' -o "$coupon_main_stl" "$repo_root/case/fit_coupon.scad" >/dev/null 2>&1
+"${openscad_cmd[@]}" "${openscad_defs[@]}" -D 'part="lid"' -o "$coupon_lid_stl" "$repo_root/case/fit_coupon.scad" >/dev/null 2>&1
+python3 "$repo_root/scripts/check-stl-components.py" "$main_stl" "$lid_stl" "$coupon_main_stl" "$coupon_lid_stl"
 
 echo "STL connectivity checks passed."

@@ -5,6 +5,7 @@
 // - USB-C receptacle pocket and shell clamp, PCB rear stops, battery hold-downs,
 //   side stops and rear stop
 // - countersunk screw holes
+// - locating lip inside the main walls
 //
 
 include <placement.scad>
@@ -29,6 +30,43 @@ assert(screw_head_d < screw_countersink_d && screw_d < screw_clear_d,
 assert(countersink_depth + screw_hole_lead_in_depth <= lid_t - 0.3,
     str("The countersink and lead-in must leave a straight lid hole. countersink=",
         countersink_depth, " mm."));
+assert(lid_lip_clear <= (screw_clear_d - screw_d) / 2,
+    "The lip must locate the lid before the screws touch their lid holes.");
+assert(lid_lip_chamfer < lid_lip_t && lid_lip_chamfer < lid_lip_depth,
+    "The lip chamfer must leave a flat lip face.");
+
+// Strip inside the main walls, clear of the board, the screw posts and the
+// end-wall grooves.
+module lid_lip_2d() {
+    difference() {
+        offset(delta = -lid_lip_clear)
+            cavity_2d();
+        offset(delta = -lid_lip_clear - lid_lip_t)
+            cavity_2d();
+        square([2 * (screw_x + screw_post_d / 2 + lid_lip_clear), 2 * outer_rear_y + 1], center = true);
+        square([2 * outer_end_x + 1, 2 * (slot_wall_outer_y + slot_wall_fit + lid_lip_clear)], center = true);
+    }
+}
+
+// Chamfered on the outer bottom edge, so it drops into the main body.
+module lid_lip() {
+    z0 = seam_z - lid_lip_depth;
+    intersection() {
+        translate([0, 0, z0])
+            linear_extrude(height = lid_lip_depth + internal_feature_embed)
+                lid_lip_2d();
+        hull() {
+            translate([0, 0, z0])
+                linear_extrude(height = 0.01)
+                    offset(delta = -lid_lip_clear - lid_lip_chamfer)
+                        cavity_2d();
+            translate([0, 0, z0 + lid_lip_chamfer])
+                linear_extrude(height = lid_lip_depth - lid_lip_chamfer + internal_feature_embed)
+                    offset(delta = -lid_lip_clear)
+                        cavity_2d();
+        }
+    }
+}
 
 // The countersink runs 0.1 mm past the lid top at the same 45 degree slope.
 module screw_holes() {
@@ -150,6 +188,7 @@ module lid_part() {
                 linear_extrude(height = lid_t)
                     case_outline_2d();
             lid_carabiner_slot_walls();
+            lid_lip();
             pcb_rear_stops();
             battery_hold_downs();
             battery_side_stops();

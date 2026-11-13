@@ -337,8 +337,17 @@ module lid_seated(eps, d = [0, 0]) {
 if (mode == "main_lid_eps_up") {
     intersection() { main_part(); lid_seated(0.01); }
 } else if (mode == "main_lid_shifted") {
-    for (d = lid_seat_shifts)
+    // Just inside the play, where the lip would touch the main walls.
+    for (d = lid_seat_shifts * (1 - 0.05 / lid_seat_play))
         intersection() { main_part(); lid_seated(0.01, d); }
+} else if (mode == "main_lid_lip_stop_x_neg") {
+    intersection() { main_part(); translate([-lid_seat_play - 0.05, 0, 0.01]) lid_lip(); }
+} else if (mode == "main_lid_lip_stop_x_pos") {
+    intersection() { main_part(); translate([lid_seat_play + 0.05, 0, 0.01]) lid_lip(); }
+} else if (mode == "main_lid_lip_stop_y_neg") {
+    intersection() { main_part(); translate([0, -lid_seat_play - 0.05, 0.01]) lid_lip(); }
+} else if (mode == "main_lid_lip_stop_y_pos") {
+    intersection() { main_part(); translate([0, lid_seat_play + 0.05, 0.01]) lid_lip(); }
 } else if (mode == "main_lid_eps_down") {
     intersection() { main_part(); lid_seated(-0.05); }
 } else if (mode == "main_loadcell_eps_z_minus") {
