@@ -56,7 +56,9 @@ The case is 89.2 × 64.6 × 27.6 mm (V3: 97.1 × 77.4 × 30.6 mm): flat front, r
   leave the middle of that end; if they leave off center, turn it over so they leave right of
   center. They turn right along its front through a recess in the PCB column. Lid bars beside
   the board stop 0.3 mm above the battery: they keep it off the board's bottom parts without
-  pressing it onto the load cell, which would shift the reading.
+  pressing it onto the load cell, which would shift the reading. Ribs on those bars hang down
+  0.3 mm beside the battery and stop it along the axis it hangs on; chamfered at the bottom,
+  they center it as the lid closes.
 - The board sits over the battery, top side up and unrotated, so the ESP32 module, the USB-C
   connector and both LEDs face the lid. Its wire-pad end hangs 10.1 mm in front of the battery,
   so every wire reaches its pad from below with room for the solder joint.
@@ -85,7 +87,8 @@ the front posts, carry the load-cell, battery and switch wires to their pads.
 
 The band behind the battery mirrors the board's front band. The PCB column stops the battery's
 front; it ends over the load cell, so a lid wall 0.6 mm behind it, more than the lid's seating
-play, stops its rear. The four screws flank the board, merged into the front and rear walls, each
+play, stops its rear. Both side ribs are on the lid, so a lid seated off center carries the
+battery with it instead of pinching it. The four screws flank the board, merged into the front and rear walls, each
 5.25 mm inside the outer faces, as in V2. Their heads seat 0.1 mm below flush in lid
 countersinks, and each screw forms its thread only over the 6 mm near its tip, below a clear
 bore, so driving it cannot twist the head off. Every lid feature over the load cell stops 0.6 mm

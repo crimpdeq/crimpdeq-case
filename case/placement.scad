@@ -132,8 +132,10 @@ rear_brand_w = 2 * (chamfer_k - outer_rear_y - case_corner_r - rear_brand_margin
 // Lid bars beside the board over the battery, from behind the switch wire
 // bend to the battery's rear. They stop the battery lifting into the board's
 // bottom parts and loosely guide the board's rear end; the lid seat play
-// keeps them off the board.
-battery_hold_down_x = [pcb_W / 2 + pcb_guide_clear + lid_seat_play, bat_W / 2 - battery_hold_down_inset];
+// keeps them off the board. Each bar runs out over the battery's side to a
+// rib that hangs down beside it and stops it along X.
+battery_side_stop_x = [bat_W / 2 + battery_side_stop_clear, bat_W / 2 + battery_side_stop_clear + battery_side_stop_t];
+battery_hold_down_x = [pcb_W / 2 + pcb_guide_clear + lid_seat_play, battery_side_stop_x[1]];
 battery_hold_down_y = [switch_rear_y + switch_wire_bend + battery_hold_down_inset,
     battery_rear_y - battery_hold_down_inset];
 
@@ -156,6 +158,9 @@ carabiner_loaded_x = eye_x + (eye_ring_bore_d - carabiner_shank_d) / 2;
 carabiner_slot_d = eye_d + 2 * eye_slot_clear;
 carabiner_slot_inner_x = bat_W / 2 + battery_side_clear + loadcell_slot_wall_t;
 slot_wall_outer_y = carabiner_slot_d / 2 + loadcell_slot_wall_t;
+// Inboard edge of each slot: its eye circle, or the cut at
+// carabiner_slot_inner_x where that reaches further out.
+carabiner_slot_edge_x = max(eye_x - carabiner_slot_d / 2, carabiner_slot_inner_x);
 
 assert(screw_y + screw_post_d / 2 >= inner_rear_y - 0.01,
     "Screw posts must merge into the front and rear walls.");
@@ -193,8 +198,12 @@ assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
 assert(brand_y_max - brand_y_min >= brand_l,
     str("The lid title needs ", brand_l, " mm between the LED holes and the rear edge; there are ",
         brand_y_max - brand_y_min, " mm."));
-assert(battery_hold_down_x[1] < carabiner_slot_inner_x - loadcell_slot_wall_t - lid_seat_play,
-    "Battery hold-downs must clear the lid slot walls.");
+assert(battery_side_stop_x[0] < carabiner_slot_edge_x - loadcell_slot_wall_t,
+    "The battery side stops must sit inboard of the lid slot walls.");
+assert(battery_side_stop_x[1] < carabiner_slot_edge_x,
+    "The battery side stops must stay out of the carabiner slots.");
+assert(battery_side_stop_chamfer < battery_side_stop_t,
+    "The battery side stop chamfer must leave a flat rib bottom.");
 assert(carabiner_shank_d < eye_ring_bore_d && eye_ring_bore_d < eye_d,
     str("Carabiner diameters must satisfy shank < ring bore < eye. Got ",
         carabiner_shank_d, ", ", eye_ring_bore_d, ", ", eye_d, " mm."));

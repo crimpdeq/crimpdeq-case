@@ -2,8 +2,8 @@
 // Lid enclosure part
 // - screw holes aligned with case_main.scad
 // - carabiner slot walls that close the electronics bay above the load cell
-// - USB-C receptacle pocket and shell clamp, PCB rear stops, battery hold-downs
-//   and rear stop
+// - USB-C receptacle pocket and shell clamp, PCB rear stops, battery hold-downs,
+//   side stops and rear stop
 // - countersunk screw holes
 //
 
@@ -119,6 +119,18 @@ module battery_hold_downs() {
             [battery_top_z + battery_hold_down_clear, seam_z + internal_feature_embed]);
 }
 
+// Ribs from each hold-down down beside the battery, chamfered on its side.
+module battery_side_stops() {
+    x0 = battery_side_stop_x[0];
+    x1 = battery_side_stop_x[1];
+    z_chamfer = lid_hold_down_z + battery_side_stop_chamfer;
+    for (s = [-1, 1])
+        hull() {
+            box(s * [x0, x1], battery_hold_down_y, [z_chamfer, seam_z + internal_feature_embed]);
+            box(s * [x0 + battery_side_stop_chamfer, x1], battery_hold_down_y, [lid_hold_down_z, z_chamfer]);
+        }
+}
+
 // The battery ends over the load cell, so this wall stops just above it.
 module battery_rear_stop() {
     box(span(0, bat_W / 2 - battery_rear_stop_inset), [battery_stop_rear_y, battery_stop_rear_y + battery_rear_stop_t],
@@ -142,6 +154,7 @@ module lid_part() {
             lid_carabiner_slot_walls();
             pcb_rear_stops();
             battery_hold_downs();
+            battery_side_stops();
             battery_rear_stop();
         }
         screw_holes();

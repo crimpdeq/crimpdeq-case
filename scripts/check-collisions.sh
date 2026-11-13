@@ -119,6 +119,8 @@ checks=(
     "lid_battery empty"
     "lid_battery_shifted empty"
     "lid_battery_rear_stop nonempty"
+    "lid_battery_stop_x_neg nonempty"
+    "lid_battery_stop_x_pos nonempty"
     "lid_battery_lift nonempty"
     "lid_pcb_clamped nonempty"
     "lid_pcb_outside_clamp empty"

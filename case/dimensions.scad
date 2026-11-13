@@ -84,9 +84,16 @@ battery_lead_clear = 0.3; // round the leads in the front column's recess
 // how far it can lift without pressing it onto the load cell, whose reading
 // would shift under the load.
 battery_hold_down_clear = 0.3;
-// The hold-downs stop this far inside the battery's side and rear edges and
-// behind the switch wire bend.
+// The hold-downs stop this far inside the battery's rear edge and behind the
+// switch wire bend.
 battery_hold_down_inset = 0.5;
+// Lid ribs beside the battery stop it along X, the axis it hangs on. Both are
+// on the lid, so a lid seated off center carries the battery with it instead
+// of pinching it, and the clearance may be smaller than lid_seat_play. The
+// chamfer on each rib's battery side centers the battery as the lid closes.
+battery_side_stop_clear = 0.3;
+battery_side_stop_t = 1.2;
+battery_side_stop_chamfer = 0.8;
 // Lid wall behind the battery, which ends over the load cell. Its gap is
 // larger than lid_seat_play, so the lid seats without pushing the battery.
 battery_rear_stop_clear = 0.6;

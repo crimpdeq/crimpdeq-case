@@ -439,8 +439,17 @@ if (mode == "main_lid_eps_up") {
 } else if (mode == "lid_battery") {
     intersection() { lid_part(); asm_battery(); }
 } else if (mode == "lid_battery_shifted") {
+    // The side stops carry the battery along with a lid shifted in X; nothing
+    // else may touch it wherever the lid seats.
     for (d = lid_seat_shifts)
-        intersection() { translate([d[0], d[1], 0]) lid_part(); asm_battery(); }
+        intersection() {
+            union() { main_part(); translate([d[0], d[1], 0]) lid_part(); }
+            translate([d[0], 0, 0]) asm_battery();
+        }
+} else if (mode == "lid_battery_stop_x_neg") {
+    intersection() { lid_part(); translate([-battery_side_stop_clear - 0.05, 0, 0]) asm_battery(); }
+} else if (mode == "lid_battery_stop_x_pos") {
+    intersection() { lid_part(); translate([battery_side_stop_clear + 0.05, 0, 0]) asm_battery(); }
 } else if (mode == "lid_battery_rear_stop") {
     intersection() { lid_part(); translate([0, battery_rear_stop_clear + 0.05, 0]) asm_battery(); }
 } else if (mode == "lid_battery_lift") {
