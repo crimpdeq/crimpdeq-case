@@ -7,6 +7,7 @@
 
 ## Enclosure invariants
 
+- The lid locates on its chamfered lip inside the main walls, not on the screws: keep `lid_lip_clear` no larger than the screws' play in their lid holes, and `lid_seat_play` equal to it.
 - Keep the electronics bay closed: the main-body and lid slot walls must isolate both carabiner slots from the bay; any fit gap between them must be a labyrinth, never a straight slit. The lid slot-wall ends reach into end-wall grooves for that.
 - Keep the plan symmetric about both axes, so the top view looks the same from the front and the rear: flat front, rear and end walls with 45 degree chamfers, and the screws mirrored. Derive every wall from the component envelopes in `case/placement.scad`.
 - Keep both load-cell eyes accessible through isolated vertical U-slots that open through each case end, with `eye_slot_clear` around each eye; the inboard edge stops at the battery bay wall. A 12 mm carabiner shank must fit centered in the 13.9 mm eye-ring bore and bearing on its outer side.
