@@ -218,6 +218,15 @@ module led_window_probe() {
             cylinder(d = led[2], h = led_window_t - 0.1);
 }
 
+// LED holes grown by brand_led_clear through the lid; the title engraving
+// must miss them.
+module brand_led_clear_probe() {
+    for (led = [[status_led_x, status_led_view_y, status_led_view_d],
+                [rgb_led_x, rgb_led_view_y, rgb_led_view_d]])
+        translate([led[0], led[1], seam_z])
+            cylinder(d = led[2] + 2 * brand_led_clear, h = lid_t + 1);
+}
+
 // Wire routes. Each cable pad needs room below for its solder joint and the
 // wire bend.
 pad_probe_h = 4;
@@ -502,6 +511,8 @@ if (mode == "main_lid_eps_up") {
     }
 } else if (mode == "lid_led_windows_closed") {
     difference() { led_window_probe(); lid_part(); }
+} else if (mode == "lid_brand_led_clear") {
+    intersection() { brand_engrave_lid(); brand_led_clear_probe(); }
 } else if (mode == "battery_on_loadcell") {
     intersection() { asm_loadcell(); translate([0, 0, -0.05]) asm_battery(); }
 } else if (mode == "loadcell_pcb") {

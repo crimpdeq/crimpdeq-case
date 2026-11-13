@@ -243,13 +243,16 @@ countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
 // plus 0.2 mm for printed walls off size.
 lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;
 
-// "Crimpdeq" titles on the lid and the bottom. They read along Y, between the
+// "Crimpdeq" titles centered on the lid and the bottom. They read along Y, between the
 // carabiner slots, so they are horizontal when the device hangs from its eyes.
 brand_text = "Crimpdeq";
 brand_font = "Liberation Sans:style=Bold"; // bundled with OpenSCAD
 brand_l = 44; // along Y
 brand_depth = 0.8;
-brand_margin = 1.5; // to the lid's LED holes and the rear edge
+brand_margin = 1.5; // to the front and rear edges
+// The lid title's "C" passes between the LED holes. It cuts deeper than their
+// windows, so it must stay this far off them.
+brand_led_clear = 0.2;
 // Rear-wall title, spanning the flat rear wall.
 rear_brand_text = "crimpdeq.com";
 rear_brand_depth = 0.8;

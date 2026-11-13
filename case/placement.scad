@@ -121,12 +121,6 @@ pcb_rear_travel = pcb_rear_stop_clear + lid_seat_play;
 
 status_led_view_y = pcb_y + status_led_y;
 rgb_led_view_y = pcb_y + rgb_led_y;
-// The LED holes leave no room for a large title centered on the lid, so it is
-// centered in the strip between them and the rear edge.
-brand_y_min = max(status_led_view_y + status_led_view_d / 2, rgb_led_view_y + rgb_led_view_d / 2)
-    + brand_margin;
-brand_y_max = outer_rear_y - case_corner_r - brand_margin;
-brand_y = (brand_y_min + brand_y_max) / 2;
 rear_brand_w = 2 * (chamfer_k - outer_rear_y - case_corner_r - rear_brand_margin);
 
 // Lid bars beside the board over the battery, from behind the switch wire
@@ -195,9 +189,8 @@ assert(pcb_rear_stop_x_min > 0 && pcb_rear_stop_z_min >= battery_top_z + 0.5,
     "PCB rear stops must sit behind the board, above the battery.");
 assert(pcb_rear_stop_z_min + pcb_rear_stop_chamfer <= pcb_board_bottom_z,
     "PCB rear stops must bear on the full board edge above their chamfer.");
-assert(brand_y_max - brand_y_min >= brand_l,
-    str("The lid title needs ", brand_l, " mm between the LED holes and the rear edge; there are ",
-        brand_y_max - brand_y_min, " mm."));
+assert(brand_l / 2 <= outer_rear_y - case_corner_r - brand_margin,
+    str("The ", brand_l, " mm titles must fit between the front and rear edges."));
 assert(battery_side_stop_x[0] < carabiner_slot_edge_x - loadcell_slot_wall_t,
     "The battery side stops must sit inboard of the lid slot walls.");
 assert(battery_side_stop_x[1] < carabiner_slot_edge_x,
@@ -223,6 +216,13 @@ function span(center, half) = [center - half, center + half];
 module box(x, y, z) {
     translate([min(x), min(y), min(z)])
         cube([abs(x[1] - x[0]), abs(y[1] - y[0]), abs(z[1] - z[0])]);
+}
+
+// The "Crimpdeq" title, centered and reading along Y.
+module brand_2d() {
+    rotate([0, 0, 90])
+        resize([brand_l, 0], auto = true)
+            text(brand_text, font = brand_font, halign = "center", valign = "center");
 }
 
 module each_screw(z_pos) {

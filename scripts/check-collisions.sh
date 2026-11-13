@@ -141,6 +141,7 @@ checks=(
     "lid_status_led_sightline empty"
     "lid_rgb_led_sightline empty"
     "lid_led_windows_closed empty"
+    "lid_brand_led_clear empty"
     "battery_on_loadcell nonempty"
     "loadcell_pcb empty"
     "loadcell_switch empty"
