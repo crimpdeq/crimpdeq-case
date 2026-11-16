@@ -111,7 +111,7 @@ grooves. Chamfered at its outer bottom edge, it centers the lid as it drops in, 
 before the screws go in, and holds the unscrewed lid ends in line with the main body. The four
 screws flank the board, merged into the front and rear walls, each
 5.25 mm inside the outer faces, as in V2. Their heads seat 0.1 mm below flush in lid
-countersinks, and each screw forms its thread only over the 4 mm near its tip, in a 2.2 mm
+countersinks, and each screw forms its thread only over the 4 mm near its tip, in a 2.1 mm
 pilot below a clear bore, so it takes little torque to drive. Every lid feature over the load
 cell stops 0.6 mm above it.
 
