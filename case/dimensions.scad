@@ -38,7 +38,7 @@ loadcell_wire_bundle = [2.0, 1.4]; // four ~0.7 mm wires two by two: width, heig
 // Floor pads hold the plate this far above the cover's underside, with room
 // for its wires beside it.
 loadcell_cover_clear = 0.5;
-loadcell_pad_size = [3, 5]; // X, Y
+loadcell_pad_size = [3, 4]; // X, Y
 loadcell_pad_edge_inset = 2; // from the plate's long edges
 
 notch_d = 6;
@@ -59,9 +59,10 @@ loadcell_guard_clear = 0.5;
 // Lid features over the load cell stop this far above it, so a printed part
 // slightly off size cannot hold the lid open.
 loadcell_hold_down_clear = 0.6;
-loadcell_slot_wall_t = 1.2;
+// As thick as the shell: the tall lid slot walls take carabiner strikes.
+loadcell_slot_wall_t = wall_t;
 loadcell_slot_clear_z = 0.3;
-// Gap from the lid slot-wall ends to the main body. The screws locate the
+// Gap from the lid slot-wall ends to the main body. The lid lip locates the
 // lid; at 0.2 mm the tall wall ends wedged into the slightly undersized
 // printed cavity and held the lid open.
 slot_wall_fit = 0.6;
@@ -225,23 +226,33 @@ screw_head_h = (screw_head_d - screw_d) / 2; // its 90 degree cone down to the t
 screw_countersink_d = 5.0;
 screw_post_d = 6.5;
 // The seated screw forms its thread in the post only over this length above
-// its tip, 2.5 diameters; a clear bore takes the rest, so the post top cannot
-// bulge into the lid.
-screw_thread_len = 6;
-// Pilot the screw forms its thread in. Printed holes come out about 0.15 mm
-// small, so this prints near 1.95 mm, about 0.8 of the thread diameter, the
-// usual pilot for thread-forming screws in plastic.
+// its tip; a clear bore takes the rest, so the post top cannot bulge into the
+// lid. The 6 mm thread of the same pilot took more torque than these
+// screws carry and snapped them. A lid needs little pull-out strength, so the
+// thread is kept to about 1.7 diameters, meant to strip before the screw snaps.
+screw_thread_len = 4;
+// Pilot the screw forms its thread in. In a printed gauge with this thread
+// length, 2.0 and 2.1 mm pilots drove smoothly and held best; this is the
+// looser of the two, for more margin before a screw snaps.
 screw_thread_d = 2.1;
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
-// Bore above the threaded length. It prints about 0.15 mm small too, and
-// must still clear the thread crests.
+// Bore above the threaded length. Printed holes come out about 0.15 mm small;
+// this must still clear the thread crests.
 screw_shank_clear_d = 3.0;
 screw_clear_d = 3.0; // lid hole, loose so the lid seats easily on the posts
 // 90 degree countersink from the lid top down to the clearance hole.
 countersink_depth = (screw_countersink_d - screw_clear_d) / 2;
-// The lid may seat anywhere within the play of the screws in their lid holes,
-// plus 0.2 mm for printed walls off size.
-lid_seat_play = (screw_clear_d - screw_d) / 2 + 0.2;
+// A lip under the lid fits inside the main walls and locates it before the
+// screws go in. It runs along the walls clear of the board, the screw posts
+// and the slot-wall grooves, and its outer bottom edge is chamfered so it
+// drops in. Kept short and loose: printed lips come out large and printed
+// cavities small, so the fit only tightens.
+lid_lip_clear = 0.3;
+lid_lip_t = 1.2;
+lid_lip_depth = 1.6;
+lid_lip_chamfer = 0.6;
+// The lip bounds how far the lid can seat off center.
+lid_seat_play = lid_lip_clear;
 
 // "Crimpdeq" titles on the lid and the bottom. They read along Y, between the
 // carabiner slots, so they are horizontal when the device hangs from its eyes.
