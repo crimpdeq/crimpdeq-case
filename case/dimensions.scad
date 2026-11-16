@@ -226,13 +226,16 @@ screw_head_h = (screw_head_d - screw_d) / 2; // its 90 degree cone down to the t
 screw_countersink_d = 5.0;
 screw_post_d = 6.5;
 // The seated screw forms its thread in the post only over this length above
-// its tip, 2.5 diameters; a clear bore takes the rest, so the post top cannot
-// bulge into the lid.
-screw_thread_len = 6;
+// its tip; a clear bore takes the rest, so the post top cannot bulge into the
+// lid. The 6 mm thread of a 1.95 mm printed pilot took more torque than these
+// screws carry and snapped them. A lid needs little pull-out strength, so the
+// thread is kept to about 1.7 diameters, meant to strip before the screw snaps.
+screw_thread_len = 4;
 // Pilot the screw forms its thread in. Printed holes come out about 0.15 mm
-// small, so this prints near 1.95 mm, about 0.8 of the thread diameter, the
-// usual pilot for thread-forming screws in plastic.
-screw_thread_d = 2.1;
+// small, so this prints near 2.05 mm, about 0.85 of the thread diameter, the
+// loose end of the usual range for thread-forming screws in stiff plastics
+// like PLA.
+screw_thread_d = 2.2;
 screw_thread_tip_clear = 0.6; // pilot depth beyond the screw tip
 // Bore above the threaded length. It prints about 0.15 mm small too, and
 // must still clear the thread crests.

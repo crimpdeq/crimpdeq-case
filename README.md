@@ -34,7 +34,9 @@ openscad -D 'part="lid"' -o /tmp/fit_coupon_lid.stl case/fit_coupon.scad
 ```
 
 The switch body sits over the load cell's front-right corner, so assemble in this order: load
-cell, switch, battery, PCB with its wires, then the lid.
+cell, switch, battery, PCB with its wires, then the lid. Drive the screws with a hand
+screwdriver and stop as soon as each head is flush; the countersunk heads snap off under more
+torque.
 
 ## Compatibility
 
@@ -109,9 +111,9 @@ grooves. Chamfered at its outer bottom edge, it centers the lid as it drops in, 
 before the screws go in, and holds the unscrewed lid ends in line with the main body. The four
 screws flank the board, merged into the front and rear walls, each
 5.25 mm inside the outer faces, as in V2. Their heads seat 0.1 mm below flush in lid
-countersinks, and each screw forms its thread only over the 6 mm near its tip, below a clear
-bore, so driving it cannot twist the head off. Every lid feature over the load cell stops 0.6 mm
-above it.
+countersinks, and each screw forms its thread only over the 4 mm near its tip, in a 2.2 mm
+pilot below a clear bore, so it takes little torque to drive. Every lid feature over the load
+cell stops 0.6 mm above it.
 
 Both LEDs shine through 0.4 mm windows: their lid holes stop two layers short of the outer
 face, which keeps chalk and dust off the board. Print the lid in a light PLA; black PLA blocks

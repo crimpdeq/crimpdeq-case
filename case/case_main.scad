@@ -32,8 +32,8 @@ assert(thread_depth <= seam_z - floor_t,
     str("Screw pilot depth ", thread_depth, " mm does not fit the posts."));
 assert(screw_thread_d < screw_d && screw_d < screw_shank_clear_d && screw_shank_clear_d <= screw_post_d - 3,
     "The screw must thread in the pilot, pass the clear bore and leave 1.5 mm of post rim.");
-assert(shank_clear_depth > 0 && screw_thread_len >= 2 * screw_d,
-    "The screw must thread at least two diameters below a clear bore.");
+assert(shank_clear_depth > 0 && screw_thread_len >= 1.5 * screw_d && screw_thread_len <= 2 * screw_d,
+    "The screw must thread 1.5 to 2 diameters below a clear bore: enough to hold the lid, short enough to strip before the screw snaps.");
 assert(screw_x - screw_post_d / 2 > max([for (p = pcb_cable_pads) abs(p[0])]) + wire_d / 2 + 0.5,
     "The front screw posts must leave a lane beside the wire pads.");
 assert(usb_x + usb_pocket_w / 2 < switch_x - switch_w / 2 - switch_flange - 1,
